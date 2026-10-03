@@ -1,14 +1,18 @@
 package br.ifsp.demo.services;
 
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.enumerations.RegistrationFilter;
+import br.ifsp.demo.domain.enumerations.RegistrationStatus;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.exception.UserNotFoundException;
 
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class RegistrationQueryService {
     private final UserRepository userRepository;
@@ -27,9 +31,19 @@ public class RegistrationQueryService {
         validateIllegalArguments(userId, filter);
 
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-        return registrationRepository.findByUserId(userId).stream()
-                .map(registration -> registration.getCategory().getEvent())
-                .toList();
+
+        LocalDateTime now = LocalDateTime.now(clock);
+        Stream<Registration> registrations = registrationRepository.findByUserId(userId).stream();
+
+        if (filter == RegistrationFilter.ATIVOS) {
+            registrations = registrations.filter(r -> isActive(r, now));
+        }
+
+        return registrations.map(r -> r.getCategory().getEvent()).toList();
+    }
+
+    private boolean isActive(Registration registration, LocalDateTime now) {
+        return registration.getStatus() == RegistrationStatus.ATIVA && registration.getCategory().getEvent().getStartDateTime().isAfter(now);
     }
 
     private void validateIllegalArguments(UUID userId, RegistrationFilter filter) {
