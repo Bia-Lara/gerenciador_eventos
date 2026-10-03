@@ -27,7 +27,9 @@ public class RegistrationQueryService {
         validateIllegalArguments(userId, filter);
 
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-        return List.of();
+        return registrationRepository.findByUserId(userId).stream()
+                .map(registration -> registration.getCategory().getEvent())
+                .toList();
     }
 
     private void validateIllegalArguments(UUID userId, RegistrationFilter filter) {
