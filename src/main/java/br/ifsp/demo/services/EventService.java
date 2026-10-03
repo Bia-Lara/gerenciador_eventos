@@ -30,5 +30,8 @@ public class EventService {
         if (request.organizerId() == null) {
             throw new IllegalArgumentException("Organizer is required");
         }
+        if (request.name() == null) {
+            throw new IllegalArgumentException("Event name is required");
+        }
     }
 }
