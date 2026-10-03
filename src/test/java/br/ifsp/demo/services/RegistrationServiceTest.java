@@ -6,6 +6,7 @@ import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
 import br.ifsp.demo.exception.CategoryNotFoundException;
+import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,5 +118,17 @@ class RegistrationServiceTest {
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Category not found: " + categoryId);
+    }
+
+    @Test
+    @DisplayName("shouldThrowEventAlreadyStartedExceptionWhenEventHasStarted")
+    void shouldThrowEventAlreadyStartedExceptionWhenEventHasStarted() {
+        Event started = new Event("Show", NOW.minusHours(1), NOW.plusHours(2), UUID.randomUUID());
+        when(eventRepository.findById(started.getOrganizerId())).thenReturn(Optional.of(started));
+        var request = new RegisterToEventRequest(UUID.randomUUID(), started.getOrganizerId(), UUID.randomUUID());
+
+        assertThatThrownBy(() -> sut.register(request))
+                .isInstanceOf(EventAlreadyStartedException.class)
+                .hasMessage("Event has already started");
     }
 }
