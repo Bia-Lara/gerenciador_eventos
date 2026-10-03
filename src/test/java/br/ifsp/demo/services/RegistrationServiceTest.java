@@ -44,4 +44,14 @@ class RegistrationServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event is required");
     }
+
+    @Test
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenUserIsNull")
+    void shouldThrowIllegalArgumentExceptionWhenUserIsNull() {
+        var request = new RegisterToEventRequest(null, UUID.randomUUID(), UUID.randomUUID());
+
+        assertThatThrownBy(() -> sut.register(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User is required");
+    }
 }
