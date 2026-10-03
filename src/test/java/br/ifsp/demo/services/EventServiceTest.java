@@ -87,4 +87,20 @@ class EventServiceTest {
                 .hasMessage("Event name is required");
     }
 
+    @Test
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEventNameExceedsMaximumLength")
+    void shouldThrowIllegalArgumentExceptionWhenEventNameExceedsMaximumLength() {
+        UUID organizerId = UUID.randomUUID();
+        CreateEventRequest request = new CreateEventRequest(
+                "a".repeat(151),
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(2),
+                organizerId
+        );
+
+        assertThatThrownBy(() -> sut.createEvent(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Event name must not exceed 150 characters");
+    }
+
 }
