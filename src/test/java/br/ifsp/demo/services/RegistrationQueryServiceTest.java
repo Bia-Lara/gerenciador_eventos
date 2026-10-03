@@ -3,6 +3,7 @@ package br.ifsp.demo.services;
 import br.ifsp.demo.domain.enumerations.RegistrationFilter;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -14,9 +15,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("UnitTest")
@@ -52,5 +55,16 @@ class RegistrationQueryServiceTest {
         assertThatThrownBy(() -> sut.listEventsByUser(UUID.randomUUID(), null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Filter is required");
+    }
+
+    @Test
+    @DisplayName("shouldThrowUserNotFoundExceptionWhenUserDoesNotExist")
+    void shouldThrowUserNotFoundExceptionWhenUserDoesNotExist() {
+        UUID userId = UUID.randomUUID();
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sut.listEventsByUser(userId, RegistrationFilter.TODOS))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User not found: " + userId);
     }
 }
