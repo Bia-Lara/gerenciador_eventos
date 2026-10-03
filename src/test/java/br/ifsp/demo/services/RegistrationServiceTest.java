@@ -1,10 +1,12 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
 import br.ifsp.demo.exception.EventNotFoundException;
+import br.ifsp.demo.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -14,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -78,5 +81,19 @@ class RegistrationServiceTest {
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(EventNotFoundException.class)
                 .hasMessage("Event not found: " + eventId);
+    }
+
+    @Test
+    @DisplayName("shouldThrowUserNotFoundExceptionWhenUserDoesNotExist")
+    void shouldThrowUserNotFoundExceptionWhenUserDoesNotExist() {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), UUID.randomUUID());
+        when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
+        when(userRepository.existsById(userId)).thenReturn(false);
+        var request = new RegisterToEventRequest(userId, event.getOrganizerId(), UUID.randomUUID());
+
+        assertThatThrownBy(() -> sut.register(request))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User not found: " + userId);
     }
 }
