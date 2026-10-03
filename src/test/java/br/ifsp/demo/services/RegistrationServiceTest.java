@@ -1,14 +1,12 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
-import br.ifsp.demo.exception.CategoryNotFoundException;
-import br.ifsp.demo.exception.EventAlreadyStartedException;
-import br.ifsp.demo.exception.EventNotFoundException;
-import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.exception.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -130,5 +128,22 @@ class RegistrationServiceTest {
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(EventAlreadyStartedException.class)
                 .hasMessage("Event has already started");
+    }
+
+    @Test
+    @DisplayName("shouldThrowDuplicateRegistrationExceptionWhenUserAlreadyHasActiveRegistration")
+    void shouldThrowDuplicateRegistrationExceptionWhenUserAlreadyHasActiveRegistration() {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        Category category = new Category(event, "Pista", 100);
+        event.getCategories().add(category);
+        when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(registrationRepository.existsActiveByUserIdAndEventId(userId, event.getOrganizerId())).thenReturn(true);
+        var request = new RegisterToEventRequest(userId, event.getOrganizerId(), category.getId());
+
+        assertThatThrownBy(() -> sut.register(request))
+                .isInstanceOf(DuplicateRegistrationException.class)
+                .hasMessage("User already registered in this event");
     }
 }
