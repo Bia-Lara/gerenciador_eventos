@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,11 +36,15 @@ class RegistrationServiceTest {
     @Mock
     private RegistrationRepository registrationRepository;
 
+    private static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 10, 0);
+
     private RegistrationService sut;
 
     @BeforeEach
     void setUp() {
-        sut = new RegistrationService(userRepository, eventRepository, registrationRepository, Clock.systemDefaultZone());
+        Clock fixedClock = Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE);
+        sut = new RegistrationService(userRepository, eventRepository, registrationRepository, fixedClock);
     }
 
     @Test
@@ -88,7 +93,7 @@ class RegistrationServiceTest {
     @DisplayName("shouldThrowUserNotFoundExceptionWhenUserDoesNotExist")
     void shouldThrowUserNotFoundExceptionWhenUserDoesNotExist() {
         UUID userId = UUID.randomUUID();
-        Event event = new Event("Show", LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), UUID.randomUUID());
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
         when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
         when(userRepository.existsById(userId)).thenReturn(false);
         var request = new RegisterToEventRequest(userId, event.getOrganizerId(), UUID.randomUUID());
@@ -103,8 +108,8 @@ class RegistrationServiceTest {
     void shouldThrowCategoryNotFoundExceptionWhenCategoryDoesNotExistInEvent() {
         UUID userId = UUID.randomUUID();
         UUID categoryId = UUID.randomUUID();
-        Event event = new Event("Show", LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2), UUID.randomUUID());
+        Event event = new Event("Show", NOW.plusDays(1),
+                NOW.plusDays(2), UUID.randomUUID());
         when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
         when(userRepository.existsById(userId)).thenReturn(true);
         var request = new RegisterToEventRequest(userId, event.getOrganizerId(), categoryId);
