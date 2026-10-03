@@ -172,4 +172,22 @@ class EventServiceTest {
                 .hasMessage("Start date time is required");
     }
 
+    @Test
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsNull")
+    void shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsNull() {
+        UUID organizerId = UUID.randomUUID();
+        CreateEventRequest request = new CreateEventRequest(
+                "Novo evento",
+                LocalDateTime.now().plusDays(1),
+                null,
+                organizerId
+        );
+
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+
+        assertThatThrownBy(() -> sut.createEvent(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("End date time is required");
+    }
+
 }
