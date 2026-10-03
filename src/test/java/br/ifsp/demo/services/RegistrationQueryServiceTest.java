@@ -141,4 +141,18 @@ class RegistrationQueryServiceTest {
 
         assertThat(result).isEmpty();
     }
+
+    @Test
+    @DisplayName("shouldReturnEmptyListWhenFilterIsInativosAndUserHasOnlyActiveRegistrations")
+    void shouldReturnEmptyListWhenFilterIsInativosAndUserHasOnlyActiveRegistrations() {
+        UUID userId = UUID.randomUUID();
+        User user = mock(User.class);
+        Registration upcoming = registration(user, NOW.plusDays(1), RegistrationStatus.ATIVA);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(registrationRepository.findByUserId(userId)).thenReturn(List.of(upcoming));
+
+        List<Event> result = sut.listEventsByUser(userId, RegistrationFilter.INATIVOS);
+
+        assertThat(result).isEmpty();
+    }
 }
