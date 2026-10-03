@@ -101,7 +101,7 @@ class RegistrationServiceTest {
         UUID userId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(userRepository.existsById(userId)).thenReturn(false);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
         var request = new RegisterToEventRequest(userId, event.getId(), UUID.randomUUID());
 
         assertThatThrownBy(() -> sut.register(request))
@@ -117,7 +117,7 @@ class RegistrationServiceTest {
         Event event = new Event("Show", NOW.plusDays(1),
                 NOW.plusDays(2), UUID.randomUUID());
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
         var request = new RegisterToEventRequest(userId, event.getId(), categoryId);
 
         assertThatThrownBy(() -> sut.register(request))
@@ -144,7 +144,7 @@ class RegistrationServiceTest {
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
         Category category = event.addCategory("Pista", 100);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
         when(registrationRepository.existsActiveByUserIdAndEventId(userId, event.getId())).thenReturn(true);
         var request = new RegisterToEventRequest(userId, event.getId(), category.getId());
 
@@ -161,7 +161,7 @@ class RegistrationServiceTest {
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
         Category category = event.addCategory("Pista", 2);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
         when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(activeRegistrations);
         var request = new RegisterToEventRequest(userId, event.getId(), category.getId());
 
@@ -177,7 +177,7 @@ class RegistrationServiceTest {
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
         Category category = event.addCategory("Pista", 2);
         when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
-        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
         when(registrationRepository.existsActiveByUserIdAndEventId(userId, event.getOrganizerId())).thenReturn(false);
         when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(1L);
         when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));

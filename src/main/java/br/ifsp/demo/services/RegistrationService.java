@@ -8,6 +8,7 @@ import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
 import br.ifsp.demo.exception.*;
+import br.ifsp.demo.security.user.User;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -36,12 +37,8 @@ public class RegistrationService {
         if (!event.getStartDateTime().isAfter(LocalDateTime.now(clock))) {
             throw new EventAlreadyStartedException();
         }
-        if (!userRepository.existsById(request.userId())) {
-            throw new UserNotFoundException(request.userId());
-        }
-        if (!userRepository.existsById(request.userId())) {
-            throw new UserNotFoundException(request.userId());
-        }
+
+        User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(request.userId()));
 
         Category category = event.findCategory(request.categoryId()).orElseThrow(() -> new CategoryNotFoundException(request.categoryId()));
         if (registrationRepository.existsActiveByUserIdAndEventId(request.userId(), request.eventId())) {
