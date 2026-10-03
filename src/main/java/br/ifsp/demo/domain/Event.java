@@ -23,6 +23,9 @@ public class Event {
         if (startDateTime == null) {
             throw new IllegalArgumentException("Start date time is required");
         }
+        if (endDateTime == null) {
+            throw new IllegalArgumentException("End date time is required");
+        }
 
         this.name = validateAndNormalizeName(name);
         this.startDateTime = startDateTime;
