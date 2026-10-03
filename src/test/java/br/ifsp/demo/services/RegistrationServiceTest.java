@@ -2,6 +2,8 @@ package br.ifsp.demo.services;
 
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.domain.Registration;
+import br.ifsp.demo.domain.enumerations.RegistrationStatus;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
@@ -23,7 +25,10 @@ import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -163,5 +168,27 @@ class RegistrationServiceTest {
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(CategoryFullException.class)
                 .hasMessage("No vacancies left for this category");
+    }
+
+    @Test
+    @DisplayName("shouldRegisterParticipantWhenAllDataIsValidAndCategoryHasVacancies")
+    void shouldRegisterParticipantWhenAllDataIsValidAndCategoryHasVacancies() {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        Category category = event.addCategory("Pista", 2);
+        when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(registrationRepository.existsActiveByUserIdAndEventId(userId, event.getOrganizerId())).thenReturn(false);
+        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(1L);
+        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
+        var request = new RegisterToEventRequest(userId, event.getOrganizerId(), category.getId());
+
+        Registration result = sut.register(request);
+
+        assertThat(result.getUser().getId()).isEqualTo(userId);
+        assertThat(result.getCategory().getEvent().getId()).isEqualTo(event.getOrganizerId());
+        assertThat(result.getCategory().getId()).isEqualTo(category.getId());
+        assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
+        verify(registrationRepository).save(any(Registration.class));
     }
 }
