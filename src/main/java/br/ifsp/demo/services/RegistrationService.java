@@ -43,9 +43,12 @@ public class RegistrationService {
             throw new UserNotFoundException(request.userId());
         }
 
-        event.findCategory(request.categoryId()).orElseThrow(() -> new CategoryNotFoundException(request.categoryId()));
+        Category category = event.findCategory(request.categoryId()).orElseThrow(() -> new CategoryNotFoundException(request.categoryId()));
         if (registrationRepository.existsActiveByUserIdAndEventId(request.userId(), request.eventId())) {
             throw new DuplicateRegistrationException();
+        }
+        if (registrationRepository.countActiveByCategoryId(category.getId()) >= category.getCapacity()) {
+            throw new CategoryFullException();
         }
 
         throw new UnsupportedOperationException("Not implemented yet");
