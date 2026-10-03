@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class Event {
+    private final UUID id;
     private final String name;
     private final LocalDateTime startDateTime;
     private final LocalDateTime endDateTime;
@@ -15,7 +16,7 @@ public class Event {
     private final List<Category> categories = new ArrayList<>();
 
     public Event(String name, LocalDateTime startDateTime, LocalDateTime endDateTime, UUID organizerId) {
-
+        this.id = UUID.randomUUID();
         if (organizerId ==null){
             throw new IllegalArgumentException("Organizer is required");
         }
@@ -58,17 +59,19 @@ public class Event {
         return List.copyOf(categories);
     }
 
+    public UUID getId() {
+        return id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Event event = (Event) o;
-        return Objects.equals(name, event.name) && Objects.equals(startDateTime, event.startDateTime) && Objects.equals(endDateTime, event.endDateTime) && Objects.equals(organizerId, event.organizerId);
+        return Objects.equals(id, event.id) && Objects.equals(name, event.name) && Objects.equals(startDateTime, event.startDateTime) && Objects.equals(endDateTime, event.endDateTime) && Objects.equals(organizerId, event.organizerId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, startDateTime, endDateTime, organizerId);
+        return Objects.hash(id, name, startDateTime, endDateTime, organizerId);
     }
-
-
 }

@@ -93,9 +93,9 @@ class RegistrationServiceTest {
     void shouldThrowUserNotFoundExceptionWhenUserDoesNotExist() {
         UUID userId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
-        when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.existsById(userId)).thenReturn(false);
-        var request = new RegisterToEventRequest(userId, event.getOrganizerId(), UUID.randomUUID());
+        var request = new RegisterToEventRequest(userId, event.getId(), UUID.randomUUID());
 
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(UserNotFoundException.class)
@@ -109,9 +109,9 @@ class RegistrationServiceTest {
         UUID categoryId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1),
                 NOW.plusDays(2), UUID.randomUUID());
-        when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.existsById(userId)).thenReturn(true);
-        var request = new RegisterToEventRequest(userId, event.getOrganizerId(), categoryId);
+        var request = new RegisterToEventRequest(userId, event.getId(), categoryId);
 
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(CategoryNotFoundException.class)
@@ -122,8 +122,8 @@ class RegistrationServiceTest {
     @DisplayName("shouldThrowEventAlreadyStartedExceptionWhenEventHasStarted")
     void shouldThrowEventAlreadyStartedExceptionWhenEventHasStarted() {
         Event started = new Event("Show", NOW.minusHours(1), NOW.plusHours(2), UUID.randomUUID());
-        when(eventRepository.findById(started.getOrganizerId())).thenReturn(Optional.of(started));
-        var request = new RegisterToEventRequest(UUID.randomUUID(), started.getOrganizerId(), UUID.randomUUID());
+        when(eventRepository.findById(started.getId())).thenReturn(Optional.of(started));
+        var request = new RegisterToEventRequest(UUID.randomUUID(), started.getId(), UUID.randomUUID());
 
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(EventAlreadyStartedException.class)
@@ -135,12 +135,11 @@ class RegistrationServiceTest {
     void shouldThrowDuplicateRegistrationExceptionWhenUserAlreadyHasActiveRegistration() {
         UUID userId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
-        Category category = new Category(event, "Pista", 100);
-        event.getCategories().add(category);
-        when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
+        Category category = event.addCategory("Pista", 100);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.existsById(userId)).thenReturn(true);
-        when(registrationRepository.existsActiveByUserIdAndEventId(userId, event.getOrganizerId())).thenReturn(true);
-        var request = new RegisterToEventRequest(userId, event.getOrganizerId(), category.getId());
+        when(registrationRepository.existsActiveByUserIdAndEventId(userId, event.getId())).thenReturn(true);
+        var request = new RegisterToEventRequest(userId, event.getId(), category.getId());
 
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(DuplicateRegistrationException.class)
