@@ -26,6 +26,9 @@ public class RegistrationService {
     }
 
     public Registration register(RegisterToEventRequest request) {
+        if (request.eventId() == null) {
+            throw new IllegalArgumentException("Event is required");
+        }
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
