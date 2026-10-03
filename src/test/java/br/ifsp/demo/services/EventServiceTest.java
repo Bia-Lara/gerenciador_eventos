@@ -66,4 +66,22 @@ class EventServiceTest {
                 .hasMessage("Organizer not found");
     }
 
+    @Test
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEventNameIsNull")
+    void shouldThrowIllegalArgumentExceptionWhenEventNameIsNull() {
+        UUID organizerId = UUID.randomUUID();
+        CreateEventRequest request = new CreateEventRequest(
+                null,
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(2),
+                organizerId
+        );
+
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+
+        assertThatThrownBy(() -> sut.createEvent(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Event name is required");
+    }
+
 }
