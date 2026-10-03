@@ -33,5 +33,9 @@ public class EventService {
         if (request.name() == null || request.name().isBlank()) {
             throw new IllegalArgumentException("Event name is required");
         }
+
+        if (request.name().length() >150){
+            throw new IllegalArgumentException("Event name must not exceed 150 characters");
+        }
     }
 }
