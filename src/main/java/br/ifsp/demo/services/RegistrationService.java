@@ -26,6 +26,11 @@ public class RegistrationService {
     }
 
     public Registration register(RegisterToEventRequest request) {
+        validateIllegalArguments(request);
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private static void validateIllegalArguments(RegisterToEventRequest request) {
         if (request.eventId() == null) {
             throw new IllegalArgumentException("Event is required");
         }
@@ -35,6 +40,5 @@ public class RegistrationService {
         if (request.categoryId() == null) {
             throw new IllegalArgumentException("Category is required");
         }
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 }
