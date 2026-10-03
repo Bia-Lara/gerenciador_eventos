@@ -4,6 +4,7 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.enumerations.RegistrationFilter;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.exception.UserNotFoundException;
 
 import java.time.Clock;
 import java.util.List;
@@ -25,6 +26,7 @@ public class RegistrationQueryService {
     public List<Event> listEventsByUser(UUID userId, RegistrationFilter filter) {
         validateIllegalArguments(userId, filter);
 
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -35,6 +37,5 @@ public class RegistrationQueryService {
         if (filter == null) {
             throw new IllegalArgumentException("Filter is required");
         }
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 }
