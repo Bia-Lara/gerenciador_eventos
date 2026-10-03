@@ -23,6 +23,9 @@ public class RegistrationQueryService {
     }
 
     public List<Event> listEventsByUser(UUID userId, RegistrationFilter filter) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User is required");
+        }
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
