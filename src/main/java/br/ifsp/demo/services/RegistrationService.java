@@ -29,6 +29,9 @@ public class RegistrationService {
         if (request.eventId() == null) {
             throw new IllegalArgumentException("Event is required");
         }
+        if (request.userId() == null) {
+            throw new IllegalArgumentException("User is required");
+        }
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
