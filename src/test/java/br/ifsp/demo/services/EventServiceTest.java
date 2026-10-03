@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
@@ -123,6 +124,29 @@ class EventServiceTest {
 
         assertThat(event.getName()).isEqualTo(eventName);
         assertThat(event.getName()).hasSize(150);
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "'  Novo evento  ', 'Novo evento'",
+            "' Novo evento', 'Novo evento'",
+            "'Novo evento ', 'Novo evento'"
+    }, ignoreLeadingAndTrailingWhitespace = false)
+    @DisplayName("shouldTrimEventNameWhenCreatingEvent")
+    void shouldTrimEventNameWhenCreatingEvent(String name, String expectedName) {
+        UUID organizerId = UUID.randomUUID();
+        CreateEventRequest request = new CreateEventRequest(
+                name,
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(2),
+                organizerId
+        );
+
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+
+        Event event = sut.createEvent(request);
+
+        assertThat(event.getName()).isEqualTo(expectedName);
     }
 
 }
