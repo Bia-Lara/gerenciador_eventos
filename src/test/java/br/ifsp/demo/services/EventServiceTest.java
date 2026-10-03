@@ -8,6 +8,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -66,12 +69,14 @@ class EventServiceTest {
                 .hasMessage("Organizer not found");
     }
 
-    @Test
-    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEventNameIsNull")
-    void shouldThrowIllegalArgumentExceptionWhenEventNameIsNull() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {" "})
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEventNameIsInvalid")
+    void shouldThrowIllegalArgumentExceptionWhenEventNameIsInvalid(String name) {
         UUID organizerId = UUID.randomUUID();
         CreateEventRequest request = new CreateEventRequest(
-                null,
+                name,
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(2),
                 organizerId
