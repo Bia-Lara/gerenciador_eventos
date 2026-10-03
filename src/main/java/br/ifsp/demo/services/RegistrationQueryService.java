@@ -23,8 +23,17 @@ public class RegistrationQueryService {
     }
 
     public List<Event> listEventsByUser(UUID userId, RegistrationFilter filter) {
+        validateIllegalArguments(userId, filter);
+
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private void validateIllegalArguments(UUID userId, RegistrationFilter filter) {
         if (userId == null) {
             throw new IllegalArgumentException("User is required");
+        }
+        if (filter == null) {
+            throw new IllegalArgumentException("Filter is required");
         }
         throw new UnsupportedOperationException("Not implemented yet");
     }
