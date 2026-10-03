@@ -20,6 +20,9 @@ public class Event {
         if (organizerId ==null){
             throw new IllegalArgumentException("Organizer is required");
         }
+        if (startDateTime == null) {
+            throw new IllegalArgumentException("Start date time is required");
+        }
 
         this.name = validateAndNormalizeName(name);
         this.startDateTime = startDateTime;
