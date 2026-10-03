@@ -128,9 +128,9 @@ class EventServiceTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "'  Novo evento  ', 'Novo evento'",
-            "' Novo evento', 'Novo evento'",
-            "'Novo evento ', 'Novo evento'"
+            "'  Novo evento  ','Novo evento'",
+            "' Novo evento','Novo evento'",
+            "'Novo evento ','Novo evento'"
     }, ignoreLeadingAndTrailingWhitespace = false)
     @DisplayName("shouldTrimEventNameWhenCreatingEvent")
     void shouldTrimEventNameWhenCreatingEvent(String name, String expectedName) {
