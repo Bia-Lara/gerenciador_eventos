@@ -5,6 +5,7 @@ import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
+import br.ifsp.demo.exception.EventNotFoundException;
 
 import java.time.Clock;
 
@@ -27,10 +28,12 @@ public class RegistrationService {
 
     public Registration register(RegisterToEventRequest request) {
         validateIllegalArguments(request);
+        eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
+
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    private static void validateIllegalArguments(RegisterToEventRequest request) {
+    private void validateIllegalArguments(RegisterToEventRequest request) {
         if (request.eventId() == null) {
             throw new IllegalArgumentException("Event is required");
         }
