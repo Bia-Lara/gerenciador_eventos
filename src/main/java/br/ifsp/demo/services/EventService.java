@@ -3,20 +3,20 @@ package br.ifsp.demo.services;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.OrganizerRepository;
 import br.ifsp.demo.dto.CreateEventRequest;
-import org.springframework.stereotype.Service;
+import br.ifsp.demo.exception.EntityNotFoundException;
 
-@Service
 public class EventService {
-    private OrganizerRepository organizerRepository;
-
-    public EventService() {
-    }
+    private final OrganizerRepository organizerRepository;
 
     public EventService(OrganizerRepository organizerRepository) {
         this.organizerRepository = organizerRepository;
     }
 
-    public Event createEvent(CreateEventRequest request){
+    public Event createEvent(CreateEventRequest request) {
+        validateIllegalArguments(request);
+
+        organizerRepository.findById(request.organizerId())
+                .orElseThrow(() -> new EntityNotFoundException("Organizer not found"));
 
         return new Event(
                 request.name(),
@@ -24,5 +24,11 @@ public class EventService {
                 request.endDateTime(),
                 request.organizerId()
         );
+    }
+
+    private void validateIllegalArguments(CreateEventRequest request) {
+        if (request.organizerId() == null) {
+            throw new IllegalArgumentException("Organizer is required");
+        }
     }
 }

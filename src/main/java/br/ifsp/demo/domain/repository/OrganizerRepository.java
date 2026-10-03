@@ -1,7 +1,8 @@
 package br.ifsp.demo.domain.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface OrganizerRepository {
-    boolean existsById(UUID organizerId);
+    Optional<UUID> findById(UUID organizerId);
 }

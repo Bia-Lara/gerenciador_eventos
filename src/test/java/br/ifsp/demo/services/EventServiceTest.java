@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -58,7 +59,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.existsById(organizerId)).thenReturn(false);
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(EntityNotFoundException.class)
