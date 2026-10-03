@@ -18,6 +18,9 @@ public class EventQueryService {
     }
 
     public List<Event> listByOrganizer(UUID organizerId) {
+        if (organizerId == null) {
+            throw new IllegalArgumentException("Organizer is required");
+        }
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
