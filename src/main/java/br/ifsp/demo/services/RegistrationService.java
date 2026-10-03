@@ -1,15 +1,13 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
-import br.ifsp.demo.exception.CategoryNotFoundException;
-import br.ifsp.demo.exception.EventAlreadyStartedException;
-import br.ifsp.demo.exception.EventNotFoundException;
-import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.exception.*;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -46,6 +44,9 @@ public class RegistrationService {
         }
 
         event.findCategory(request.categoryId()).orElseThrow(() -> new CategoryNotFoundException(request.categoryId()));
+        if (registrationRepository.existsActiveByUserIdAndEventId(request.userId(), request.eventId())) {
+            throw new DuplicateRegistrationException();
+        }
 
         throw new UnsupportedOperationException("Not implemented yet");
     }
