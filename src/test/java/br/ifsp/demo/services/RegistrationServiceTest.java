@@ -12,6 +12,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -144,5 +146,22 @@ class RegistrationServiceTest {
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(DuplicateRegistrationException.class)
                 .hasMessage("User already registered in this event");
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {2, 3})
+    @DisplayName("shouldThrowCategoryFullExceptionWhenNoVacanciesLeft")
+    void shouldThrowCategoryFullExceptionWhenNoVacanciesLeft(long activeRegistrations) {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        Category category = event.addCategory("Pista", 2);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(activeRegistrations);
+        var request = new RegisterToEventRequest(userId, event.getId(), category.getId());
+
+        assertThatThrownBy(() -> sut.register(request))
+                .isInstanceOf(CategoryFullException.class)
+                .hasMessage("No vacancies left for this category");
     }
 }
