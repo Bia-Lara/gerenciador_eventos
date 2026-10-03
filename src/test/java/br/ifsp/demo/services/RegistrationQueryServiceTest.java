@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
@@ -43,5 +44,13 @@ class RegistrationQueryServiceTest {
         assertThatThrownBy(() -> sut.listEventsByUser(null, RegistrationFilter.TODOS))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("User is required");
+    }
+
+    @Test
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenFilterIsNull")
+    void shouldThrowIllegalArgumentExceptionWhenFilterIsNull() {
+        assertThatThrownBy(() -> sut.listEventsByUser(UUID.randomUUID(), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Filter is required");
     }
 }
