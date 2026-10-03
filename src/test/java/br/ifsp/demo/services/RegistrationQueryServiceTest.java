@@ -126,4 +126,19 @@ class RegistrationQueryServiceTest {
 
         assertThat(result).containsExactly(upcoming.getCategory().getEvent());
     }
+
+    @Test
+    @DisplayName("shouldReturnEmptyListWhenFilterIsAtivosAndAllRegistrationsAreInactive")
+    void shouldReturnEmptyListWhenFilterIsAtivosAndAllRegistrationsAreInactive() {
+        UUID userId = UUID.randomUUID();
+        User user = mock(User.class);
+        Registration started = registration(user, NOW.minusDays(1), RegistrationStatus.ATIVA);
+        Registration canceled = registration(user, NOW.plusDays(2), RegistrationStatus.CANCELADA);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(registrationRepository.findByUserId(userId)).thenReturn(List.of(started, canceled));
+
+        List<Event> result = sut.listEventsByUser(userId, RegistrationFilter.ATIVOS);
+
+        assertThat(result).isEmpty();
+    }
 }
