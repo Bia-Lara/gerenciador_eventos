@@ -5,6 +5,7 @@ import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
+import br.ifsp.demo.exception.CategoryNotFoundException;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,5 +96,21 @@ class RegistrationServiceTest {
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User not found: " + userId);
+    }
+
+    @Test
+    @DisplayName("shouldThrowCategoryNotFoundExceptionWhenCategoryDoesNotExistInEvent")
+    void shouldThrowCategoryNotFoundExceptionWhenCategoryDoesNotExistInEvent() {
+        UUID userId = UUID.randomUUID();
+        UUID categoryId = UUID.randomUUID();
+        Event event = new Event("Show", LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(2), UUID.randomUUID());
+        when(eventRepository.findById(event.getOrganizerId())).thenReturn(Optional.of(event));
+        when(userRepository.existsById(userId)).thenReturn(true);
+        var request = new RegisterToEventRequest(userId, event.getOrganizerId(), categoryId);
+
+        assertThatThrownBy(() -> sut.register(request))
+                .isInstanceOf(CategoryNotFoundException.class)
+                .hasMessage("Category not found: " + categoryId);
     }
 }
