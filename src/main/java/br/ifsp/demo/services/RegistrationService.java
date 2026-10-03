@@ -1,10 +1,12 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
+import br.ifsp.demo.exception.CategoryNotFoundException;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 
@@ -29,11 +31,14 @@ public class RegistrationService {
 
     public Registration register(RegisterToEventRequest request) {
         validateIllegalArguments(request);
-        eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
+        Event event = eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
 
         if (!userRepository.existsById(request.userId())) {
             throw new UserNotFoundException(request.userId());
         }
+
+        event.findCategory(request.categoryId()).orElseThrow(() -> new CategoryNotFoundException(request.categoryId()));
+
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
