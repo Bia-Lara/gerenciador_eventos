@@ -155,4 +155,22 @@ class RegistrationQueryServiceTest {
 
         assertThat(result).isEmpty();
     }
+
+    @Test
+    @DisplayName("shouldReturnStartedAndCanceledEventsWhenFilterIsInativos")
+    void shouldReturnStartedAndCanceledEventsWhenFilterIsInativos() {
+        UUID userId = UUID.randomUUID();
+        User user = mock(User.class);
+        Registration upcoming = registration(user, NOW.plusDays(1), RegistrationStatus.ATIVA);
+        Registration started = registration(user, NOW.minusDays(1), RegistrationStatus.ATIVA);
+        Registration canceled = registration(user, NOW.plusDays(2), RegistrationStatus.CANCELADA);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(registrationRepository.findByUserId(userId)).thenReturn(List.of(upcoming, started, canceled));
+
+        List<Event> result = sut.listEventsByUser(userId, RegistrationFilter.INATIVOS);
+
+        assertThat(result).containsExactly(
+                started.getCategory().getEvent(),
+                canceled.getCategory().getEvent());
+    }
 }
