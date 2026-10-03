@@ -85,6 +85,8 @@ class EventServiceTest {
                 organizerId
         );
 
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event name is required");
@@ -100,6 +102,8 @@ class EventServiceTest {
                 LocalDateTime.now().plusDays(2),
                 organizerId
         );
+
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
 
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)

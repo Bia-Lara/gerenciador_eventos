@@ -21,7 +21,7 @@ public class Event {
             throw new IllegalArgumentException("Organizer is required");
         }
 
-        this.name = name;
+        this.name = validateAndNormalizeName(name);
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.organizerId = organizerId;
@@ -53,6 +53,19 @@ public class Event {
         return categories.stream()
                 .filter(c -> c.getId().equals(categoryId))
                 .findFirst();
+    }
+
+    private String validateAndNormalizeName(String name){
+
+        if(name ==null || name.isBlank()) {
+            throw new IllegalArgumentException("Event name is required");
+        }
+
+        if(name.trim().length()>150) {
+            throw new IllegalArgumentException("Event name must not exceed 150 characters");
+        }
+
+        return name.trim();
     }
 
     public List<Category> getCategories() {

@@ -14,13 +14,12 @@ public class EventService {
 
     public Event createEvent(CreateEventRequest request) {
         validateIllegalArguments(request);
-        String eventName = request.name().trim();
 
         organizerRepository.findById(request.organizerId())
                 .orElseThrow(() -> new EntityNotFoundException("Organizer not found"));
 
         return new Event(
-                eventName,
+                request.name(),
                 request.startDateTime(),
                 request.endDateTime(),
                 request.organizerId()
@@ -30,13 +29,6 @@ public class EventService {
     private void validateIllegalArguments(CreateEventRequest request) {
         if (request.organizerId() == null) {
             throw new IllegalArgumentException("Organizer is required");
-        }
-        if (request.name() == null || request.name().isBlank()) {
-            throw new IllegalArgumentException("Event name is required");
-        }
-
-        if (request.name().trim().length() > 150) {
-            throw new IllegalArgumentException("Event name must not exceed 150 characters");
         }
     }
 }
