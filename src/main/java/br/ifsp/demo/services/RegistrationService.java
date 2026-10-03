@@ -48,7 +48,8 @@ public class RegistrationService {
             throw new CategoryFullException();
         }
 
-        throw new UnsupportedOperationException("Not implemented yet");
+        Registration registration = new Registration(category, user);
+        return registrationRepository.save(registration);
     }
 
     private void validateIllegalArguments(RegisterToEventRequest request) {
