@@ -1,5 +1,6 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.domain.repository.OrganizerRepository;
 import br.ifsp.demo.exception.EntityNotFoundException;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +103,26 @@ class EventServiceTest {
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event name must not exceed 150 characters");
+    }
+
+    @Test
+    @DisplayName("shouldCreateEventWhenEventNameHasMaximumLength")
+    void shouldCreateEventWhenEventNameHasMaximumLength() {
+        UUID organizerId = UUID.randomUUID();
+        String eventName = "a".repeat(150);
+        CreateEventRequest request = new CreateEventRequest(
+                eventName,
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(2),
+                organizerId
+        );
+
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+
+        Event event = sut.createEvent(request);
+
+        assertThat(event.getName()).isEqualTo(eventName);
+        assertThat(event.getName()).hasSize(150);
     }
 
 }
