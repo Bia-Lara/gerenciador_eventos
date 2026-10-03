@@ -7,10 +7,12 @@ import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.dto.RegisterToEventRequest;
 import br.ifsp.demo.exception.CategoryNotFoundException;
+import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 
 import java.time.Clock;
+import java.time.LocalDateTime;
 
 public class RegistrationService {
 
@@ -33,6 +35,12 @@ public class RegistrationService {
         validateIllegalArguments(request);
         Event event = eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
 
+        if (!event.getStartDateTime().isAfter(LocalDateTime.now(clock))) {
+            throw new EventAlreadyStartedException();
+        }
+        if (!userRepository.existsById(request.userId())) {
+            throw new UserNotFoundException(request.userId());
+        }
         if (!userRepository.existsById(request.userId())) {
             throw new UserNotFoundException(request.userId());
         }
