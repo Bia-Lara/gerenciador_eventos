@@ -1,4 +1,5 @@
 package br.ifsp.demo.dto;
 
-public class RegisterToEventRequest {
-}
+import java.util.UUID;
+
+public record RegisterToEventRequest(UUID userId, UUID eventId, UUID categoryId) {}
