@@ -32,6 +32,9 @@ public class RegistrationService {
         if (request.userId() == null) {
             throw new IllegalArgumentException("User is required");
         }
+        if (request.categoryId() == null) {
+            throw new IllegalArgumentException("Category is required");
+        }
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
