@@ -37,6 +37,8 @@ public class RegistrationQueryService {
 
         if (filter == RegistrationFilter.ATIVOS) {
             registrations = registrations.filter(r -> isActive(r, now));
+        } else if (filter == RegistrationFilter.INATIVOS) {
+            registrations = registrations.filter(r -> !isActive(r, now));
         }
 
         return registrations.map(r -> r.getCategory().getEvent()).toList();
