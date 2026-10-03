@@ -27,7 +27,7 @@ public class RegistrationQueryService {
         validateIllegalArguments(userId, filter);
 
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-        throw new UnsupportedOperationException("Not implemented yet");
+        return List.of();
     }
 
     private void validateIllegalArguments(UUID userId, RegistrationFilter filter) {
