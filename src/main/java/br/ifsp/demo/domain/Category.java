@@ -4,14 +4,14 @@ import java.util.UUID;
 
 public class Category {
     private final Event event;
-    private final UUID uuid;
+    private UUID id;
     private String name;
     private int capacity;
     private double price;
 
     public Category(Event event, String name, int capacity, double price) {
         this.event = event;
-        this.uuid = UUID.randomUUID();
+        this.id = UUID.randomUUID();
         this.name = name;
         this.capacity = capacity;
         this.price = price;
@@ -22,7 +22,7 @@ public class Category {
     }
 
     public UUID getId() {
-        return uuid;
+        return id;
     }
 
     public String getName() {
@@ -47,5 +47,9 @@ public class Category {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 }

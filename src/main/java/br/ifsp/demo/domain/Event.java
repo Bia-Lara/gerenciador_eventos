@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class Event {
-    private final UUID id;
+    private UUID id;
     private final String name;
     private final LocalDateTime startDateTime;
     private final LocalDateTime endDateTime;
@@ -109,5 +109,17 @@ public class Event {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, startDateTime, endDateTime, organizerId);
+    }
+
+    public static Event restore(UUID id, String name, LocalDateTime start, LocalDateTime end, UUID organizerId) {
+        Event event = new Event(name, start, end, organizerId);
+        event.id = id;
+        return event;
+    }
+
+    public Category restoreCategory(UUID id, String name, int capacity, double price) {
+        Category category = addCategory(name, capacity, price);
+        category.setId(id);
+        return category;
     }
 }
