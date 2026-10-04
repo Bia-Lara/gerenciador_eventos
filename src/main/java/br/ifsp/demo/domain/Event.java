@@ -27,6 +27,10 @@ public class Event {
             throw new IllegalArgumentException("End date time is required");
         }
 
+        if (endDateTime.isBefore(startDateTime)){
+            throw new IllegalArgumentException("End date time must be after start date time");
+        }
+
         this.name = validateAndNormalizeName(name);
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
