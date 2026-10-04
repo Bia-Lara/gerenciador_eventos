@@ -6,6 +6,8 @@ import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
+import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.security.user.User;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -35,6 +37,8 @@ public class EventCategoryService {
         if (!event.getStartDateTime().isAfter(LocalDateTime.now(clock))) {
             throw new EventAlreadyStartedException();
         }
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         throw new UnsupportedOperationException("Not implemented yet");
     }
