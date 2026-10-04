@@ -104,4 +104,20 @@ class EventQueryServiceTest {
 
         assertThat(events).isEmpty();
     }
+
+    @Test
+    @DisplayName("shouldReturnEventsWhenThereAreEventsOnDate")
+    void shouldReturnEventsWhenThereAreEventsOnDate() {
+        LocalDate date = NOW.toLocalDate();
+        UUID organizerId = UUID.randomUUID();
+        Event first = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        Event second = new Event("Palestra", NOW.plusDays(1).plusHours(1), NOW.plusDays(2).plusHours(1), organizerId);
+        List<Event> expectedEvents = List.of(first, second);
+
+        when(eventRepository.findByDate(date)).thenReturn(expectedEvents);
+
+        List<Event> events = sut.findByDate(date);
+
+        assertThat(events).containsExactly(first, second);
+    }
 }
