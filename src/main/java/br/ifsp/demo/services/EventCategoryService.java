@@ -64,7 +64,7 @@ public class EventCategoryService {
             throw new ActionNotAllowedException("Only the event organizer can create categories");
         }
 
-        if (request.name().isBlank()) {
+        if (request.name() == null || request.name().isBlank()) {
             throw new IllegalArgumentException("Category name is required");
         }
 
