@@ -105,7 +105,7 @@ class RegistrationQueryServiceTest {
 
     private Registration registration(User user, LocalDateTime eventStart, RegistrationStatus status) {
         Event event = new Event("Evento", eventStart, eventStart.plusDays(1), UUID.randomUUID());
-        Category category = event.addCategory("Pista", 100);
+        Category category = event.addCategory("Pista", 100, 50.0);
         Registration registration = new Registration(category, user);
         registration.setStatus(status);
         return registration;
