@@ -25,13 +25,19 @@ public class EventCategoryService {
     }
 
     public void deleteCategory(UUID userId, UUID eventId, UUID categoryId) {
+        validateIllegalArguments(userId, eventId, categoryId);
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private void validateIllegalArguments(UUID userId, UUID eventId, UUID categoryId) {
         if (eventId == null) {
             throw new IllegalArgumentException("Event is required");
         }
-
-        if (categoryId == null){
+        if (categoryId == null) {
             throw new IllegalArgumentException("Category is required");
         }
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (userId == null) {
+            throw new IllegalArgumentException("User is required");
+        }
     }
 }
