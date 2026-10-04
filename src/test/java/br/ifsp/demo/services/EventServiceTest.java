@@ -213,14 +213,16 @@ class EventServiceTest {
                 .hasMessage("Start date time must be in the future");
     }
 
-    @Test
-    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsBeforeStartDateTime")
-    void shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsBeforeStartDateTime() {
+    @ParameterizedTest
+    @ValueSource(longs = {-1, 0})
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsNotAfterStartDateTime")
+    void shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsNotAfterStartDateTime(long daysAfterStartDateTime) {
         UUID organizerId = UUID.randomUUID();
+        LocalDateTime startDateTime = NOW.plusDays(2);
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
-                NOW.plusDays(2),
-                NOW.plusDays(1),
+                startDateTime,
+                startDateTime.plusDays(daysAfterStartDateTime),
                 organizerId
         );
 
