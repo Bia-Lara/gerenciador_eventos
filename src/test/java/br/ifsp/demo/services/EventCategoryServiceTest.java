@@ -55,4 +55,12 @@ class EventCategoryServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Category is required");
     }
+
+    @Test
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenUserIsNull")
+    void shouldThrowIllegalArgumentExceptionWhenUserIsNull() {
+        assertThatThrownBy(() -> sut.deleteCategory(null, UUID.randomUUID(), UUID.randomUUID()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("User is required");
+    }
 }
