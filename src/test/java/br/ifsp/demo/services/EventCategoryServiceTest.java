@@ -200,4 +200,27 @@ class EventCategoryServiceTest {
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User not found: " + organizerId);
     }
+
+
+    @Test
+    @DisplayName("shouldThrowActionNotAllowedExceptionWhenOrganizerIsNotTheEventCreatorOnCategoryCreation")
+    void shouldThrowActionNotAllowedExceptionWhenOrganizerIsNotTheEventCreatorOnCategoryCreation() {
+        UUID eventOrganizerId = UUID.randomUUID();
+        UUID requestOrganizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), eventOrganizerId);
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                requestOrganizerId,
+                event.getId(),
+                "Pista",
+                10.00,
+                100
+        );
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(requestOrganizerId)).thenReturn(Optional.of(mock(User.class)));
+
+        assertThatThrownBy(() -> sut.createCategory(request))
+                .isInstanceOf(ActionNotAllowedException.class)
+                .hasMessage("Only the event organizer can create categories");
+    }
 }
