@@ -4,10 +4,7 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
-import br.ifsp.demo.exception.ActionNotAllowedException;
-import br.ifsp.demo.exception.EventAlreadyStartedException;
-import br.ifsp.demo.exception.EventNotFoundException;
-import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.exception.*;
 import br.ifsp.demo.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -123,5 +120,19 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), UUID.randomUUID()))
                 .isInstanceOf(ActionNotAllowedException.class)
                 .hasMessage("Only the event organizer can delete categories");
+    }
+
+    @Test
+    @DisplayName("shouldThrowCategoryNotFoundExceptionWhenEventDoesNotHaveTheCategory")
+    void shouldThrowCategoryNotFoundExceptionWhenEventDoesNotHaveTheCategory() {
+        UUID userId = UUID.randomUUID();
+        UUID categoryId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), userId);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+
+        assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), categoryId))
+                .isInstanceOf(CategoryNotFoundException.class)
+                .hasMessage("Category not found: " + categoryId);
     }
 }
