@@ -4,9 +4,11 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
 
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class EventCategoryService {
@@ -30,6 +32,9 @@ public class EventCategoryService {
         validateIllegalArguments(userId, eventId, categoryId);
 
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+        if (!event.getStartDateTime().isAfter(LocalDateTime.now(clock))) {
+            throw new EventAlreadyStartedException();
+        }
 
         throw new UnsupportedOperationException("Not implemented yet");
     }
