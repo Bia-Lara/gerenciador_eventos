@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -249,9 +250,10 @@ class EventCategoryServiceTest {
 
 
     @ParameterizedTest
+    @NullSource
     @ValueSource(strings = {"", " "})
-    @DisplayName("shouldThrowIllegalArgumentExceptionWhenCategoryNameIsBlank")
-    void shouldThrowIllegalArgumentExceptionWhenCategoryNameIsBlank(String name) {
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenCategoryNameIsBlankOrNull")
+    void shouldThrowIllegalArgumentExceptionWhenCategoryNameIsBlankOrNull(String name) {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
         CreateCategoryRequest request = new CreateCategoryRequest(
