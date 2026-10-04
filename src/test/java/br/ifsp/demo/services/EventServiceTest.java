@@ -213,4 +213,22 @@ class EventServiceTest {
                 .hasMessage("Start date time must be in the future");
     }
 
+    @Test
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsBeforeStartDateTime")
+    void shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsBeforeStartDateTime() {
+        UUID organizerId = UUID.randomUUID();
+        CreateEventRequest request = new CreateEventRequest(
+                "Novo evento",
+                NOW.plusDays(2),
+                NOW.plusDays(1),
+                organizerId
+        );
+
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+
+        assertThatThrownBy(() -> sut.createEvent(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("End date time must be after start date time");
+    }
+
 }
