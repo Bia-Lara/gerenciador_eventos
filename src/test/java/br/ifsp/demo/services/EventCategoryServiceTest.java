@@ -2,6 +2,7 @@ package br.ifsp.demo.services;
 
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.domain.repository.CategoryRepository;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
@@ -23,9 +24,9 @@ import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("UnitTest")
@@ -37,6 +38,8 @@ class EventCategoryServiceTest {
     private EventRepository eventRepository;
     @Mock
     private RegistrationRepository registrationRepository;
+    @Mock
+    private CategoryRepository categoryRepository;
 
     private static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 10, 0);
@@ -46,7 +49,7 @@ class EventCategoryServiceTest {
     @BeforeEach
     void setUp() {
         Clock fixedClock = Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE);
-        sut = new EventCategoryService(userRepository, eventRepository, registrationRepository, fixedClock);
+        sut = new EventCategoryService(userRepository, eventRepository, registrationRepository, categoryRepository, fixedClock);
     }
 
     @Test
@@ -150,5 +153,22 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), category.getId()))
                 .isInstanceOf(ActionNotAllowedException.class)
                 .hasMessage("Category has registrations");
+    }
+
+    @Test
+    @DisplayName("shouldDeleteCategoryWhenOrganizerOwnsEventAndCategoryHasNoRegistrations")
+    void shouldDeleteCategoryWhenOrganizerOwnsEventAndCategoryHasNoRegistrations() {
+        UUID userId = UUID.randomUUID();
+        LocalDateTime start = NOW.plusSeconds(1);
+        Event event = new Event("Show", start, start.plusHours(3), userId);
+        Category category = event.addCategory("Pista", 50, 50.0);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+        when(registrationRepository.existsByCategoryId(category.getId())).thenReturn(false);
+
+        sut.deleteCategory(userId, event.getId(), category.getId());
+
+        verify(categoryRepository).delete(category);
+        assertThat(event.findCategory(category.getId())).isEmpty();
     }
 }
