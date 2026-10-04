@@ -2,11 +2,11 @@ package br.ifsp.demo.application.event.category;
 
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
-import br.ifsp.demo.domain.repository.EventRepository;
-import br.ifsp.demo.domain.repository.RegistrationRepository;
-import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.application.event.EventRepository;
+import br.ifsp.demo.application.registration.RegistrationRepository;
+import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.exception.*;
-import br.ifsp.demo.security.user.User;
+import br.ifsp.demo.infrastructure.security.user.User;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
