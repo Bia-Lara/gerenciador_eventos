@@ -1,14 +1,18 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -76,5 +80,18 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.deleteCategory(UUID.randomUUID(), eventId, UUID.randomUUID()))
                 .isInstanceOf(EventNotFoundException.class)
                 .hasMessage("Event not found: " + eventId);
+    }
+
+    @ParameterizedTest(name = "evento começa {0}s em relação a agora")
+    @ValueSource(longs = {-1, 0})
+    @DisplayName("shouldThrowEventAlreadyStartedExceptionWhenStartIsNowOrBefore")
+    void shouldThrowEventAlreadyStartedExceptionWhenStartIsNowOrBefore(long offsetSeconds) {
+        LocalDateTime start = NOW.plusSeconds(offsetSeconds);
+        Event event = new Event("Show", start, start.plusHours(3), UUID.randomUUID());
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+
+        assertThatThrownBy(() -> sut.deleteCategory(UUID.randomUUID(), event.getId(), UUID.randomUUID()))
+                .isInstanceOf(EventAlreadyStartedException.class)
+                .hasMessage("Event has already started");
     }
 }
