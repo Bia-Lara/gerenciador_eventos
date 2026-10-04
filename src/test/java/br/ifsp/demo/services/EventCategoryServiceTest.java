@@ -246,4 +246,27 @@ class EventCategoryServiceTest {
                 .isInstanceOf(EventAlreadyStartedException.class)
                 .hasMessage("Event has already started");
     }
+
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " "})
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenCategoryNameIsBlank")
+    void shouldThrowIllegalArgumentExceptionWhenCategoryNameIsBlank(String name) {
+        UUID organizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                organizerId,
+                event.getId(),
+                name,
+                10.00,
+                100
+        );
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+
+        assertThatThrownBy(() -> sut.createCategory(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Category name is required");
+    }
 }
