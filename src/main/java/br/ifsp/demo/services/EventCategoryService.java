@@ -53,6 +53,8 @@ public class EventCategoryService {
     public Category createCategory(CreateCategoryRequest request) {
         validateCreateCategoryIllegalArguments(request);
 
+        eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
+
         return null;
     }
 
