@@ -22,9 +22,6 @@ public class EventQueryService {
         if (organizerId == null) {
             throw new IllegalArgumentException("Organizer is required");
         }
-        userRepository.findById(organizerId)
-                .orElseThrow(() -> new UserNotFoundException(organizerId));
-
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
+        userRepository.findById(organizerId).orElseThrow(() -> new UserNotFoundException(organizerId));
+        return List.of();    }
 }
