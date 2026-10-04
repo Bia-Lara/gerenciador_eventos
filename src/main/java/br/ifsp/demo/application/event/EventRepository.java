@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface EventRepository {
     Optional<Event> findById(UUID id);
-
+    Event save(Event event);
     List<Event> findByDate(LocalDate date);
     List<Event> findByOrganizerId(UUID organizerId);
 }

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -83,5 +84,41 @@ class EventQueryServiceTest {
         List<Event> result = sut.listByOrganizer(organizerId);
 
         assertThat(result).containsExactly(first, second);
+    }
+
+    @Test
+    @DisplayName("shouldThrowNullPointerExceptionWhenFindEventsDateIsNull")
+    void shouldThrowNullPointerExceptionWhenFindEventsDateIsNull() {
+        assertThatThrownBy(() -> sut.findByDate(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Event date is required");
+    }
+
+    @Test
+    @DisplayName("shouldReturnEmptyListWhenThereAreNoEventsOnDate")
+    void shouldReturnEmptyListWhenThereAreNoEventsOnDate() {
+        LocalDate date = NOW.toLocalDate();
+
+        when(eventRepository.findByDate(date)).thenReturn(List.of());
+
+        List<Event> events = sut.findByDate(date);
+
+        assertThat(events).isEmpty();
+    }
+
+    @Test
+    @DisplayName("shouldReturnEventsWhenThereAreEventsOnDate")
+    void shouldReturnEventsWhenThereAreEventsOnDate() {
+        LocalDate date = NOW.toLocalDate();
+        UUID organizerId = UUID.randomUUID();
+        Event first = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        Event second = new Event("Palestra", NOW.plusDays(1).plusHours(1), NOW.plusDays(2).plusHours(1), organizerId);
+        List<Event> expectedEvents = List.of(first, second);
+
+        when(eventRepository.findByDate(date)).thenReturn(expectedEvents);
+
+        List<Event> events = sut.findByDate(date);
+
+        assertThat(events).containsExactly(first, second);
     }
 }

@@ -6,7 +6,7 @@ import br.ifsp.demo.infrastructure.security.user.User;
 import java.util.UUID;
 
 public class Registration {
-    private final UUID id;
+    private UUID id;
     private final User user;
     private final Category category;
     private RegistrationStatus status;
@@ -36,5 +36,12 @@ public class Registration {
 
     public void setStatus(RegistrationStatus status) {
         this.status = status;
+    }
+
+    public static Registration restore(UUID id, Category category, User user, RegistrationStatus status) {
+        Registration registration = new Registration(category, user);
+        registration.id = id;
+        registration.setStatus(status);
+        return registration;
     }
 }

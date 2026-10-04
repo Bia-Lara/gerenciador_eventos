@@ -19,10 +19,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,8 +35,6 @@ class EventServiceTest {
 
     @Mock
     private OrganizerRepository organizerRepository;
-    @Mock
-    private EventRepository eventRepository;
 
     private static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 10, 0);
@@ -48,7 +44,7 @@ class EventServiceTest {
     @BeforeEach
     void setUp() {
         Clock fixedClock = Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE);
-        sut = new EventService(organizerRepository, eventRepository, fixedClock);
+        sut = new EventService(organizerRepository, fixedClock);
     }
 
     @Test
@@ -261,26 +257,6 @@ class EventServiceTest {
         assertThat(event.getStartDateTime()).isEqualTo(startDateTime);
         assertThat(event.getEndDateTime()).isEqualTo(endDateTime);
         assertThat(event.getOrganizerId()).isEqualTo(organizerId);
-    }
-
-    @Test
-    @DisplayName("shouldThrowNullPointerExceptionWhenFindEventsDateIsNull")
-    void shouldThrowNullPointerExceptionWhenFindEventsDateIsNull() {
-        assertThatThrownBy(() -> sut.findByDate(null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("Event date is required");
-    }
-
-    @Test
-    @DisplayName("shouldReturnEmptyListWhenThereAreNoEventsOnDate")
-    void shouldReturnEmptyListWhenThereAreNoEventsOnDate() {
-        LocalDate date = NOW.toLocalDate();
-
-        when(eventRepository.findByDate(date)).thenReturn(List.of());
-
-        List<Event> events = sut.findByDate(date);
-
-        assertThat(events).isEqualTo(List.of());
     }
 
 }

@@ -10,4 +10,5 @@ public interface RegistrationRepository {
     long countActiveByCategoryId(UUID categoryId);
     Registration save(Registration registration);
     List<Registration> findByUserId(UUID userId);
+    boolean existsByCategoryId(UUID categoryId);
 }
