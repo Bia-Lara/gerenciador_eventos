@@ -4,10 +4,7 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
-import br.ifsp.demo.exception.ActionNotAllowedException;
-import br.ifsp.demo.exception.EventAlreadyStartedException;
-import br.ifsp.demo.exception.EventNotFoundException;
-import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.exception.*;
 import br.ifsp.demo.security.user.User;
 
 import java.time.Clock;
@@ -44,6 +41,9 @@ public class EventCategoryService {
         if (!event.getOrganizerId().equals(userId)) {
             throw new ActionNotAllowedException("Only the event organizer can delete categories");
         }
+
+        event.findCategory(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
