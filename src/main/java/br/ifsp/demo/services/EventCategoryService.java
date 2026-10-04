@@ -25,6 +25,9 @@ public class EventCategoryService {
     }
 
     public void deleteCategory(UUID userId, UUID eventId, UUID categoryId) {
+        if (eventId == null) {
+            throw new IllegalArgumentException("Event is required");
+        }
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
