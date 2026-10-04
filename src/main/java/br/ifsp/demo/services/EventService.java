@@ -5,11 +5,19 @@ import br.ifsp.demo.domain.repository.OrganizerRepository;
 import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.exception.EntityNotFoundException;
 
+import java.time.Clock;
+
 public class EventService {
     private final OrganizerRepository organizerRepository;
+    private final Clock clock;
 
     public EventService(OrganizerRepository organizerRepository) {
+        this(organizerRepository, Clock.systemDefaultZone());
+    }
+
+    public EventService(OrganizerRepository organizerRepository, Clock clock) {
         this.organizerRepository = organizerRepository;
+        this.clock = clock;
     }
 
     public Event createEvent(CreateEventRequest request) {

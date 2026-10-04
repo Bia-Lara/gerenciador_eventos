@@ -16,7 +16,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,11 +34,15 @@ class EventServiceTest {
     @Mock
     private OrganizerRepository organizerRepository;
 
+    private static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 10, 0);
+
     private EventService sut;
 
     @BeforeEach
     void setUp() {
-        sut = new EventService(organizerRepository);
+        Clock fixedClock = Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE);
+        sut = new EventService(organizerRepository, fixedClock);
     }
 
     @Test
@@ -188,6 +194,25 @@ class EventServiceTest {
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("End date time is required");
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {1})
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsBeforeNow")
+    void shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsBeforeNow(long minutesBeforeNow) {
+        UUID organizerId = UUID.randomUUID();
+        CreateEventRequest request = new CreateEventRequest(
+                "Novo evento",
+                NOW.minusMinutes(minutesBeforeNow),
+                NOW.plusDays(1),
+                organizerId
+        );
+
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+
+        assertThatThrownBy(() -> sut.createEvent(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Start date time must be in the future");
     }
 
 }
