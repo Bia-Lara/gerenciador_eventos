@@ -54,6 +54,10 @@ public class EventCategoryService {
         validateCreateCategoryIllegalArguments(request);
 
         Event event = eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
+        if (!event.getStartDateTime().isAfter(LocalDateTime.now(clock))) {
+            throw new EventAlreadyStartedException();
+        }
+
         userRepository.findById(request.organizerId()).orElseThrow(() -> new UserNotFoundException(request.organizerId()));
 
         if (!event.getOrganizerId().equals(request.organizerId())) {
