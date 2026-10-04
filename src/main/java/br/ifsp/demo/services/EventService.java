@@ -40,7 +40,7 @@ public class EventService {
             throw new IllegalArgumentException("Organizer is required");
         }
 
-        if (request.startDateTime() !=null && request.startDateTime().isBefore(LocalDateTime.now(clock))){
+        if (request.startDateTime() != null && !request.startDateTime().isAfter(LocalDateTime.now(clock))) {
             throw new IllegalArgumentException("Start date time must be in the future");
         }
     }
