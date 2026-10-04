@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +34,7 @@ class EventQueryServiceTest {
     private EventRepository eventRepository;
 
     private EventQueryService sut;
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 10, 0);
 
     @BeforeEach
     void setUp() {
@@ -66,5 +68,19 @@ class EventQueryServiceTest {
 
         List<Event> result = sut.listByOrganizer(organizerId);
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("shouldReturnEventsCreatedByOrganizer")
+    void shouldReturnEventsCreatedByOrganizer() {
+        UUID organizerId = UUID.randomUUID();
+        Event first = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        Event second = new Event("Palestra", NOW.plusDays(3), NOW.plusDays(4), organizerId);
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+        when(eventRepository.findByOrganizerId(organizerId)).thenReturn(List.of(first, second));
+
+        List<Event> result = sut.listByOrganizer(organizerId);
+
+        assertThat(result).containsExactly(first, second);
     }
 }
