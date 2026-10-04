@@ -1,5 +1,6 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
@@ -37,12 +38,14 @@ public class EventCategoryService {
         }
 
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-
         if (!event.getOrganizerId().equals(userId)) {
             throw new ActionNotAllowedException("Only the event organizer can delete categories");
         }
 
-        event.findCategory(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        Category category = event.findCategory(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        if (registrationRepository.existsByCategoryId(category.getId())) {
+            throw new ActionNotAllowedException("Category has registrations");
+        }
 
         throw new UnsupportedOperationException("Not implemented yet");
     }
