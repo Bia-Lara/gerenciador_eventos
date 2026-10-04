@@ -2,6 +2,7 @@ package br.ifsp.demo.services;
 
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.domain.repository.CategoryRepository;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
@@ -17,15 +18,17 @@ public class EventCategoryService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final RegistrationRepository registrationRepository;
+    private final CategoryRepository categoryRepository;
     private final Clock clock;
 
     public EventCategoryService(UserRepository userRepository,
                                 EventRepository eventRepository,
                                 RegistrationRepository registrationRepository,
-                                Clock clock) {
+                                CategoryRepository categoryRepository, Clock clock) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.registrationRepository = registrationRepository;
+        this.categoryRepository = categoryRepository;
         this.clock = clock;
     }
 
@@ -47,7 +50,8 @@ public class EventCategoryService {
             throw new ActionNotAllowedException("Category has registrations");
         }
 
-        throw new UnsupportedOperationException("Not implemented yet");
+        event.removeCategory(category.getId());
+        categoryRepository.delete(category);
     }
 
     private void validateIllegalArguments(UUID userId, UUID eventId, UUID categoryId) {

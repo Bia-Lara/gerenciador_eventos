@@ -49,6 +49,7 @@ public class Event {
     }
 
     public void removeCategory(UUID categoryId) {
+        categories.removeIf(c -> c.getId().equals(categoryId));
     }
 
     public Optional<Category> findCategory(UUID categoryId) {
