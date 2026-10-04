@@ -48,6 +48,9 @@ public class Event {
         return category;
     }
 
+    public void removeCategory(UUID categoryId) {
+    }
+
     public Optional<Category> findCategory(UUID categoryId) {
         return categories.stream()
                 .filter(c -> c.getId().equals(categoryId))
