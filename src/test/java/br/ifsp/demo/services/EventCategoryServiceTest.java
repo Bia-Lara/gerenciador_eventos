@@ -1,5 +1,6 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
@@ -134,5 +135,20 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), categoryId))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Category not found: " + categoryId);
+    }
+
+    @Test
+    @DisplayName("shouldThrowActionNotAllowedExceptionWhenCategoryHasRegistrations")
+    void shouldThrowActionNotAllowedExceptionWhenCategoryHasRegistrations() {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), userId);
+        Category category = event.addCategory("Pista", 50, 50.0);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+        when(registrationRepository.existsByCategoryId(category.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), category.getId()))
+                .isInstanceOf(ActionNotAllowedException.class)
+                .hasMessage("Category has registrations");
     }
 }
