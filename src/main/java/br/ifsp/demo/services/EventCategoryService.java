@@ -28,6 +28,10 @@ public class EventCategoryService {
         if (eventId == null) {
             throw new IllegalArgumentException("Event is required");
         }
+
+        if (categoryId == null){
+            throw new IllegalArgumentException("Category is required");
+        }
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
