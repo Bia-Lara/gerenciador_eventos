@@ -4,9 +4,11 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.exception.ActionNotAllowedException;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -24,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,5 +110,18 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), UUID.randomUUID()))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User not found: " + userId);
+    }
+
+    @Test
+    @DisplayName("shouldThrowActionNotAllowedExceptionWhenUserIsNotTheEventOrganizer")
+    void shouldThrowActionNotAllowedExceptionWhenUserIsNotTheEventOrganizer() {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+
+        assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), UUID.randomUUID()))
+                .isInstanceOf(ActionNotAllowedException.class)
+                .hasMessage("Only the event organizer can delete categories");
     }
 }
