@@ -3,6 +3,7 @@ package br.ifsp.demo.services;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.exception.UserNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,9 @@ public class EventQueryService {
         if (organizerId == null) {
             throw new IllegalArgumentException("Organizer is required");
         }
+        userRepository.findById(organizerId)
+                .orElseThrow(() -> new UserNotFoundException(organizerId));
+
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
