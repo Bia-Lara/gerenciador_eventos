@@ -1,7 +1,7 @@
-package br.ifsp.demo.infrastructure;
+package br.ifsp.demo.infrastructure.repository;
 
 import br.ifsp.demo.domain.Category;
-import br.ifsp.demo.domain.repository.CategoryRepository;
+import br.ifsp.demo.application.event.category.CategoryRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package br.ifsp.demo.domain.repository;
+package br.ifsp.demo.application.event.category;
 
 import br.ifsp.demo.domain.Category;
 
