@@ -233,4 +233,28 @@ class EventServiceTest {
                 .hasMessage("End date time must be after start date time");
     }
 
+
+    @Test
+    @DisplayName("shouldCreateEventWhenAllDataIsValid")
+    void shouldCreateEventWhenAllDataIsValid() {
+        UUID organizerId = UUID.randomUUID();
+        LocalDateTime startDateTime = NOW.plusDays(1);
+        LocalDateTime endDateTime = NOW.plusDays(2);
+        CreateEventRequest request = new CreateEventRequest(
+                "Novo evento",
+                startDateTime,
+                endDateTime,
+                organizerId
+        );
+
+        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+
+        Event event = sut.createEvent(request);
+
+        assertThat(event.getName()).isEqualTo("Novo evento");
+        assertThat(event.getStartDateTime()).isEqualTo(startDateTime);
+        assertThat(event.getEndDateTime()).isEqualTo(endDateTime);
+        assertThat(event.getOrganizerId()).isEqualTo(organizerId);
+    }
+
 }
