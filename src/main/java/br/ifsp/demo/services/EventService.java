@@ -10,6 +10,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 public class EventService {
     private final OrganizerRepository organizerRepository;
@@ -45,6 +46,8 @@ public class EventService {
     }
 
     public List<Event> findByDate(LocalDate date) {
+        Objects.requireNonNull(date, "Event date is required");
+
         return eventRepository.findByDate(date);
     }
 
