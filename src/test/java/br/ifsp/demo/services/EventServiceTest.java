@@ -197,9 +197,9 @@ class EventServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(longs = {1})
-    @DisplayName("shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsBeforeNow")
-    void shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsBeforeNow(long minutesBeforeNow) {
+    @ValueSource(longs = {0, 1})
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNotInFuture")
+    void shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNotInFuture(long minutesBeforeNow) {
         UUID organizerId = UUID.randomUUID();
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
