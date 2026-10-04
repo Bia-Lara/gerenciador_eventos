@@ -68,6 +68,10 @@ public class EventCategoryService {
             throw new IllegalArgumentException("Category name is required");
         }
 
+        if (request.name().length() > 150) {
+            throw new IllegalArgumentException("Category name must not exceed 150 characters");
+        }
+
         return null;
     }
 
