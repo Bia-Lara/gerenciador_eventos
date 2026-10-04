@@ -11,4 +11,5 @@ public interface EventRepository {
     Optional<Event> findById(UUID id);
 
     List<Event> findByDate(LocalDate date);
+    List<Event> findByOrganizerId(UUID organizerId);
 }
