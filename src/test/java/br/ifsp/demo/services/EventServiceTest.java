@@ -21,6 +21,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -267,6 +268,18 @@ class EventServiceTest {
         assertThatThrownBy(() -> sut.findByDate(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Event date is required");
+    }
+
+    @Test
+    @DisplayName("shouldReturnEmptyListWhenThereAreNoEventsOnDate")
+    void shouldReturnEmptyListWhenThereAreNoEventsOnDate() {
+        LocalDate date = NOW.toLocalDate();
+
+        when(eventRepository.findByDate(date)).thenReturn(List.of());
+
+        List<Event> events = sut.findByDate(date);
+
+        assertThat(events).isEqualTo(List.of());
     }
 
 }
