@@ -7,27 +7,18 @@ import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.exception.EntityNotFoundException;
 
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
 
 public class EventService {
     private final OrganizerRepository organizerRepository;
-    private final EventRepository eventRepository;
     private final Clock clock;
 
     public EventService(OrganizerRepository organizerRepository) {
-        this(organizerRepository, null, Clock.systemDefaultZone());
+        this(organizerRepository, Clock.systemDefaultZone());
     }
 
     public EventService(OrganizerRepository organizerRepository, Clock clock) {
-        this(organizerRepository, null, clock);
-    }
-
-    public EventService(OrganizerRepository organizerRepository, EventRepository eventRepository, Clock clock) {
         this.organizerRepository = organizerRepository;
-        this.eventRepository = eventRepository;
         this.clock = clock;
     }
 
@@ -43,12 +34,6 @@ public class EventService {
                 request.endDateTime(),
                 request.organizerId()
         );
-    }
-
-    public List<Event> findByDate(LocalDate date) {
-        Objects.requireNonNull(date, "Event date is required");
-
-        return eventRepository.findByDate(date);
     }
 
     private void validateIllegalArguments(CreateEventRequest request) {
