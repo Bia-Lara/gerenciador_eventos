@@ -4,6 +4,7 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.exception.ActionNotAllowedException;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
@@ -40,6 +41,9 @@ public class EventCategoryService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
+        if (!event.getOrganizerId().equals(userId)) {
+            throw new ActionNotAllowedException("Only the event organizer can delete categories");
+        }
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
