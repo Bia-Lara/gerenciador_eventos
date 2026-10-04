@@ -178,4 +178,26 @@ class EventCategoryServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Organizer is required");
     }
+
+
+    @Test
+    @DisplayName("shouldThrowUserNotFoundExceptionWhenOrganizerDoesNotExistOnCategoryCreation")
+    void shouldThrowUserNotFoundExceptionWhenOrganizerDoesNotExistOnCategoryCreation() {
+        UUID organizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                organizerId,
+                event.getId(),
+                "Pista",
+                10.00,
+                100
+        );
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sut.createCategory(request))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User not found: " + organizerId);
+    }
 }
