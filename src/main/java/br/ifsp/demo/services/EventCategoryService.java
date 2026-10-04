@@ -51,7 +51,18 @@ public class EventCategoryService {
 
 
     public Category createCategory(CreateCategoryRequest request) {
+        validateCreateCategoryIllegalArguments(request);
+
         return null;
+    }
+
+    private void validateCreateCategoryIllegalArguments(CreateCategoryRequest request) {
+        if (request.eventId() == null) {
+            throw new IllegalArgumentException("Event is required");
+        }
+        if (request.organizerId() == null) {
+            throw new IllegalArgumentException("Organizer is required");
+        }
     }
 
     private void validateIllegalArguments(UUID userId, UUID eventId, UUID categoryId) {
