@@ -6,6 +6,7 @@ import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
+import br.ifsp.demo.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -93,5 +94,18 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.deleteCategory(UUID.randomUUID(), event.getId(), UUID.randomUUID()))
                 .isInstanceOf(EventAlreadyStartedException.class)
                 .hasMessage("Event has already started");
+    }
+
+    @Test
+    @DisplayName("shouldThrowUserNotFoundExceptionWhenUserDoesNotExist")
+    void shouldThrowUserNotFoundExceptionWhenUserDoesNotExist() {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), UUID.randomUUID()))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User not found: " + userId);
     }
 }
