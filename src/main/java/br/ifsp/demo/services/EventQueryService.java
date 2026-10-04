@@ -23,5 +23,6 @@ public class EventQueryService {
             throw new IllegalArgumentException("Organizer is required");
         }
         userRepository.findById(organizerId).orElseThrow(() -> new UserNotFoundException(organizerId));
-        return List.of();    }
+        return eventRepository.findByOrganizerId(organizerId);
+    }
 }
