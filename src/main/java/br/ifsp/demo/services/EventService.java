@@ -6,6 +6,7 @@ import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.exception.EntityNotFoundException;
 
 import java.time.Clock;
+import java.time.LocalDateTime;
 
 public class EventService {
     private final OrganizerRepository organizerRepository;
@@ -37,6 +38,10 @@ public class EventService {
     private void validateIllegalArguments(CreateEventRequest request) {
         if (request.organizerId() == null) {
             throw new IllegalArgumentException("Organizer is required");
+        }
+
+        if (request.startDateTime() !=null && request.startDateTime().isBefore(LocalDateTime.now(clock))){
+            throw new IllegalArgumentException("Start date time must be in the future");
         }
     }
 }
