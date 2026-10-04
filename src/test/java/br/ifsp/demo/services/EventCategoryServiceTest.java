@@ -143,4 +143,22 @@ class EventCategoryServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event is required");
     }
+
+    @Test
+    @DisplayName("shouldThrowEventNotFoundExceptionWhenEventDoesNotExistOnCategoryCreation")
+    void shouldThrowEventNotFoundExceptionWhenEventDoesNotExistOnCategoryCreation() {
+        UUID eventId = UUID.randomUUID();
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                UUID.randomUUID(),
+                eventId,
+                "Pista",
+                10.00,
+                100
+        );
+        when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> sut.createCategory(request))
+                .isInstanceOf(EventNotFoundException.class)
+                .hasMessage("Event not found: " + eventId);
+    }
 }
