@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -126,16 +127,35 @@ class RegistrationServiceTest {
                 .hasMessage("Category not found: " + categoryId);
     }
 
-    @Test
-    @DisplayName("shouldThrowEventAlreadyStartedExceptionWhenEventHasStarted")
-    void shouldThrowEventAlreadyStartedExceptionWhenEventHasStarted() {
-        Event started = new Event("Show", NOW.minusHours(1), NOW.plusHours(2), UUID.randomUUID());
-        when(eventRepository.findById(started.getId())).thenReturn(Optional.of(started));
-        var request = new RegisterToEventRequest(UUID.randomUUID(), started.getId(), UUID.randomUUID());
+    @ParameterizedTest(name = "evento começa {0}s em relação a agora")
+    @ValueSource(longs = {-1, 0})
+    @DisplayName("shouldThrowEventAlreadyStartedExceptionWhenStartIsNowOrBefore")
+    void shouldThrowEventAlreadyStartedExceptionWhenStartIsNowOrBefore(long offsetSeconds) {
+        LocalDateTime start = NOW.plusSeconds(offsetSeconds);
+        Event event = new Event("Show", start, start.plusHours(3), UUID.randomUUID());
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        var request = new RegisterToEventRequest(UUID.randomUUID(), event.getId(), UUID.randomUUID());
 
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(EventAlreadyStartedException.class)
                 .hasMessage("Event has already started");
+    }
+
+    @Test
+    @DisplayName("shouldRegisterWhenEventStartsOneSecondAfterNow")
+    void shouldRegisterWhenEventStartsOneSecondAfterNow() {
+        LocalDateTime start = NOW.plusSeconds(1);
+        Event event = new Event("Show", start, start.plusHours(3), UUID.randomUUID());
+        Category category = event.addCategory("Pista", 50, 50.0);
+        User user = mock(User.class);
+        UUID userId = UUID.randomUUID();
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Registration result = sut.register(new RegisterToEventRequest(userId, event.getId(), category.getId()));
+
+        assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
     }
 
     @Test
@@ -155,22 +175,42 @@ class RegistrationServiceTest {
                 .hasMessage("User already registered in this event");
     }
 
-    @ParameterizedTest
-    @ValueSource(longs = {2, 3})
-    @DisplayName("shouldThrowCategoryFullExceptionWhenNoVacanciesLeft")
-    void shouldThrowCategoryFullExceptionWhenNoVacanciesLeft(long activeRegistrations) {
+    @ParameterizedTest(name = "capacidade {0}, ocupadas {1}")
+    @CsvSource({"1, 1", "1, 2", "50, 50"})
+    @DisplayName("shouldThrowCategoryFullExceptionWhenActiveRegistrationsReachCapacity")
+    void shouldThrowCategoryFullExceptionWhenActiveRegistrationsReachCapacity(int capacity, long active) {
         UUID userId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
-        Category category = event.addCategory("Pista", 50, 50.0);
+        Category category = event.addCategory("Pista", capacity, 50.0);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        User user = mock(User.class);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(activeRegistrations);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(active);
         var request = new RegisterToEventRequest(userId, event.getId(), category.getId());
 
         assertThatThrownBy(() -> sut.register(request))
                 .isInstanceOf(CategoryFullException.class)
                 .hasMessage("No vacancies left for this category");
+    }
+
+    @ParameterizedTest(name = "capacidade {0}, ocupadas {1}")
+    @CsvSource({"1, 0", "50, 0", "50, 49"})
+    @DisplayName("shouldRegisterWhenCategoryStillHasAtLeastOneVacancy")
+    void shouldRegisterWhenCategoryStillHasAtLeastOneVacancy(int capacity, long active) {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        Category category = event.addCategory("Pista", capacity, 50.0);
+        User user = mock(User.class);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(active);
+        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Registration result = sut.register(new RegisterToEventRequest(userId, event.getId(), category.getId()));
+
+        assertThat(result.getUser()).isSameAs(user);
+        assertThat(result.getCategory()).isSameAs(category);
+        assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
+        verify(registrationRepository).save(any(Registration.class));
     }
 
     @Test
