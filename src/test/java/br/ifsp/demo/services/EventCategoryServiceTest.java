@@ -4,6 +4,7 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.exception.ActionNotAllowedException;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
@@ -52,8 +53,8 @@ class EventCategoryServiceTest {
     }
 
     @Test
-    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEventIsNull")
-    void shouldThrowIllegalArgumentExceptionWhenEventIsNull() {
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEventIsNullOnCategoryCreation")
+    void shouldThrowIllegalArgumentExceptionWhenEventIsNullOnCategoryCreation() {
         assertThatThrownBy(() -> sut.deleteCategory(UUID.randomUUID(), null, UUID.randomUUID()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event is required");
@@ -123,5 +124,23 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.deleteCategory(userId, event.getId(), UUID.randomUUID()))
                 .isInstanceOf(ActionNotAllowedException.class)
                 .hasMessage("Only the event organizer can delete categories");
+    }
+
+
+
+    @Test
+    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEventIsNull")
+    void shouldThrowIllegalArgumentExceptionWhenEventIsNull() {
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                UUID.randomUUID(),
+                null,
+                "Pista",
+                10.00,
+                100
+        );
+
+        assertThatThrownBy(() -> sut.createCategory(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Event is required");
     }
 }

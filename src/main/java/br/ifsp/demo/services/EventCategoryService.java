@@ -1,9 +1,11 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.exception.ActionNotAllowedException;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.EventNotFoundException;
@@ -45,6 +47,11 @@ public class EventCategoryService {
             throw new ActionNotAllowedException("Only the event organizer can delete categories");
         }
         throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+
+    public Category createCategory(CreateCategoryRequest request) {
+        return null;
     }
 
     private void validateIllegalArguments(UUID userId, UUID eventId, UUID categoryId) {
