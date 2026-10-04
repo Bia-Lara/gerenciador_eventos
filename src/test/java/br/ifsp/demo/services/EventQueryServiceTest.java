@@ -1,10 +1,11 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.application.event.EventQueryService;
 import br.ifsp.demo.domain.Event;
-import br.ifsp.demo.domain.repository.EventRepository;
-import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.application.event.EventRepository;
+import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.exception.UserNotFoundException;
-import br.ifsp.demo.security.user.User;
+import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;

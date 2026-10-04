@@ -1,9 +1,10 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.application.event.EventService;
 import br.ifsp.demo.domain.Event;
-import br.ifsp.demo.domain.repository.EventRepository;
-import br.ifsp.demo.dto.CreateEventRequest;
-import br.ifsp.demo.domain.repository.OrganizerRepository;
+import br.ifsp.demo.application.event.EventRepository;
+import br.ifsp.demo.application.event.CreateEventRequest;
+import br.ifsp.demo.application.organizer.OrganizerRepository;
 import br.ifsp.demo.exception.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

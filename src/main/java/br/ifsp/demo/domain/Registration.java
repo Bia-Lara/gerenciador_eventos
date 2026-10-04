@@ -1,7 +1,7 @@
 package br.ifsp.demo.domain;
 
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
-import br.ifsp.demo.security.user.User;
+import br.ifsp.demo.infrastructure.security.user.User;
 
 import java.util.UUID;
 
