@@ -1,5 +1,7 @@
 package br.ifsp.demo.domain;
 
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,19 +19,8 @@ public class Event {
 
     public Event(String name, LocalDateTime startDateTime, LocalDateTime endDateTime, UUID organizerId) {
         this.id = UUID.randomUUID();
-        if (organizerId ==null){
-            throw new IllegalArgumentException("Organizer is required");
-        }
-        if (startDateTime == null) {
-            throw new IllegalArgumentException("Start date time is required");
-        }
-        if (endDateTime == null) {
-            throw new IllegalArgumentException("End date time is required");
-        }
-
-        if (endDateTime.isBefore(startDateTime)){
-            throw new IllegalArgumentException("End date time must be after start date time");
-        }
+        validateOrganizerId(organizerId);
+        validatePeriod(startDateTime, endDateTime);
 
         this.name = validateAndNormalizeName(name);
         this.startDateTime = startDateTime;
@@ -65,17 +56,37 @@ public class Event {
                 .findFirst();
     }
 
-    private String validateAndNormalizeName(String name){
-
-        if(name ==null || name.isBlank()) {
+    private String validateAndNormalizeName(String name) {
+        if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Event name is required");
         }
 
-        if(name.trim().length()>150) {
+        String normalizedName = name.trim();
+
+        if (normalizedName.length() > 150) {
             throw new IllegalArgumentException("Event name must not exceed 150 characters");
         }
 
-        return name.trim();
+        return normalizedName;
+    }
+
+    private void validateOrganizerId(UUID organizerId) {
+        if (organizerId == null) {
+            throw new IllegalArgumentException("Organizer is required");
+        }
+    }
+
+    private void validatePeriod(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+
+        if (startDateTime == null) {
+            throw new IllegalArgumentException("Start date time is required");
+        }
+        if (endDateTime == null) {
+            throw new IllegalArgumentException("End date time is required");
+        }
+        if (endDateTime.isBefore(startDateTime)) {
+            throw new IllegalArgumentException("End date time must be after start date time");
+        }
     }
 
     public List<Category> getCategories() {
