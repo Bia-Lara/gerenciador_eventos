@@ -1,8 +1,10 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
+import br.ifsp.demo.exception.EventNotFoundException;
 
 import java.time.Clock;
 import java.util.UUID;
@@ -26,6 +28,9 @@ public class EventCategoryService {
 
     public void deleteCategory(UUID userId, UUID eventId, UUID categoryId) {
         validateIllegalArguments(userId, eventId, categoryId);
+
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
