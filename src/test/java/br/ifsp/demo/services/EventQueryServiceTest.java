@@ -1,8 +1,10 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.UserRepository;
 import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -11,11 +13,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("UnitTest")
@@ -50,5 +56,15 @@ class EventQueryServiceTest {
         assertThatThrownBy(() -> sut.listByOrganizer(organizerId))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User not found: " + organizerId);
+    }
+
+    @Test
+    @DisplayName("shouldReturnEmptyListWhenOrganizerHasNoEvents")
+    void shouldReturnEmptyListWhenOrganizerHasNoEvents() {
+        UUID organizerId = UUID.randomUUID();
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+
+        List<Event> result = sut.listByOrganizer(organizerId);
+        assertThat(result).isEmpty();
     }
 }
