@@ -7,12 +7,14 @@ public class Category {
     private final UUID uuid;
     private String name;
     private int capacity;
+    private double price;
 
-    public Category(Event event, String name, int capacity) {
+    public Category(Event event, String name, int capacity, double price) {
         this.event = event;
         this.uuid = UUID.randomUUID();
         this.name = name;
         this.capacity = capacity;
+        this.price = price;
     }
 
     public Event getEvent() {
@@ -37,5 +39,13 @@ public class Category {
 
     public void setCapacity(int capacity) {
         this.capacity = capacity;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }

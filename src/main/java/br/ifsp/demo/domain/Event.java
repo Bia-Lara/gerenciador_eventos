@@ -42,8 +42,8 @@ public class Event {
         return organizerId;
     }
 
-    public Category addCategory(String name, int capacity) {
-        Category category = new Category(this, name, capacity);
+    public Category addCategory(String name, int capacity, double price) {
+        Category category = new Category(this, name, capacity, price);
         categories.add(category);
         return category;
     }

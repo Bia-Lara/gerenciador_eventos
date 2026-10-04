@@ -143,7 +143,7 @@ class RegistrationServiceTest {
     void shouldThrowDuplicateRegistrationExceptionWhenUserAlreadyHasActiveRegistration() {
         UUID userId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
-        Category category = event.addCategory("Pista", 100);
+        Category category = event.addCategory("Pista", 100, 50.0);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         User user = mock(User.class);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -161,7 +161,7 @@ class RegistrationServiceTest {
     void shouldThrowCategoryFullExceptionWhenNoVacanciesLeft(long activeRegistrations) {
         UUID userId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
-        Category category = event.addCategory("Pista", 2);
+        Category category = event.addCategory("Pista", 50, 50.0);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         User user = mock(User.class);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -178,7 +178,7 @@ class RegistrationServiceTest {
     void shouldRegisterParticipantWhenAllDataIsValidAndCategoryHasVacancies() {
         UUID userId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
-        Category category = event.addCategory("Pista", 2);
+        Category category = event.addCategory("Pista", 50, 50.0);
         User user = mock(User.class);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
