@@ -1,7 +1,5 @@
 package br.ifsp.demo.domain;
 
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +82,7 @@ public class Event {
         if (endDateTime == null) {
             throw new IllegalArgumentException("End date time is required");
         }
-        if (endDateTime.isBefore(startDateTime)) {
+        if (!endDateTime.isAfter(startDateTime)) {
             throw new IllegalArgumentException("End date time must be after start date time");
         }
     }
