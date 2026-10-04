@@ -53,8 +53,12 @@ public class EventCategoryService {
     public Category createCategory(CreateCategoryRequest request) {
         validateCreateCategoryIllegalArguments(request);
 
-        eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
+        Event event = eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
         userRepository.findById(request.organizerId()).orElseThrow(() -> new UserNotFoundException(request.organizerId()));
+
+        if (!event.getOrganizerId().equals(request.organizerId())) {
+            throw new ActionNotAllowedException("Only the event organizer can create categories");
+        }
 
         return null;
     }
