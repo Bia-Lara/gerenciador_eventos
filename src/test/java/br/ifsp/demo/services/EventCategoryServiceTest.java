@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
@@ -372,9 +373,7 @@ class EventCategoryServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "-1.00, Category price must not be negative"
-    })
+    @MethodSource("invalidCategoryPrices")
     @DisplayName("shouldValidateCategoryPrice")
     void shouldValidateCategoryPrice(Double price, String expectedMessage) {
         UUID organizerId = UUID.randomUUID();
@@ -393,6 +392,13 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.createCategory(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(expectedMessage);
+    }
+
+    private static Object[][] invalidCategoryPrices() {
+        return new Object[][]{
+                {-1.00, "Category price must not be negative"},
+                {null, "Category price is required"}
+        };
     }
 
     @Test
