@@ -1,15 +1,16 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.application.registration.RegistrationService;
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
-import br.ifsp.demo.domain.repository.EventRepository;
-import br.ifsp.demo.domain.repository.RegistrationRepository;
-import br.ifsp.demo.domain.repository.UserRepository;
-import br.ifsp.demo.dto.RegisterToEventRequest;
+import br.ifsp.demo.application.event.EventRepository;
+import br.ifsp.demo.application.registration.RegistrationRepository;
+import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.application.registration.RegisterToEventRequest;
 import br.ifsp.demo.exception.*;
-import br.ifsp.demo.security.user.User;
+import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
