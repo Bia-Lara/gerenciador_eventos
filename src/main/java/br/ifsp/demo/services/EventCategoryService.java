@@ -72,7 +72,9 @@ public class EventCategoryService {
             throw new IllegalArgumentException("Category name must not exceed 150 characters");
         }
 
-        return null;
+        Category category = event.addCategory(request.name(), request.capacity(), request.price());
+        eventRepository.save(event);
+        return category;
     }
 
     private void validateCreateCategoryIllegalArguments(CreateCategoryRequest request) {
