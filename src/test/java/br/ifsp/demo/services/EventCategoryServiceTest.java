@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
@@ -368,5 +369,29 @@ class EventCategoryServiceTest {
 
         assertThat(category).isNotNull();
         assertThat(category.getName()).isEqualTo(name);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "-1.00, Category price must not be negative"
+    })
+    @DisplayName("shouldValidateCategoryPrice")
+    void shouldValidateCategoryPrice(Double price, String expectedMessage) {
+        UUID organizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                organizerId,
+                event.getId(),
+                "Pista",
+                price,
+                100
+        );
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+
+        assertThatThrownBy(() -> sut.createCategory(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(expectedMessage);
     }
 }
