@@ -434,9 +434,6 @@ class EventCategoryServiceTest {
                 capacity
         );
 
-        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
-
         assertThatThrownBy(() -> sut.createCategory(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(expectedMessage);
