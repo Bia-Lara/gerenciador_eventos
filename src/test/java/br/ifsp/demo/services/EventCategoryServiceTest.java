@@ -394,4 +394,26 @@ class EventCategoryServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(expectedMessage);
     }
+
+    @Test
+    @DisplayName("shouldCreateCategoryWhenPriceIsZero")
+    void shouldCreateCategoryWhenPriceIsZero() {
+        UUID organizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                organizerId,
+                event.getId(),
+                "Pista",
+                0.00,
+                100
+        );
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+        when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Category category = sut.createCategory(request);
+
+        assertThat(category.getPrice()).isEqualTo(0.00);
+    }
 }
