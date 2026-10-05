@@ -99,6 +99,10 @@ public class EventCategoryService {
             throw new IllegalArgumentException("Category price must not be negative");
         }
 
+        if (request.capacity() == null) {
+            throw new IllegalArgumentException("Category capacity is required");
+        }
+
         if (request.capacity() < 0) {
             throw new IllegalArgumentException("Category capacity must not be negative");
         }
