@@ -1,6 +1,8 @@
 package br.ifsp.demo.domain;
 
+import br.ifsp.demo.exception.ActionNotAllowedException;
 import br.ifsp.demo.exception.EntityAlreadyExistsException;
+import br.ifsp.demo.exception.EventAlreadyStartedException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,14 +46,23 @@ public class Event {
         return organizerId;
     }
 
-    public Category addCategory(String name, int capacity, double price) {
-        if (categories.stream().anyMatch(category -> category.getName().equals(name))) {
-            throw new EntityAlreadyExistsException("Category name already exists");
-        }
-
+    public Category addCategory(String name, Integer capacity, Double price) {
         Category category = new Category(this, name, capacity, price);
+        validateCategoryNameAvailability(category.getName());
         categories.add(category);
         return category;
+    }
+
+    public void ensureNotStarted(LocalDateTime now) {
+        if (!startDateTime.isAfter(now)) {
+            throw new EventAlreadyStartedException();
+        }
+    }
+
+    public void ensureOrganizerCanCreateCategory(UUID organizerId) {
+        if (!this.organizerId.equals(organizerId)) {
+            throw new ActionNotAllowedException("Only the event organizer can create categories");
+        }
     }
 
     public void removeCategory(UUID categoryId) {
@@ -97,6 +108,12 @@ public class Event {
         }
     }
 
+    private void validateCategoryNameAvailability(String categoryName) {
+        if (categories.stream().anyMatch(category -> category.getName().equals(categoryName))) {
+            throw new EntityAlreadyExistsException("Category name already exists");
+        }
+    }
+
     public List<Category> getCategories() {
         return List.copyOf(categories);
     }
@@ -123,7 +140,7 @@ public class Event {
         return event;
     }
 
-    public Category restoreCategory(UUID id, String name, int capacity, double price) {
+    public Category restoreCategory(UUID id, String name, Integer capacity, Double price) {
         Category category = addCategory(name, capacity, price);
         category.setId(id);
         return category;

@@ -61,23 +61,10 @@ public class EventCategoryService {
         validateCreateCategoryIllegalArguments(request);
 
         Event event = eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
-        if (!event.getStartDateTime().isAfter(LocalDateTime.now(clock))) {
-            throw new EventAlreadyStartedException();
-        }
+        event.ensureNotStarted(LocalDateTime.now(clock));
 
         userRepository.findById(request.organizerId()).orElseThrow(() -> new UserNotFoundException(request.organizerId()));
-
-        if (!event.getOrganizerId().equals(request.organizerId())) {
-            throw new ActionNotAllowedException("Only the event organizer can create categories");
-        }
-
-        if (request.name() == null || request.name().isBlank()) {
-            throw new IllegalArgumentException("Category name is required");
-        }
-
-        if (request.name().length() > 150) {
-            throw new IllegalArgumentException("Category name must not exceed 150 characters");
-        }
+        event.ensureOrganizerCanCreateCategory(request.organizerId());
 
         Category category = event.addCategory(request.name(), request.capacity(), request.price());
         return categoryRepository.save(category);
@@ -90,24 +77,6 @@ public class EventCategoryService {
         if (request.organizerId() == null) {
             throw new IllegalArgumentException("Organizer is required");
         }
-
-        if (request.price() == null) {
-            throw new IllegalArgumentException("Category price is required");
-        }
-
-        if (request.price() < 0) {
-            throw new IllegalArgumentException("Category price must not be negative");
-        }
-
-        if (request.capacity() == null) {
-            throw new IllegalArgumentException("Category capacity is required");
-        }
-
-        if (request.capacity() < 0) {
-            throw new IllegalArgumentException("Category capacity must not be negative");
-        }
-
-
     }
 
     private void validateIllegalArguments(UUID userId, UUID eventId, UUID categoryId) {
