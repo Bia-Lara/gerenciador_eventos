@@ -1,5 +1,6 @@
 package br.ifsp.demo.services;
 
+import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.repository.EventRepository;
 import br.ifsp.demo.domain.repository.RegistrationRepository;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -292,5 +294,29 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.createCategory(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Category name must not exceed 150 characters");
+    }
+
+    @Test
+    @DisplayName("shouldCreateCategoryWhenNameHasMaximumLength")
+    void shouldCreateCategoryWhenNameHasMaximumLength() {
+        UUID organizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        String name = "a".repeat(150);
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                organizerId,
+                event.getId(),
+                name,
+                10.00,
+                100
+        );
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+        when(eventRepository.save(event)).thenReturn(event);
+
+        Category category = sut.createCategory(request);
+
+        assertThat(category).isNotNull();
+        assertThat(category.getName()).isEqualTo(name);
     }
 }
