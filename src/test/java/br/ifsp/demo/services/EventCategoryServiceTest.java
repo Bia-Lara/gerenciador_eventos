@@ -467,4 +467,31 @@ class EventCategoryServiceTest {
                 .isInstanceOf(EntityAlreadyExistsException.class)
                 .hasMessage("Category name already exists");
     }
+
+    @Test
+    @DisplayName("shouldCreateCategoryWhenEventOrganizerNamePriceAndCapacityAreValid")
+    void shouldCreateCategoryWhenEventOrganizerNamePriceAndCapacityAreValid() {
+        UUID organizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                organizerId,
+                event.getId(),
+                "Pista",
+                10.00,
+                100
+        );
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+        when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Category category = sut.createCategory(request);
+
+        assertThat(category).isNotNull();
+        assertThat(category.getEvent()).isEqualTo(event);
+        assertThat(category.getName()).isEqualTo("Pista");
+        assertThat(category.getPrice()).isEqualTo(10.00);
+        assertThat(category.getCapacity()).isEqualTo(100);
+        verify(categoryRepository).save(category);
+    }
 }
