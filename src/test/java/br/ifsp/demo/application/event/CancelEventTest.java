@@ -1,6 +1,7 @@
 package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.domain.enumerations.EventStatus;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.NullValueException;
 import br.ifsp.demo.exception.UnauthorizedUserException;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("UnitTest")
@@ -62,5 +64,15 @@ class CancelEventTest {
         event.cancel(organizerId);
 
         assertThrows(IllegalStateException.class, () -> event.cancel(organizerId));
+    }
+
+    @Test
+    @DisplayName("Should successfully cancel event")
+    void shouldSuccessfullyCancelEvent() {
+        Event event = new Event("Test Event", startTime, endTime, organizerId);
+
+        event.cancel(organizerId);
+
+        assertThat(event.getStatus()).isEqualTo(EventStatus.CANCELLED);
     }
 }
