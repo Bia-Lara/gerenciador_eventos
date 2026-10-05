@@ -1,6 +1,7 @@
 package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.NullValueException;
 import br.ifsp.demo.exception.UnauthorizedUserException;
 import org.junit.jupiter.api.Tag;
@@ -33,5 +34,15 @@ class CancelEventTest {
         Event event = new Event("Test Event", start, end, organizerId);
 
         assertThrows(UnauthorizedUserException.class, () -> event.cancel(UUID.randomUUID()));
+    }
+
+    @Test
+    void testCancelEventAlreadyStartedThrowsInvalidStateException() {
+        UUID organizerId = UUID.randomUUID();
+        LocalDateTime start = LocalDateTime.now().minusMinutes(30);
+        LocalDateTime end = start.plusHours(1);
+        Event event = new Event("Test Event", start, end, organizerId);
+
+        assertThrows(EventAlreadyStartedException.class, () -> event.cancel(organizerId));
     }
 }
