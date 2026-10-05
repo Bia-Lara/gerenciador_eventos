@@ -1,13 +1,10 @@
 package br.ifsp.demo.domain;
 
+import br.ifsp.demo.domain.enumerations.EventStatus;
 import br.ifsp.demo.exception.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class Event {
     private UUID id;
@@ -16,6 +13,7 @@ public class Event {
     private final LocalDateTime endDateTime;
     private final UUID organizerId;
     private final List<Category> categories = new ArrayList<>();
+    private EventStatus status = EventStatus.ACTIVE;
 
     public Event(String name, LocalDateTime startDateTime, LocalDateTime endDateTime, UUID organizerId) {
         this.id = UUID.randomUUID();
@@ -122,6 +120,12 @@ public class Event {
         }
 
         ensureNotStarted(LocalDateTime.now());
+
+        if (this.status == EventStatus.CANCELLED) {
+            throw new IllegalStateException("Event is already cancelled");
+        }
+
+        this.status = EventStatus.CANCELLED;
     }
 
     public List<Category> getCategories() {
