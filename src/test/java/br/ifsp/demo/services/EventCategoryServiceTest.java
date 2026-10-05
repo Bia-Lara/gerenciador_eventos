@@ -362,7 +362,7 @@ class EventCategoryServiceTest {
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
-        when(eventRepository.save(event)).thenReturn(event);
+        when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Category category = sut.createCategory(request);
 

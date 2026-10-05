@@ -80,8 +80,7 @@ public class EventCategoryService {
         }
 
         Category category = event.addCategory(request.name(), request.capacity(), request.price());
-        eventRepository.save(event);
-        return category;
+        return categoryRepository.save(category);
     }
 
     private void validateCreateCategoryIllegalArguments(CreateCategoryRequest request) {
