@@ -1,9 +1,6 @@
 package br.ifsp.demo.domain;
 
-import br.ifsp.demo.exception.ActionNotAllowedException;
-import br.ifsp.demo.exception.EntityAlreadyExistsException;
-import br.ifsp.demo.exception.EventAlreadyStartedException;
-import br.ifsp.demo.exception.NullValueException;
+import br.ifsp.demo.exception.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -118,6 +115,10 @@ public class Event {
     public void cancel(UUID requestingUserId) {
         if (requestingUserId == null) {
             throw new NullValueException("User");
+        }
+
+        if (!this.organizerId.equals(requestingUserId)) {
+            throw new UnauthorizedUserException();
         }
     }
 
