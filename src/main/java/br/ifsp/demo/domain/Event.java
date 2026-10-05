@@ -159,4 +159,8 @@ public class Event {
         category.setId(id);
         return category;
     }
+
+    public EventStatus getStatus() {
+        return status;
+    }
 }
