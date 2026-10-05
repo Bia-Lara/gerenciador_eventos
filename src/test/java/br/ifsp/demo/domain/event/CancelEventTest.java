@@ -1,4 +1,4 @@
-package br.ifsp.demo.application.event;
+package br.ifsp.demo.domain.event;
 
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.enumerations.EventStatus;
