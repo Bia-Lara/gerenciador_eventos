@@ -441,7 +441,8 @@ class EventCategoryServiceTest {
 
     private static Object[][] invalidCategoryCapacities() {
         return new Object[][]{
-                {-1, "Category capacity must not be negative"}
+                {-1, "Category capacity must not be negative"},
+                {null, "Category capacity is required"}
         };
     }
 }

@@ -102,6 +102,8 @@ public class EventCategoryService {
         if (request.capacity() < 0) {
             throw new IllegalArgumentException("Category capacity must not be negative");
         }
+
+
     }
 
     private void validateIllegalArguments(UUID userId, UUID eventId, UUID categoryId) {
