@@ -1,5 +1,7 @@
 package br.ifsp.demo.domain;
 
+import br.ifsp.demo.exception.EntityAlreadyExistsException;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,10 @@ public class Event {
     }
 
     public Category addCategory(String name, int capacity, double price) {
+        if (categories.stream().anyMatch(category -> category.getName().equals(name))) {
+            throw new EntityAlreadyExistsException("Category name already exists");
+        }
+
         Category category = new Category(this, name, capacity, price);
         categories.add(category);
         return category;

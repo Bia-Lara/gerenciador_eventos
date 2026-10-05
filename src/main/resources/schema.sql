@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS category (
     price REAL NOT NULL
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_category_event_name
+ON category(event_id, name);
+
 CREATE TABLE IF NOT EXISTS registration (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
