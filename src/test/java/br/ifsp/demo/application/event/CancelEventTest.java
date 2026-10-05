@@ -47,11 +47,20 @@ class CancelEventTest {
     }
 
     @Test
-    @DisplayName("Should throw invalid state exception when event already started")
-    void shouldThrowInvalidStateExceptionWhenEventAlreadyStarted() {
+    @DisplayName("Should throw event already started exception when event already started")
+    void shouldThrowEventAlreadyStartedExceptionWhenEventAlreadyStarted() {
         LocalDateTime start = LocalDateTime.now().minusMinutes(30);
         Event event = new Event("Test Event", start, endTime, organizerId);
 
         assertThrows(EventAlreadyStartedException.class, () -> event.cancel(organizerId));
+    }
+
+    @Test
+    @DisplayName("Should throw illegal state exception when event is already cancelled")
+    void shouldThrowIllegalStateExceptionWhenEventIsAlreadyCancelled() {
+        Event event = new Event("Test Event", startTime, endTime, organizerId);
+        event.cancel(organizerId);
+
+        assertThrows(IllegalStateException.class, () -> event.cancel(organizerId));
     }
 }
