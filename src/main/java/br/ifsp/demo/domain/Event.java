@@ -3,6 +3,7 @@ package br.ifsp.demo.domain;
 import br.ifsp.demo.exception.ActionNotAllowedException;
 import br.ifsp.demo.exception.EntityAlreadyExistsException;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
+import br.ifsp.demo.exception.NullValueException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -111,6 +112,12 @@ public class Event {
     private void validateCategoryNameAvailability(String categoryName) {
         if (categories.stream().anyMatch(category -> category.getName().equals(categoryName))) {
             throw new EntityAlreadyExistsException("Category name already exists");
+        }
+    }
+
+    public void cancel(UUID requestingUserId) {
+        if (requestingUserId == null) {
+            throw new NullValueException("User");
         }
     }
 
