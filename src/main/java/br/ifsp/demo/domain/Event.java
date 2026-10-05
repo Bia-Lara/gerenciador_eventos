@@ -120,6 +120,8 @@ public class Event {
         if (!this.organizerId.equals(requestingUserId)) {
             throw new UnauthorizedUserException();
         }
+
+        ensureNotStarted(LocalDateTime.now());
     }
 
     public List<Category> getCategories() {
