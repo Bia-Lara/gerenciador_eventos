@@ -419,4 +419,32 @@ class EventCategoryServiceTest {
 
         assertThat(category.getPrice()).isEqualTo(0.00);
     }
+
+    @ParameterizedTest
+    @MethodSource("invalidCategoryCapacities")
+    @DisplayName("shouldValidateCategoryCapacity")
+    void shouldValidateCategoryCapacity(Integer capacity, String expectedMessage) {
+        UUID organizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        CreateCategoryRequest request = new CreateCategoryRequest(
+                organizerId,
+                event.getId(),
+                "Pista",
+                10.00,
+                capacity
+        );
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+
+        assertThatThrownBy(() -> sut.createCategory(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(expectedMessage);
+    }
+
+    private static Object[][] invalidCategoryCapacities() {
+        return new Object[][]{
+                {-1, "Category capacity must not be negative"}
+        };
+    }
 }
