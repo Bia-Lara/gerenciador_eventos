@@ -102,6 +102,16 @@ class EventTest {
                     .isInstanceOf(IllegalArgumentException.class);
         }
 
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when start datetime is before now")
+        void shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsBeforeNow() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+            LocalDateTime pastDateTime = startTime.minusDays(1);
+
+            assertThatThrownBy(() -> event.edit(organizerId, "New Name", pastDateTime, endTime))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
         @ParameterizedTest
         @NullAndEmptySource
         @DisplayName("Should throw IllegalArgumentException when name is null or blank")
