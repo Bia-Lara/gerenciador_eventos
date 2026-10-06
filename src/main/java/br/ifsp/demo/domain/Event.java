@@ -130,6 +130,8 @@ public class Event {
 
     public void edit(UUID requestingUserId, String newName, LocalDateTime newStartDateTime, LocalDateTime newEndDateTime) {
         validatePeriod(newStartDateTime, newEndDateTime);
+
+        validateAndNormalizeName(newName);
     }
 
     public List<Category> getCategories() {
