@@ -1,4 +1,4 @@
-package br.ifsp.demo.domain.event;
+package br.ifsp.demo.domain;
 
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.enumerations.EventStatus;
@@ -167,6 +167,16 @@ class EventTest {
 
             assertThatThrownBy(() -> event.edit(otherUserId, "Test Event", startTime, endTime))
                     .isInstanceOf(UnauthorizedUserException.class);
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalStateException when event is cancelled")
+        void shouldThrowIllegalStateExceptionWhenEventIsCancelled() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+            event.setStatus(EventStatus.CANCELLED);
+
+            assertThatThrownBy(() -> event.edit(organizerId, "Test Event", startTime, endTime))
+                    .isInstanceOf(IllegalStateException.class);
         }
     }
 }

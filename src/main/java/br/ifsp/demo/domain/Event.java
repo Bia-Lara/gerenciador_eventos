@@ -185,4 +185,8 @@ public class Event {
     public EventStatus getStatus() {
         return status;
     }
+
+    void setStatus(EventStatus status) {
+        this.status = status;
+    }
 }
