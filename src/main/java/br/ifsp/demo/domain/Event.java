@@ -137,6 +137,8 @@ public class Event {
             throw new NullValueException("User");
         }
 
+        ensureNotStarted(LocalDateTime.now());
+
         ensureIsOrganizer(requestingUserId);
 
         validatePeriod(newStartDateTime, newEndDateTime);
