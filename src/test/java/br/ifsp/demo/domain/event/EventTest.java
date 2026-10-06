@@ -99,5 +99,14 @@ class EventTest {
             assertThatThrownBy(() -> event.edit(organizerId, "Test Event", startTime, null))
                     .isInstanceOf(IllegalArgumentException.class);
         }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when name is null")
+        void shouldThrowIllegalArgumentExceptionWhenNameIsNull() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+
+            assertThatThrownBy(() -> event.edit(organizerId, null, startTime, endTime))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
     }
 }
