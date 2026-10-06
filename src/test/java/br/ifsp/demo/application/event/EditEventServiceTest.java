@@ -1,7 +1,9 @@
 package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -51,5 +53,16 @@ class EditEventServiceTest {
 
         assertThatThrownBy(() -> sut.execute(eventId, otherUserId, "Test Event", startTime, endTime))
                 .isInstanceOf(UserNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Should throw EventNotFoundException when event does not exist")
+    void shouldThrowEventNotFoundExceptionWhenEventDoesNotExist() {
+        UUID eventId = UUID.randomUUID();
+        when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
+        when(userRepository.findById(otherUserId)).thenReturn(Optional.of(new User()));
+
+        assertThatThrownBy(() -> sut.execute(eventId, otherUserId, "New Name", startTime, endTime))
+                .isInstanceOf(EventNotFoundException.class);
     }
 }
