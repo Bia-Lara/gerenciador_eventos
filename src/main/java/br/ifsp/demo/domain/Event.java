@@ -110,14 +110,18 @@ public class Event {
         }
     }
 
+    private void ensureIsOrganizer(UUID organizerId){
+        if(!this.organizerId.equals(organizerId)){
+            throw new UnauthorizedUserException();
+        }
+    }
+
     public void cancel(UUID requestingUserId) {
         if (requestingUserId == null) {
             throw new NullValueException("User");
         }
 
-        if (!this.organizerId.equals(requestingUserId)) {
-            throw new UnauthorizedUserException();
-        }
+        ensureIsOrganizer(requestingUserId);
 
         ensureNotStarted(LocalDateTime.now());
 
@@ -132,6 +136,8 @@ public class Event {
         if (requestingUserId == null) {
             throw new NullValueException("User");
         }
+
+        ensureIsOrganizer(requestingUserId);
 
         validatePeriod(newStartDateTime, newEndDateTime);
 
