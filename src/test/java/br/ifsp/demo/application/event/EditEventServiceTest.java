@@ -1,6 +1,7 @@
 package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
@@ -16,7 +17,9 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,5 +67,26 @@ class EditEventServiceTest {
 
         assertThatThrownBy(() -> sut.execute(eventId, otherUserId, "New Name", startTime, endTime))
                 .isInstanceOf(EventNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Should successfully edit event")
+    void shouldSuccessfullyEditEvent() {
+        Event event = new Event("Test Event", startTime, endTime, organizerId);
+        UUID eventId = event.getId();
+
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(new User()));
+
+        String newName = "Updated Event";
+        LocalDateTime newStart = startTime.plusHours(1);
+        LocalDateTime newEnd = endTime.plusHours(1);
+
+        Event result = sut.execute(eventId, organizerId, newName, newStart, newEnd);
+
+        verify(eventRepository).save(event);
+        assertThat(result.getName()).isEqualTo(newName);
+        assertThat(result.getStartDateTime()).isEqualTo(newStart);
+        assertThat(result.getEndDateTime()).isEqualTo(newEnd);
     }
 }
