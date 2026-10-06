@@ -108,7 +108,17 @@ class EventTest {
             Event event = new Event("Test Event", startTime, endTime, organizerId);
             LocalDateTime pastDateTime = startTime.minusDays(1);
 
-            assertThatThrownBy(() -> event.edit(organizerId, "New Name", pastDateTime, endTime))
+            assertThatThrownBy(() -> event.edit(organizerId, "Test Event", pastDateTime, endTime))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when end datetime is before now")
+        void shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsBeforeNow() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+            LocalDateTime pastDateTime = endTime.minusDays(1);
+
+            assertThatThrownBy(() -> event.edit(organizerId, "Test Event", startTime, pastDateTime))
                     .isInstanceOf(IllegalArgumentException.class);
         }
 
