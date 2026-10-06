@@ -120,5 +120,14 @@ class EventTest {
             assertThatThrownBy(() -> event.edit(null, "Test Event", startTime, endTime))
                     .isInstanceOf(NullValueException.class);
         }
+
+        @Test
+        @DisplayName("Should throw UnauthorizedUserException when user is not organizer")
+        void shouldThrowUnauthorizedUserExceptionWhenUserIsNotOrganizer() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+
+            assertThatThrownBy(() -> event.edit(otherUserId, "Test Event", startTime, endTime))
+                    .isInstanceOf(UnauthorizedUserException.class);
+        }
     }
 }
