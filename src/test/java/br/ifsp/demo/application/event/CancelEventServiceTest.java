@@ -36,7 +36,7 @@ public class CancelEventServiceTest {
 
     @BeforeEach
     void setUp() {
-        sut = new CancelEventServiceImpl(eventRepository, userRepository);
+        sut = new CancelEventServiceImpl(eventRepository, userRepository, registrationRepository);
     }
 
     @Test
