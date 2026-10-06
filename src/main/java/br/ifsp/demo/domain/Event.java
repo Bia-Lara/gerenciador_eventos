@@ -129,6 +129,10 @@ public class Event {
     }
 
     public void edit(UUID requestingUserId, String newName, LocalDateTime newStartDateTime, LocalDateTime newEndDateTime) {
+        if (requestingUserId == null) {
+            throw new NullValueException("User");
+        }
+
         validatePeriod(newStartDateTime, newEndDateTime);
 
         validateAndNormalizeName(newName);
