@@ -142,6 +142,10 @@ public class Event {
         validatePeriod(newStartDateTime, newEndDateTime);
 
         validateAndNormalizeName(newName);
+
+        if (!newStartDateTime.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Start date time must be after now");
+        }
     }
 
     public List<Category> getCategories() {
