@@ -122,6 +122,15 @@ class EventTest {
                     .isInstanceOf(IllegalArgumentException.class);
         }
 
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when end datetime equals start datetime")
+        void shouldThrowIllegalArgumentExceptionWhenEndEqualsStart() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+
+            assertThatThrownBy(() -> event.edit(organizerId, "Test Event", startTime, startTime))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+
         @ParameterizedTest
         @NullAndEmptySource
         @DisplayName("Should throw IllegalArgumentException when name is null or blank")
