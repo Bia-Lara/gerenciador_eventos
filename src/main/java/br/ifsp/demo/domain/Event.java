@@ -116,6 +116,12 @@ public class Event {
         }
     }
 
+    private void ensureIsNotCancelled(){
+        if(this.status.equals(EventStatus.CANCELLED)){
+            throw new IllegalStateException();
+        }
+    }
+
     public void cancel(UUID requestingUserId) {
         if (requestingUserId == null) {
             throw new NullValueException("User");
@@ -125,9 +131,7 @@ public class Event {
 
         ensureNotStarted(LocalDateTime.now());
 
-        if (this.status == EventStatus.CANCELLED) {
-            throw new IllegalStateException("Event is already cancelled");
-        }
+        ensureIsNotCancelled();
 
         this.status = EventStatus.CANCELLED;
     }
@@ -148,6 +152,8 @@ public class Event {
         if (!newStartDateTime.isAfter(LocalDateTime.now())) {
             throw new IllegalArgumentException("Start date time must be after now");
         }
+
+        ensureIsNotCancelled();
     }
 
     public List<Category> getCategories() {
