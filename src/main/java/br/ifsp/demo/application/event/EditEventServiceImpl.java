@@ -19,12 +19,16 @@ public class EditEventServiceImpl {
         this.userRepository = userRepository;
     }
 
-    public void execute(UUID eventId, UUID userId, String newName, LocalDateTime newStart, LocalDateTime newEnd) {
+    public Event execute(UUID eventId, UUID userId, String newName, LocalDateTime newStart, LocalDateTime newEnd) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new UserNotFoundException(userId);
         }
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
+
+        event.edit(userId, newName, newStart, newEnd);
+        eventRepository.save(event);
+        return event;
     }
 }
