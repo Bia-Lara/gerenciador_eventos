@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("UnitTest")
@@ -75,6 +76,19 @@ class EventTest {
             event.cancel(organizerId);
 
             assertThat(event.getStatus()).isEqualTo(EventStatus.CANCELLED);
+        }
+    }
+
+    @Nested
+    @DisplayName("Edit Event")
+    class EditEventTests {
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when start datetime is null")
+        void shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNull() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+
+            assertThatThrownBy(() -> event.edit(organizerId, "Test Event", null, endTime))
+                    .isInstanceOf(IllegalArgumentException.class);
         }
     }
 }
