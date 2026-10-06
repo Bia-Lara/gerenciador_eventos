@@ -8,9 +8,9 @@ import java.util.*;
 
 public class Event {
     private UUID id;
-    private final String name;
-    private final LocalDateTime startDateTime;
-    private final LocalDateTime endDateTime;
+    private String name;
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
     private final UUID organizerId;
     private final List<Category> categories = new ArrayList<>();
     private EventStatus status = EventStatus.ACTIVE;
@@ -154,6 +154,10 @@ public class Event {
         }
 
         ensureIsNotCancelled();
+
+        this.name = validateAndNormalizeName(newName);
+        this.startDateTime = newStartDateTime;
+        this.endDateTime = newEndDateTime;
     }
 
     public List<Category> getCategories() {
