@@ -178,5 +178,21 @@ class EventTest {
             assertThatThrownBy(() -> event.edit(organizerId, "Test Event", startTime, endTime))
                     .isInstanceOf(IllegalStateException.class);
         }
+
+        @Test
+        @DisplayName("Should successfully edit event when all validations pass")
+        void shouldSuccessfullyEditEventWhenAllValidationsPass() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+
+            String newName = "Updated Event";
+            LocalDateTime newStart = startTime.plusHours(1);
+            LocalDateTime newEnd = endTime.plusHours(1);
+
+            event.edit(organizerId, newName, newStart, newEnd);
+
+            assertThat(event.getName()).isEqualTo(newName);
+            assertThat(event.getStartDateTime()).isEqualTo(newStart);
+            assertThat(event.getEndDateTime()).isEqualTo(newEnd);
+        }
     }
 }
