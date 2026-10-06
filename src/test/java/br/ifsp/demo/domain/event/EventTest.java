@@ -6,6 +6,9 @@ import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.NullValueException;
 import br.ifsp.demo.exception.UnauthorizedUserException;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -100,12 +103,13 @@ class EventTest {
                     .isInstanceOf(IllegalArgumentException.class);
         }
 
-        @Test
-        @DisplayName("Should throw IllegalArgumentException when name is null")
-        void shouldThrowIllegalArgumentExceptionWhenNameIsNull() {
+        @ParameterizedTest
+        @NullAndEmptySource
+        @DisplayName("Should throw IllegalArgumentException when name is null or blank")
+        void shouldThrowIllegalArgumentExceptionWhenNameIsNullOrBlank(String invalidName) {
             Event event = new Event("Test Event", startTime, endTime, organizerId);
 
-            assertThatThrownBy(() -> event.edit(organizerId, null, startTime, endTime))
+            assertThatThrownBy(() -> event.edit(organizerId, invalidName, startTime, endTime))
                     .isInstanceOf(IllegalArgumentException.class);
         }
     }
