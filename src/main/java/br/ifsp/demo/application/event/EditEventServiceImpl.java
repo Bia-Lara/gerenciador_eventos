@@ -1,6 +1,8 @@
 package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -21,5 +23,8 @@ public class EditEventServiceImpl {
         if (userRepository.findById(userId).isEmpty()) {
             throw new UserNotFoundException(userId);
         }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(eventId));
     }
 }
