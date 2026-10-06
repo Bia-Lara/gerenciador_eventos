@@ -7,10 +7,12 @@ import br.ifsp.demo.application.event.EventRepository;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.exception.*;
 import br.ifsp.demo.infrastructure.security.user.User;
+import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 
+@Service
 public class RegistrationService {
 
     private final UserRepository userRepository;
