@@ -131,6 +131,16 @@ class EventTest {
                     .isInstanceOf(IllegalArgumentException.class);
         }
 
+        @Test
+        @DisplayName("Should throw EventAlreadyStartedException when event already started")
+        void shouldThrowEventAlreadyStartedExceptionWhenEventAlreadyStarted() {
+            LocalDateTime pastDateTime = startTime.minusDays(1);
+            Event event = new Event("Test Event", pastDateTime, endTime, organizerId);
+
+            assertThatThrownBy(() -> event.edit(organizerId, "Test Event", startTime, endTime))
+                    .isInstanceOf(EventAlreadyStartedException.class);
+        }
+
         @ParameterizedTest
         @NullAndEmptySource
         @DisplayName("Should throw IllegalArgumentException when name is null or blank")
