@@ -2,6 +2,7 @@ package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.exception.EntityNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,13 +56,12 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
                 LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2),
-                null
+                LocalDateTime.now().plusDays(2)
         );
-        assertThatThrownBy(() -> sut.createEvent(request))
+
+        assertThatThrownBy(() -> sut.createEvent(null, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Organizer is required");
-
     }
 
     @Test
@@ -71,13 +71,12 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
                 LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2),
-                organizerId
+                LocalDateTime.now().plusDays(2)
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> sut.createEvent(request))
+        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Organizer not found");
     }
@@ -91,13 +90,12 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 name,
                 LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2),
-                organizerId
+                LocalDateTime.now().plusDays(2)
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createEvent(request))
+        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event name is required");
     }
@@ -109,13 +107,12 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 "a".repeat(151),
                 LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2),
-                organizerId
+                LocalDateTime.now().plusDays(2)
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createEvent(request))
+        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event name must not exceed 150 characters");
     }
@@ -128,14 +125,13 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 eventName,
                 LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2),
-                organizerId
+                LocalDateTime.now().plusDays(2)
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
         when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Event event = sut.createEvent(request);
+        Event event = sut.createEvent(organizerId, request);
 
         assertThat(event.getName()).isEqualTo(eventName);
         assertThat(event.getName()).hasSize(150);
@@ -153,18 +149,16 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 name,
                 LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2),
-                organizerId
+                LocalDateTime.now().plusDays(2)
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
         when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Event event = sut.createEvent(request);
+        Event event = sut.createEvent(organizerId, request);
 
         assertThat(event.getName()).isEqualTo(expectedName);
     }
-
 
     @Test
     @DisplayName("shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNull")
@@ -173,13 +167,12 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
                 null,
-                LocalDateTime.now().plusDays(2),
-                organizerId
+                LocalDateTime.now().plusDays(2)
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createEvent(request))
+        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Start date time is required");
     }
@@ -191,13 +184,12 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
                 LocalDateTime.now().plusDays(1),
-                null,
-                organizerId
+                null
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createEvent(request))
+        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("End date time is required");
     }
@@ -210,11 +202,10 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
                 NOW.minusMinutes(minutesBeforeNow),
-                NOW.plusDays(1),
-                organizerId
+                NOW.plusDays(1)
         );
 
-        assertThatThrownBy(() -> sut.createEvent(request))
+        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Start date time must be in the future");
     }
@@ -228,17 +219,15 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
                 startDateTime,
-                startDateTime.plusDays(daysAfterStartDateTime),
-                organizerId
+                startDateTime.plusDays(daysAfterStartDateTime)
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createEvent(request))
+        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("End date time must be after start date time");
     }
-
 
     @Test
     @DisplayName("shouldCreateEventWhenAllDataIsValid")
@@ -249,19 +238,17 @@ class EventServiceTest {
         CreateEventRequest request = new CreateEventRequest(
                 "Novo evento",
                 startDateTime,
-                endDateTime,
-                organizerId
+                endDateTime
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
         when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Event event = sut.createEvent(request);
+        Event event = sut.createEvent(organizerId, request);
 
         assertThat(event.getName()).isEqualTo("Novo evento");
         assertThat(event.getStartDateTime()).isEqualTo(startDateTime);
         assertThat(event.getEndDateTime()).isEqualTo(endDateTime);
         assertThat(event.getOrganizerId()).isEqualTo(organizerId);
     }
-
 }
