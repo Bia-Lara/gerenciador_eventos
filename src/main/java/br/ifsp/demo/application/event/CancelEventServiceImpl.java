@@ -2,7 +2,9 @@ package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.Registration;
+import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
 
@@ -27,6 +29,9 @@ public class CancelEventServiceImpl implements CancelEventService {
         if(user.isEmpty()){
             throw new UserNotFoundException(userId);
         }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(eventId));
 
         if (registrationRepository.existsActiveByEventId(eventId)) {
             throw new IllegalStateException("Cannot cancel event with active registrations");
