@@ -3,12 +3,14 @@ package br.ifsp.demo.application.event;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.exception.UserNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+@Service
 public class EventQueryService {
 
     private final UserRepository userRepository;

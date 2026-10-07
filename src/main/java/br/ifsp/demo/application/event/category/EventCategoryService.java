@@ -1,6 +1,5 @@
 package br.ifsp.demo.application.event.category;
 
-import br.ifsp.demo.application.event.category.CategoryRepository;
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.application.event.EventRepository;
@@ -9,11 +8,13 @@ import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.exception.*;
 import br.ifsp.demo.infrastructure.security.user.User;
+import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Service
 public class EventCategoryService {
 
     private final UserRepository userRepository;
