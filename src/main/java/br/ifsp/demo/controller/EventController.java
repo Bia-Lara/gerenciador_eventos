@@ -16,14 +16,14 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/events")
 @Tag(name = "Event Query API")
-public class EventQueryController {
+public class EventController {
 
     private final AuthenticationInfoService authService;
     private final EventQueryService eventQueryService;
     private final EditEventService editEventService;
     private final CancelEventService cancelEventService;
 
-    public EventQueryController(AuthenticationInfoService authService, EventQueryService eventQueryService, EditEventService editEventService, CancelEventService cancelEventService) {
+    public EventController(AuthenticationInfoService authService, EventQueryService eventQueryService, EditEventService editEventService, CancelEventService cancelEventService) {
         this.authService = authService;
         this.eventQueryService = eventQueryService;
         this.editEventService = editEventService;
