@@ -9,6 +9,7 @@ import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
+import br.ifsp.demo.exception.CategoryFullException;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,8 +32,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("UnitTest")
@@ -84,5 +85,43 @@ class RegistrationServiceFunctionalTest {
         Registration result = sut.register(new RegisterToEventRequest(userId, event.getId(), category.getId()));
 
         assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
+    }
+
+    @ParameterizedTest(name = "capacidade {0}, ocupadas {1}")
+    @CsvSource({"1, 1", "1, 2", "50, 50", "50, 51"})
+    @DisplayName("shouldThrowCategoryFullExceptionWhenActiveRegistrationsReachCapacity")
+    void shouldThrowCategoryFullExceptionWhenActiveRegistrationsReachCapacity(int capacity, long active) {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        Category category = event.addCategory("Pista", capacity, 50.0);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(active);
+        var request = new RegisterToEventRequest(userId, event.getId(), category.getId());
+
+        assertThatThrownBy(() -> sut.register(request))
+                .isInstanceOf(CategoryFullException.class)
+                .hasMessage("No vacancies left for this category");
+    }
+
+    @ParameterizedTest(name = "capacidade {0}, ocupadas {1}")
+    @CsvSource({"1, 0", "50, 0", "50, 49"})
+    @DisplayName("shouldRegisterWhenCategoryStillHasAtLeastOneVacancy")
+    void shouldRegisterWhenCategoryStillHasAtLeastOneVacancy(int capacity, long active) {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        Category category = event.addCategory("Pista", capacity, 50.0);
+        User user = mock(User.class);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(active);
+        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Registration result = sut.register(new RegisterToEventRequest(userId, event.getId(), category.getId()));
+
+        assertThat(result.getUser()).isSameAs(user);
+        assertThat(result.getCategory()).isSameAs(category);
+        assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
+        verify(registrationRepository).save(any(Registration.class));
     }
 }

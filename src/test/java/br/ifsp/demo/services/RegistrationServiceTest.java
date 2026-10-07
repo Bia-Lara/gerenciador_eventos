@@ -145,44 +145,6 @@ class RegistrationServiceTest {
                 .hasMessage("User already registered in this event");
     }
 
-    @ParameterizedTest(name = "capacidade {0}, ocupadas {1}")
-    @CsvSource({"1, 1", "1, 2", "50, 50"})
-    @DisplayName("shouldThrowCategoryFullExceptionWhenActiveRegistrationsReachCapacity")
-    void shouldThrowCategoryFullExceptionWhenActiveRegistrationsReachCapacity(int capacity, long active) {
-        UUID userId = UUID.randomUUID();
-        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
-        Category category = event.addCategory("Pista", capacity, 50.0);
-        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
-        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(active);
-        var request = new RegisterToEventRequest(userId, event.getId(), category.getId());
-
-        assertThatThrownBy(() -> sut.register(request))
-                .isInstanceOf(CategoryFullException.class)
-                .hasMessage("No vacancies left for this category");
-    }
-
-    @ParameterizedTest(name = "capacidade {0}, ocupadas {1}")
-    @CsvSource({"1, 0", "50, 0", "50, 49"})
-    @DisplayName("shouldRegisterWhenCategoryStillHasAtLeastOneVacancy")
-    void shouldRegisterWhenCategoryStillHasAtLeastOneVacancy(int capacity, long active) {
-        UUID userId = UUID.randomUUID();
-        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
-        Category category = event.addCategory("Pista", capacity, 50.0);
-        User user = mock(User.class);
-        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(active);
-        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        Registration result = sut.register(new RegisterToEventRequest(userId, event.getId(), category.getId()));
-
-        assertThat(result.getUser()).isSameAs(user);
-        assertThat(result.getCategory()).isSameAs(category);
-        assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
-        verify(registrationRepository).save(any(Registration.class));
-    }
-
     @Test
     @DisplayName("shouldRegisterParticipantWhenAllDataIsValidAndCategoryHasVacancies")
     void shouldRegisterParticipantWhenAllDataIsValidAndCategoryHasVacancies() {
