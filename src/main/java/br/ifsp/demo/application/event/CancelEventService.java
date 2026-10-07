@@ -1,7 +1,9 @@
 package br.ifsp.demo.application.event;
 
+import br.ifsp.demo.domain.Event;
+
 import java.util.UUID;
 
 public interface CancelEventService {
-    void execute(UUID eventId, UUID userId);
+    Event execute(UUID eventId, UUID userId);
 }

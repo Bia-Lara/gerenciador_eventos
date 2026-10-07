@@ -3,7 +3,6 @@ package br.ifsp.demo.application.event;
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
-import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
@@ -23,7 +22,7 @@ public class CancelEventServiceImpl implements CancelEventService {
     }
 
     @Override
-    public void execute(UUID eventId, UUID userId) {
+    public Event execute(UUID eventId, UUID userId) {
         Optional<User> user = userRepository.findById(userId);
 
         if(user.isEmpty()){
@@ -36,5 +35,9 @@ public class CancelEventServiceImpl implements CancelEventService {
         if (registrationRepository.existsActiveByEventId(eventId)) {
             throw new IllegalStateException("Cannot cancel event with active registrations");
         }
+
+        event.cancel(userId);
+        eventRepository.save(event);
+        return event;
     }
 }
