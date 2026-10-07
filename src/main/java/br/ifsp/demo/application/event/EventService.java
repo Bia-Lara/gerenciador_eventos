@@ -1,5 +1,6 @@
 package br.ifsp.demo.application.event;
 
+import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.application.organizer.OrganizerRepository;
 import br.ifsp.demo.exception.EntityNotFoundException;
@@ -8,22 +9,22 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 
 public class EventService {
-    private final OrganizerRepository organizerRepository;
+    private final UserRepository userRepository;
     private final Clock clock;
 
-    public EventService(OrganizerRepository organizerRepository) {
-        this(organizerRepository, Clock.systemDefaultZone());
+    public EventService(UserRepository userRepository) {
+        this(userRepository, Clock.systemDefaultZone());
     }
 
-    public EventService(OrganizerRepository organizerRepository, Clock clock) {
-        this.organizerRepository = organizerRepository;
+    public EventService(UserRepository userRepository, Clock clock) {
+        this.userRepository = userRepository;
         this.clock = clock;
     }
 
     public Event createEvent(CreateEventRequest request) {
         validateIllegalArguments(request);
 
-        organizerRepository.findById(request.organizerId())
+        userRepository.findById(request.organizerId())
                 .orElseThrow(() -> new EntityNotFoundException("Organizer not found"));
 
         return new Event(

@@ -1,8 +1,11 @@
 package br.ifsp.demo.application.event;
 
+import br.ifsp.demo.application.event.EventService;
+import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.application.organizer.OrganizerRepository;
 import br.ifsp.demo.exception.EntityNotFoundException;
+import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -23,6 +26,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,7 +35,7 @@ import static org.mockito.Mockito.when;
 class EventServiceTest {
 
     @Mock
-    private OrganizerRepository organizerRepository;
+    private UserRepository userRepository;
 
     private static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 10, 0);
@@ -41,7 +45,7 @@ class EventServiceTest {
     @BeforeEach
     void setUp() {
         Clock fixedClock = Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE);
-        sut = new EventService(organizerRepository, fixedClock);
+        sut = new EventService(userRepository, fixedClock);
     }
 
     @Test
@@ -70,7 +74,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.empty());
+        when(userRepository.findById(organizerId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(EntityNotFoundException.class)
@@ -90,7 +94,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -108,7 +112,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -127,7 +131,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
         Event event = sut.createEvent(request);
 
@@ -151,7 +155,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
         Event event = sut.createEvent(request);
 
@@ -170,7 +174,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -188,7 +192,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -225,7 +229,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
         assertThatThrownBy(() -> sut.createEvent(request))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -246,7 +250,7 @@ class EventServiceTest {
                 organizerId
         );
 
-        when(organizerRepository.findById(organizerId)).thenReturn(Optional.of(organizerId));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
         Event event = sut.createEvent(request);
 
