@@ -6,10 +6,12 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class CancelEventServiceImpl implements CancelEventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
