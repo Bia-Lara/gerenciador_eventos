@@ -46,9 +46,9 @@ public class EventController {
     }
 
     @PostMapping("/{eventId}/cancel")
-    public ResponseEntity<Void> cancel(@PathVariable UUID eventId) {
+    public ResponseEntity<EventResponse> cancel(@PathVariable UUID eventId) {
         UUID userId = authService.getAuthenticatedUserId();
-        cancelEventService.execute(eventId, userId);
-        return ResponseEntity.noContent().build();
+        Event cancelledEvent = cancelEventService.execute(eventId, userId);
+        return ResponseEntity.ok(EventResponse.from(cancelledEvent));
     }
 }
