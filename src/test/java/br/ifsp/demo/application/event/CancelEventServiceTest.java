@@ -67,11 +67,11 @@ public class CancelEventServiceTest {
     @Test
     @DisplayName("Should IllegalStateException when event has active registrations")
     void shouldThrowIllegalStateExceptionWhenEventHasActiveRegistrations() {
-        UUID organizerId = UUID.randomUUID();
-        UUID eventId = UUID.randomUUID();
+        Event event = new Event("Test Event", startTime, endTime, organizerId);
+        UUID eventId = event.getId();
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(new User()));
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(new Event("Test event", startTime, endTime, organizerId)));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         when(registrationRepository.existsActiveByEventId(eventId)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> sut.execute(eventId, organizerId));
@@ -103,5 +103,21 @@ public class CancelEventServiceTest {
 
         assertThat(event.getStatus()).isEqualTo(EventStatus.CANCELLED);
         verify(eventRepository).save(result);
+    }
+
+    @Test
+    @DisplayName("Should successfully cancel event when only cancelled registrations exist")
+    void shouldSuccessfullyCancelEventWhenOnlyCancelledRegistrationsExist() {
+        Event event = new Event("Test Event", startTime, endTime, organizerId);
+        UUID eventId = event.getId();
+
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(new User()));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(registrationRepository.existsActiveByEventId(eventId)).thenReturn(false);
+
+        sut.execute(eventId, organizerId);
+
+        assertThat(event.getStatus()).isEqualTo(EventStatus.CANCELLED);
+        verify(eventRepository).save(event);
     }
 }
