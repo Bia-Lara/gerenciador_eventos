@@ -1,13 +1,13 @@
 package br.ifsp.demo.controller;
 
+import br.ifsp.demo.application.event.EditEventService;
 import br.ifsp.demo.application.event.EventQueryService;
+import br.ifsp.demo.dto.EditEventRequest;
 import br.ifsp.demo.dto.EventResponse;
 import br.ifsp.demo.infrastructure.security.auth.AuthenticationInfoService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,10 +19,12 @@ public class EventQueryController {
 
     private final AuthenticationInfoService authService;
     private final EventQueryService eventQueryService;
+    private final EditEventService editEventService;
 
-    public EventQueryController(AuthenticationInfoService authService, EventQueryService eventQueryService) {
+    public EventQueryController(AuthenticationInfoService authService, EventQueryService eventQueryService, EditEventService editEventService) {
         this.authService = authService;
         this.eventQueryService = eventQueryService;
+        this.editEventService = editEventService;
     }
 
     @GetMapping("/mine")
@@ -30,5 +32,12 @@ public class EventQueryController {
         UUID userId = authService.getAuthenticatedUserId();
         return ResponseEntity.ok(eventQueryService.listByOrganizer(userId)
                 .stream().map(EventResponse::from).toList());
+    }
+
+    @PutMapping("/{eventId}")
+    public ResponseEntity<Void> edit(@PathVariable UUID eventId, @RequestBody EditEventRequest request) {
+        UUID userId = authService.getAuthenticatedUserId();
+        editEventService.execute(eventId, userId, request.name(), request.startDateTime(), request.endDateTime());
+        return ResponseEntity.noContent().build();
     }
 }
