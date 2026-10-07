@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface RegistrationRepository {
+    boolean existsActiveByEventId(UUID eventId);
     boolean existsActiveByUserIdAndEventId(UUID userId, UUID eventId);
     long countActiveByCategoryId(UUID categoryId);
     Registration save(Registration registration);
