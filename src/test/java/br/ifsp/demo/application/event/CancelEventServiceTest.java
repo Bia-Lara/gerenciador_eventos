@@ -2,6 +2,7 @@ package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,5 +59,17 @@ public class CancelEventServiceTest {
         when(registrationRepository.existsActiveByEventId(eventId)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> sut.execute(eventId, organizerId));
+    }
+
+    @Test
+    @DisplayName("Should throw event not found exception when event does not exist")
+    void shouldThrowEventNotFoundExceptionWhenEventDoesNotExist() {
+        UUID organizerId = UUID.randomUUID();
+        UUID eventId = UUID.randomUUID();
+
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(new User()));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
+
+        assertThrows(EventNotFoundException.class, () -> sut.execute(eventId, organizerId));
     }
 }
