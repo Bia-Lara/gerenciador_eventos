@@ -3,6 +3,7 @@ package br.ifsp.demo.application.event;
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.domain.enumerations.EventStatus;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
@@ -18,7 +19,9 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,5 +87,21 @@ public class CancelEventServiceTest {
         when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
 
         assertThrows(EventNotFoundException.class, () -> sut.execute(eventId, organizerId));
+    }
+
+    @Test
+    @DisplayName("Should successfully cancel event when conditions are valid")
+    void shouldSuccessfullyCancelEventWhenConditionsAreValid() {
+        Event event = new Event("Test Event", startTime, endTime, organizerId);
+        UUID eventId = event.getId();
+
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(new User()));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(registrationRepository.existsActiveByEventId(eventId)).thenReturn(false);
+
+        Event result = sut.execute(eventId, organizerId);
+
+        assertThat(event.getStatus()).isEqualTo(EventStatus.CANCELLED);
+        verify(eventRepository).save(result);
     }
 }
