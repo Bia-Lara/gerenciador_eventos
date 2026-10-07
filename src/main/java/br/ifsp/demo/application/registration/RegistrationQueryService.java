@@ -6,6 +6,7 @@ import br.ifsp.demo.domain.enumerations.RegistrationFilter;
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.exception.UserNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+@Service
 public class RegistrationQueryService {
     private final UserRepository userRepository;
     private final RegistrationRepository registrationRepository;

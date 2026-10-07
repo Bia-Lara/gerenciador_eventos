@@ -1,23 +1,19 @@
 package br.ifsp.demo.domain;
 
-import br.ifsp.demo.exception.ActionNotAllowedException;
-import br.ifsp.demo.exception.EntityAlreadyExistsException;
-import br.ifsp.demo.exception.EventAlreadyStartedException;
+import br.ifsp.demo.domain.enumerations.EventStatus;
+import br.ifsp.demo.exception.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class Event {
     private UUID id;
-    private final String name;
-    private final LocalDateTime startDateTime;
-    private final LocalDateTime endDateTime;
+    private String name;
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
     private final UUID organizerId;
     private final List<Category> categories = new ArrayList<>();
+    private EventStatus status = EventStatus.ACTIVE;
 
     public Event(String name, LocalDateTime startDateTime, LocalDateTime endDateTime, UUID organizerId) {
         this.id = UUID.randomUUID();
@@ -114,6 +110,56 @@ public class Event {
         }
     }
 
+    private void ensureIsOrganizer(UUID organizerId){
+        if(!this.organizerId.equals(organizerId)){
+            throw new UnauthorizedUserException();
+        }
+    }
+
+    private void ensureIsNotCancelled(){
+        if(this.status.equals(EventStatus.CANCELLED)){
+            throw new IllegalStateException();
+        }
+    }
+
+    public void cancel(UUID requestingUserId) {
+        if (requestingUserId == null) {
+            throw new NullValueException("User");
+        }
+
+        ensureIsOrganizer(requestingUserId);
+
+        ensureNotStarted(LocalDateTime.now());
+
+        ensureIsNotCancelled();
+
+        this.status = EventStatus.CANCELLED;
+    }
+
+    public void edit(UUID requestingUserId, String newName, LocalDateTime newStartDateTime, LocalDateTime newEndDateTime) {
+        if (requestingUserId == null) {
+            throw new NullValueException("User");
+        }
+
+        ensureNotStarted(LocalDateTime.now());
+
+        ensureIsOrganizer(requestingUserId);
+
+        validatePeriod(newStartDateTime, newEndDateTime);
+
+        validateAndNormalizeName(newName);
+
+        if (!newStartDateTime.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Start date time must be after now");
+        }
+
+        ensureIsNotCancelled();
+
+        this.name = validateAndNormalizeName(newName);
+        this.startDateTime = newStartDateTime;
+        this.endDateTime = newEndDateTime;
+    }
+
     public List<Category> getCategories() {
         return List.copyOf(categories);
     }
@@ -144,5 +190,13 @@ public class Event {
         Category category = addCategory(name, capacity, price);
         category.setId(id);
         return category;
+    }
+
+    public EventStatus getStatus() {
+        return status;
+    }
+
+    void setStatus(EventStatus status) {
+        this.status = status;
     }
 }

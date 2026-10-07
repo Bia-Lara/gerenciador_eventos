@@ -19,6 +19,24 @@ public class JdbcRegistrationRepository implements RegistrationRepository {
     }
 
     @Override
+    public boolean existsActiveByEventId(UUID eventId) {
+        Integer count = jdbc.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM registration r
+                JOIN category c ON c.id = r.category_id
+                WHERE c.event_id = ?
+                  AND r.status = ?
+                """,
+                Integer.class,
+                eventId.toString(),
+                RegistrationStatus.ATIVA.name()
+        );
+
+        return count != null && count > 0;
+    }
+
+    @Override
     public boolean existsActiveByUserIdAndEventId(UUID userId, UUID eventId) {
         Integer count = jdbc.queryForObject(
                 """
