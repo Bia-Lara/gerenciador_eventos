@@ -1,9 +1,7 @@
 package br.ifsp.demo.application.event;
 
-import br.ifsp.demo.application.event.EventService;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
-import br.ifsp.demo.application.organizer.OrganizerRepository;
 import br.ifsp.demo.exception.EntityNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +24,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +35,8 @@ class EventServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private EventRepository eventRepository;
 
     private static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 10, 0);
@@ -45,7 +46,7 @@ class EventServiceTest {
     @BeforeEach
     void setUp() {
         Clock fixedClock = Clock.fixed(NOW.atZone(ZONE).toInstant(), ZONE);
-        sut = new EventService(userRepository, fixedClock);
+        sut = new EventService(userRepository, eventRepository, fixedClock);
     }
 
     @Test
@@ -132,6 +133,7 @@ class EventServiceTest {
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+        when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Event event = sut.createEvent(request);
 
@@ -156,6 +158,7 @@ class EventServiceTest {
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+        when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Event event = sut.createEvent(request);
 
@@ -251,6 +254,7 @@ class EventServiceTest {
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+        when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Event event = sut.createEvent(request);
 

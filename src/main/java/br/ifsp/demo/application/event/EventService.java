@@ -2,22 +2,25 @@ package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
-import br.ifsp.demo.application.organizer.OrganizerRepository;
 import br.ifsp.demo.exception.EntityNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 
+@Service
 public class EventService {
     private final UserRepository userRepository;
+    private final EventRepository eventRepository;
     private final Clock clock;
 
-    public EventService(UserRepository userRepository) {
-        this(userRepository, Clock.systemDefaultZone());
+    public EventService(UserRepository userRepository, EventRepository eventRepository) {
+        this(userRepository, eventRepository, Clock.systemDefaultZone());
     }
 
-    public EventService(UserRepository userRepository, Clock clock) {
+    public EventService(UserRepository userRepository, EventRepository eventRepository, Clock clock) {
         this.userRepository = userRepository;
+        this.eventRepository = eventRepository;
         this.clock = clock;
     }
 
@@ -27,12 +30,14 @@ public class EventService {
         userRepository.findById(request.organizerId())
                 .orElseThrow(() -> new EntityNotFoundException("Organizer not found"));
 
-        return new Event(
+        Event event = new Event(
                 request.name(),
                 request.startDateTime(),
                 request.endDateTime(),
                 request.organizerId()
         );
+
+        return eventRepository.save(event);
     }
 
     private void validateIllegalArguments(CreateEventRequest request) {
