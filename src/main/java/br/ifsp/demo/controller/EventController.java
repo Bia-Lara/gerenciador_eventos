@@ -3,6 +3,7 @@ package br.ifsp.demo.controller;
 import br.ifsp.demo.application.event.CancelEventService;
 import br.ifsp.demo.application.event.EditEventService;
 import br.ifsp.demo.application.event.EventQueryService;
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.dto.EditEventRequest;
 import br.ifsp.demo.dto.EventResponse;
 import br.ifsp.demo.infrastructure.security.auth.AuthenticationInfoService;
@@ -38,10 +39,10 @@ public class EventController {
     }
 
     @PutMapping("/{eventId}")
-    public ResponseEntity<Void> edit(@PathVariable UUID eventId, @RequestBody EditEventRequest request) {
+    public ResponseEntity<EventResponse> edit(@PathVariable UUID eventId, @RequestBody EditEventRequest request) {
         UUID userId = authService.getAuthenticatedUserId();
-        editEventService.execute(eventId, userId, request.name(), request.startDateTime(), request.endDateTime());
-        return ResponseEntity.noContent().build();
+        Event editedEvent = editEventService.execute(eventId, userId, request.name(), request.startDateTime(), request.endDateTime());
+        return ResponseEntity.ok(EventResponse.from(editedEvent));
     }
 
     @PostMapping("/{eventId}/cancel")
