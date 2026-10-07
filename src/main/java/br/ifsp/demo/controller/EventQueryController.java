@@ -1,5 +1,6 @@
 package br.ifsp.demo.controller;
 
+import br.ifsp.demo.application.event.CancelEventService;
 import br.ifsp.demo.application.event.EditEventService;
 import br.ifsp.demo.application.event.EventQueryService;
 import br.ifsp.demo.dto.EditEventRequest;
@@ -20,11 +21,13 @@ public class EventQueryController {
     private final AuthenticationInfoService authService;
     private final EventQueryService eventQueryService;
     private final EditEventService editEventService;
+    private final CancelEventService cancelEventService;
 
-    public EventQueryController(AuthenticationInfoService authService, EventQueryService eventQueryService, EditEventService editEventService) {
+    public EventQueryController(AuthenticationInfoService authService, EventQueryService eventQueryService, EditEventService editEventService, CancelEventService cancelEventService) {
         this.authService = authService;
         this.eventQueryService = eventQueryService;
         this.editEventService = editEventService;
+        this.cancelEventService = cancelEventService;
     }
 
     @GetMapping("/mine")
@@ -38,6 +41,13 @@ public class EventQueryController {
     public ResponseEntity<Void> edit(@PathVariable UUID eventId, @RequestBody EditEventRequest request) {
         UUID userId = authService.getAuthenticatedUserId();
         editEventService.execute(eventId, userId, request.name(), request.startDateTime(), request.endDateTime());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{eventId}/cancel")
+    public ResponseEntity<Void> cancel(@PathVariable UUID eventId) {
+        UUID userId = authService.getAuthenticatedUserId();
+        cancelEventService.execute(eventId, userId);
         return ResponseEntity.noContent().build();
     }
 }
