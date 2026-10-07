@@ -1,6 +1,7 @@
 package br.ifsp.demo.domain;
 
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
+import br.ifsp.demo.exception.NullValueException;
 import br.ifsp.demo.infrastructure.security.user.User;
 
 import java.util.UUID;
@@ -43,5 +44,11 @@ public class Registration {
         registration.id = id;
         registration.setStatus(status);
         return registration;
+    }
+
+    public void cancel(UUID userId) {
+        if (userId == null) {
+            throw new NullValueException("User");
+        }
     }
 }
