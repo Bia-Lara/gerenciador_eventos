@@ -2,6 +2,7 @@ package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.exception.EventNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,9 +37,19 @@ public class CancelEventServiceTest {
 
     private CancelEventServiceImpl sut;
 
+    private UUID organizerId;
+    private UUID otherUserId;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+
+
     @BeforeEach
     void setUp() {
         sut = new CancelEventServiceImpl(eventRepository, userRepository, registrationRepository);
+        organizerId = UUID.randomUUID();
+        otherUserId = UUID.randomUUID();
+        startTime = LocalDateTime.now().plusHours(1);
+        endTime = startTime.plusHours(2);
     }
 
     @Test
@@ -56,6 +68,7 @@ public class CancelEventServiceTest {
         UUID eventId = UUID.randomUUID();
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(new User()));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(new Event("Test event", startTime, endTime, organizerId)));
         when(registrationRepository.existsActiveByEventId(eventId)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> sut.execute(eventId, organizerId));
