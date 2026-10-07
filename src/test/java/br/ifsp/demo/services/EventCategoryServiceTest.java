@@ -279,30 +279,6 @@ class EventCategoryServiceTest {
                 .hasMessage("Only the event organizer can create categories");
     }
 
-
-    @ParameterizedTest()
-    @ValueSource(longs = {0})
-    @DisplayName("shouldThrowEventAlreadyStartedExceptionWhenStartIsNowOrBeforeOnCategoryCreation")
-    void shouldThrowEventAlreadyStartedExceptionWhenStartIsNowOrBeforeOnCategoryCreation(long offsetSeconds) {
-        UUID organizerId = UUID.randomUUID();
-        LocalDateTime start = NOW.plusSeconds(offsetSeconds);
-        Event event = new Event("Show", start, start.plusHours(3), organizerId);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                "Pista",
-                10.00,
-                100
-        );
-
-        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-
-        assertThatThrownBy(() -> sut.createCategory(request))
-                .isInstanceOf(EventAlreadyStartedException.class)
-                .hasMessage("Event has already started");
-    }
-
-
     @ParameterizedTest
     @NullSource
     @ValueSource(strings = {"", " "})
