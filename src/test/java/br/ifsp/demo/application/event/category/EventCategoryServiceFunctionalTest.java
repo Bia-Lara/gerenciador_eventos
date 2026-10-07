@@ -1,8 +1,6 @@
-package br.ifsp.demo.services;
+package br.ifsp.demo.application.event.category;
 
 import br.ifsp.demo.application.event.EventRepository;
-import br.ifsp.demo.application.event.category.CategoryRepository;
-import br.ifsp.demo.application.event.category.EventCategoryService;
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Category;

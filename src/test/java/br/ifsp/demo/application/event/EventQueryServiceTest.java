@@ -1,8 +1,6 @@
-package br.ifsp.demo.services;
+package br.ifsp.demo.application.event;
 
-import br.ifsp.demo.application.event.EventQueryService;
 import br.ifsp.demo.domain.Event;
-import br.ifsp.demo.application.event.EventRepository;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
