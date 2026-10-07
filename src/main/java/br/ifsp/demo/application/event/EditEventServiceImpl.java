@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-public class EditEventServiceImpl {
+public class EditEventServiceImpl implements EditEventService{
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
 
