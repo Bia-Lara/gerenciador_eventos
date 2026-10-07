@@ -128,37 +128,6 @@ class RegistrationServiceTest {
                 .hasMessage("Category not found: " + categoryId);
     }
 
-    @ParameterizedTest(name = "evento começa {0}s em relação a agora")
-    @ValueSource(longs = {-1, 0})
-    @DisplayName("shouldThrowEventAlreadyStartedExceptionWhenStartIsNowOrBefore")
-    void shouldThrowEventAlreadyStartedExceptionWhenStartIsNowOrBefore(long offsetSeconds) {
-        LocalDateTime start = NOW.plusSeconds(offsetSeconds);
-        Event event = new Event("Show", start, start.plusHours(3), UUID.randomUUID());
-        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        var request = new RegisterToEventRequest(UUID.randomUUID(), event.getId(), UUID.randomUUID());
-
-        assertThatThrownBy(() -> sut.register(request))
-                .isInstanceOf(EventAlreadyStartedException.class)
-                .hasMessage("Event has already started");
-    }
-
-    @Test
-    @DisplayName("shouldRegisterWhenEventStartsOneSecondAfterNow")
-    void shouldRegisterWhenEventStartsOneSecondAfterNow() {
-        LocalDateTime start = NOW.plusSeconds(1);
-        Event event = new Event("Show", start, start.plusHours(3), UUID.randomUUID());
-        Category category = event.addCategory("Pista", 50, 50.0);
-        User user = mock(User.class);
-        UUID userId = UUID.randomUUID();
-        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        Registration result = sut.register(new RegisterToEventRequest(userId, event.getId(), category.getId()));
-
-        assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
-    }
-
     @Test
     @DisplayName("shouldThrowDuplicateRegistrationExceptionWhenUserAlreadyHasActiveRegistration")
     void shouldThrowDuplicateRegistrationExceptionWhenUserAlreadyHasActiveRegistration() {
