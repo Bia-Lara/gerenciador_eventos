@@ -43,6 +43,16 @@ public class Event {
     }
 
     public Category addCategory(String name, Integer capacity, Double price) {
+        if (capacity == null) {
+            throw new IllegalArgumentException("Category capacity is required");
+        }
+        if (capacity < 0) {
+            throw new IllegalArgumentException("Category capacity must not be negative");
+        }
+        if (capacity == 0) {
+            throw new IllegalArgumentException("Category capacity must be greater than zero");
+        }
+
         Category category = new Category(this, name, capacity, price);
         validateCategoryNameAvailability(category.getName());
         categories.add(category);
