@@ -1,13 +1,14 @@
 package br.ifsp.demo.domain;
 
-import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.enumerations.EventStatus;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.NullValueException;
 import br.ifsp.demo.exception.UnauthorizedUserException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -32,6 +33,97 @@ class EventTest {
         endTime = startTime.plusHours(2);
     }
 
+    @Nested
+    @DisplayName("Create Event")
+    class CreateEventTests {
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when organizer is null")
+        void shouldThrowIllegalArgumentExceptionWhenOrganizerIsNull() {
+            assertThatThrownBy(() -> new Event("Test Event", startTime, endTime, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Organizer is required");
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {" "})
+        @DisplayName("Should throw IllegalArgumentException when name is null or blank")
+        void shouldThrowIllegalArgumentExceptionWhenNameIsNullOrBlank(String name) {
+            assertThatThrownBy(() -> new Event(name, startTime, endTime, organizerId))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Event name is required");
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when name exceeds maximum length")
+        void shouldThrowIllegalArgumentExceptionWhenNameExceedsMaximumLength() {
+            String name = "a".repeat(151);
+
+            assertThatThrownBy(() -> new Event(name, startTime, endTime, organizerId))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Event name must not exceed 150 characters");
+        }
+
+        @Test
+        @DisplayName("Should create event when name has maximum length")
+        void shouldCreateEventWhenNameHasMaximumLength() {
+            String name = "a".repeat(150);
+
+            Event event = new Event(name, startTime, endTime, organizerId);
+
+            assertThat(event.getName()).isEqualTo(name);
+            assertThat(event.getName()).hasSize(150);
+        }
+
+        @ParameterizedTest
+        @CsvSource(value = {
+                "'  Novo evento  ','Novo evento'",
+                "' Novo evento','Novo evento'",
+                "'Novo evento ','Novo evento'"
+        }, ignoreLeadingAndTrailingWhitespace = false)
+        @DisplayName("Should trim event name")
+        void shouldTrimEventName(String name, String expectedName) {
+            Event event = new Event(name, startTime, endTime, organizerId);
+
+            assertThat(event.getName()).isEqualTo(expectedName);
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when start datetime is null")
+        void shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNull() {
+            assertThatThrownBy(() -> new Event("Test Event", null, endTime, organizerId))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Start date time is required");
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalArgumentException when end datetime is null")
+        void shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsNull() {
+            assertThatThrownBy(() -> new Event("Test Event", startTime, null, organizerId))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("End date time is required");
+        }
+
+        @ParameterizedTest
+        @ValueSource(longs = {-1, 0})
+        @DisplayName("Should throw IllegalArgumentException when end datetime is not after start datetime")
+        void shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsNotAfterStartDateTime(long daysAfterStartDateTime) {
+            assertThatThrownBy(() -> new Event("Test Event", startTime, startTime.plusDays(daysAfterStartDateTime), organizerId))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("End date time must be after start date time");
+        }
+
+        @Test
+        @DisplayName("Should successfully create event")
+        void shouldSuccessfullyCreateEvent() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+
+            assertThat(event.getName()).isEqualTo("Test Event");
+            assertThat(event.getStartDateTime()).isEqualTo(startTime);
+            assertThat(event.getEndDateTime()).isEqualTo(endTime);
+            assertThat(event.getOrganizerId()).isEqualTo(organizerId);
+        }
+    }
 
     @Nested
     @DisplayName("Cancel Event")
@@ -196,3 +288,4 @@ class EventTest {
         }
     }
 }
+
