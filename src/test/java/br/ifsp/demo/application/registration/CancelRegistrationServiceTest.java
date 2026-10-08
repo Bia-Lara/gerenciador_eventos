@@ -74,7 +74,7 @@ public class CancelRegistrationServiceTest {
         Category category = event.addCategory("Test Category", 10, 50.0);
         User user = new User();
         Registration registration = new Registration(category, user);
-        UUID userId = user.getId();
+        UUID userId = UUID.randomUUID();
         UUID registrationId = registration.getId();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
