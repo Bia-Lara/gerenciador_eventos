@@ -3,6 +3,7 @@ package br.ifsp.demo.application.registration;
 import br.ifsp.demo.domain.Registration;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RegistrationRepository {
@@ -12,4 +13,5 @@ public interface RegistrationRepository {
     Registration save(Registration registration);
     List<Registration> findByUserId(UUID userId);
     boolean existsByCategoryId(UUID categoryId);
+    Optional<Registration> findById(UUID registrationId);
 }

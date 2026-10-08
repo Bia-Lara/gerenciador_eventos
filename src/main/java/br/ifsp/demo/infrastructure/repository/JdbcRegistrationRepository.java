@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -94,5 +95,25 @@ public class JdbcRegistrationRepository implements RegistrationRepository {
         );
 
         return count != null && count > 0;
+    }
+
+    @Override
+    public Optional<Registration> findById(UUID registrationId) {
+        List<Registration> registrations = jdbc.query(
+                "SELECT id, user_id, category_id, status FROM registration WHERE id = ?",
+                (rs, rowNum) -> mapRegistration(rs),
+                registrationId.toString()
+        );
+
+        return registrations.stream().findFirst();
+    }
+
+    private Registration mapRegistration(java.sql.ResultSet rs) throws java.sql.SQLException {
+        UUID id = UUID.fromString(rs.getString("id"));
+        UUID userId = UUID.fromString(rs.getString("user_id"));
+        UUID categoryId = UUID.fromString(rs.getString("category_id"));
+        RegistrationStatus status = RegistrationStatus.valueOf(rs.getString("status"));
+
+        return null;
     }
 }
