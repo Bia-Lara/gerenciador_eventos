@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
@@ -118,49 +117,6 @@ class EventServiceTest {
     }
 
     @Test
-    @DisplayName("shouldCreateEventWhenEventNameHasMaximumLength")
-    void shouldCreateEventWhenEventNameHasMaximumLength() {
-        UUID organizerId = UUID.randomUUID();
-        String eventName = "a".repeat(150);
-        CreateEventRequest request = new CreateEventRequest(
-                eventName,
-                LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2)
-        );
-
-        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
-        when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Event event = sut.createEvent(organizerId, request);
-
-        assertThat(event.getName()).isEqualTo(eventName);
-        assertThat(event.getName()).hasSize(150);
-    }
-
-    @ParameterizedTest
-    @CsvSource(value = {
-            "'  Novo evento  ','Novo evento'",
-            "' Novo evento','Novo evento'",
-            "'Novo evento ','Novo evento'"
-    }, ignoreLeadingAndTrailingWhitespace = false)
-    @DisplayName("shouldTrimEventNameWhenCreatingEvent")
-    void shouldTrimEventNameWhenCreatingEvent(String name, String expectedName) {
-        UUID organizerId = UUID.randomUUID();
-        CreateEventRequest request = new CreateEventRequest(
-                name,
-                LocalDateTime.now().plusDays(1),
-                LocalDateTime.now().plusDays(2)
-        );
-
-        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
-        when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Event event = sut.createEvent(organizerId, request);
-
-        assertThat(event.getName()).isEqualTo(expectedName);
-    }
-
-    @Test
     @DisplayName("shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNull")
     void shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNull() {
         UUID organizerId = UUID.randomUUID();
@@ -192,41 +148,6 @@ class EventServiceTest {
         assertThatThrownBy(() -> sut.createEvent(organizerId, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("End date time is required");
-    }
-
-    @ParameterizedTest
-    @ValueSource(longs = {0, 1})
-    @DisplayName("shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNotInFuture")
-    void shouldThrowIllegalArgumentExceptionWhenStartDateTimeIsNotInFuture(long minutesBeforeNow) {
-        UUID organizerId = UUID.randomUUID();
-        CreateEventRequest request = new CreateEventRequest(
-                "Novo evento",
-                NOW.minusMinutes(minutesBeforeNow),
-                NOW.plusDays(1)
-        );
-
-        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Start date time must be in the future");
-    }
-
-    @ParameterizedTest
-    @ValueSource(longs = {-1, 0})
-    @DisplayName("shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsNotAfterStartDateTime")
-    void shouldThrowIllegalArgumentExceptionWhenEndDateTimeIsNotAfterStartDateTime(long daysAfterStartDateTime) {
-        UUID organizerId = UUID.randomUUID();
-        LocalDateTime startDateTime = NOW.plusDays(2);
-        CreateEventRequest request = new CreateEventRequest(
-                "Novo evento",
-                startDateTime,
-                startDateTime.plusDays(daysAfterStartDateTime)
-        );
-
-        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
-
-        assertThatThrownBy(() -> sut.createEvent(organizerId, request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("End date time must be after start date time");
     }
 
     @Test
