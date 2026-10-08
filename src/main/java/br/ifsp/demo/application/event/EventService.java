@@ -2,41 +2,48 @@ package br.ifsp.demo.application.event;
 
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
-import br.ifsp.demo.application.organizer.OrganizerRepository;
+import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.exception.EntityNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+@Service
 public class EventService {
     private final UserRepository userRepository;
+    private final EventRepository eventRepository;
     private final Clock clock;
 
-    public EventService(UserRepository userRepository) {
-        this(userRepository, Clock.systemDefaultZone());
+    public EventService(UserRepository userRepository, EventRepository eventRepository) {
+        this(userRepository, eventRepository, Clock.systemDefaultZone());
     }
 
-    public EventService(UserRepository userRepository, Clock clock) {
+    public EventService(UserRepository userRepository, EventRepository eventRepository, Clock clock) {
         this.userRepository = userRepository;
+        this.eventRepository = eventRepository;
         this.clock = clock;
     }
 
-    public Event createEvent(CreateEventRequest request) {
-        validateIllegalArguments(request);
+    public Event createEvent(UUID organizerId, CreateEventRequest request) {
+        validateIllegalArguments(organizerId, request);
 
-        userRepository.findById(request.organizerId())
+        userRepository.findById(organizerId)
                 .orElseThrow(() -> new EntityNotFoundException("Organizer not found"));
 
-        return new Event(
+        Event event = new Event(
                 request.name(),
                 request.startDateTime(),
                 request.endDateTime(),
-                request.organizerId()
+                organizerId
         );
+
+        return eventRepository.save(event);
     }
 
-    private void validateIllegalArguments(CreateEventRequest request) {
-        if (request.organizerId() == null) {
+    private void validateIllegalArguments(UUID organizerId, CreateEventRequest request) {
+        if (organizerId == null) {
             throw new IllegalArgumentException("Organizer is required");
         }
 
@@ -45,3 +52,4 @@ public class EventService {
         }
     }
 }
+

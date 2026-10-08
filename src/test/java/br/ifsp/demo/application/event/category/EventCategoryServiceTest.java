@@ -1,17 +1,13 @@
 package br.ifsp.demo.application.event.category;
 
-import br.ifsp.demo.domain.Category;
-import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.application.event.EventRepository;
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.domain.Category;
+import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.exception.*;
 import br.ifsp.demo.infrastructure.security.user.User;
-import br.ifsp.demo.dto.CreateCategoryRequest;
-import br.ifsp.demo.exception.ActionNotAllowedException;
-import br.ifsp.demo.exception.EventAlreadyStartedException;
-import br.ifsp.demo.exception.EventNotFoundException;
-import br.ifsp.demo.exception.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -178,20 +174,13 @@ class EventCategoryServiceTest {
         assertThat(event.findCategory(category.getId())).isEmpty();
     }
 
-
-
     @Test
     @DisplayName("shouldThrowIllegalArgumentExceptionWhenEventIsNullOnCategoryCreation")
     void shouldThrowIllegalArgumentExceptionWhenEventIsNullOnCategoryCreation() {
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                UUID.randomUUID(),
-                null,
-                "Pista",
-                10.00,
-                100
-        );
+        UUID organizerId = UUID.randomUUID();
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, 100);
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, null, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event is required");
     }
@@ -199,60 +188,40 @@ class EventCategoryServiceTest {
     @Test
     @DisplayName("shouldThrowEventNotFoundExceptionWhenEventDoesNotExistOnCategoryCreation")
     void shouldThrowEventNotFoundExceptionWhenEventDoesNotExistOnCategoryCreation() {
+        UUID organizerId = UUID.randomUUID();
         UUID eventId = UUID.randomUUID();
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                UUID.randomUUID(),
-                eventId,
-                "Pista",
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, 100);
         when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, eventId, request))
                 .isInstanceOf(EventNotFoundException.class)
                 .hasMessage("Event not found: " + eventId);
     }
 
-
     @Test
     @DisplayName("shouldThrowIllegalArgumentExceptionWhenOrganizerIsNullOnCategoryCreation")
     void shouldThrowIllegalArgumentExceptionWhenOrganizerIsNullOnCategoryCreation() {
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                null,
-                UUID.randomUUID(),
-                "Pista",
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, 100);
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(null, UUID.randomUUID(), request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Organizer is required");
     }
-
 
     @Test
     @DisplayName("shouldThrowUserNotFoundExceptionWhenOrganizerDoesNotExistOnCategoryCreation")
     void shouldThrowUserNotFoundExceptionWhenOrganizerDoesNotExistOnCategoryCreation() {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                "Pista",
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User not found: " + organizerId);
     }
-
 
     @Test
     @DisplayName("shouldThrowActionNotAllowedExceptionWhenOrganizerIsNotTheEventCreatorOnCategoryCreation")
@@ -260,18 +229,12 @@ class EventCategoryServiceTest {
         UUID eventOrganizerId = UUID.randomUUID();
         UUID requestOrganizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), eventOrganizerId);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                requestOrganizerId,
-                event.getId(),
-                "Pista",
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(requestOrganizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(requestOrganizerId, event.getId(), request))
                 .isInstanceOf(ActionNotAllowedException.class)
                 .hasMessage("Only the event organizer can create categories");
     }
@@ -283,18 +246,12 @@ class EventCategoryServiceTest {
     void shouldThrowIllegalArgumentExceptionWhenCategoryNameIsBlankOrNull(String name) {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                name,
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest(name, 10.00, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Category name is required");
     }
@@ -305,18 +262,12 @@ class EventCategoryServiceTest {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
         String name = "a".repeat(151);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                name,
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest(name, 10.00, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Category name must not exceed 150 characters");
     }
@@ -327,19 +278,13 @@ class EventCategoryServiceTest {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
         String name = "a".repeat(150);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                name,
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest(name, 10.00, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
         when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Category category = sut.createCategory(request);
+        Category category = sut.createCategory(organizerId, event.getId(), request);
 
         assertThat(category).isNotNull();
         assertThat(category.getName()).isEqualTo(name);
@@ -351,18 +296,12 @@ class EventCategoryServiceTest {
     void shouldValidateCategoryPrice(Double price, String expectedMessage) {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                "Pista",
-                price,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", price, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(expectedMessage);
     }
@@ -379,19 +318,13 @@ class EventCategoryServiceTest {
     void shouldCreateCategoryWhenPriceIsZero() {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                "Pista",
-                0.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 0.00, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
         when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Category category = sut.createCategory(request);
+        Category category = sut.createCategory(organizerId, event.getId(), request);
 
         assertThat(category.getPrice()).isEqualTo(0.00);
     }
@@ -402,18 +335,12 @@ class EventCategoryServiceTest {
     void shouldValidateCategoryCapacity(Integer capacity, String expectedMessage) {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                "Pista",
-                10.00,
-                capacity
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, capacity);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(expectedMessage);
     }
@@ -431,18 +358,12 @@ class EventCategoryServiceTest {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
         event.addCategory("Pista", 100, 10.00);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                "Pista",
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
                 .isInstanceOf(EntityAlreadyExistsException.class)
                 .hasMessage("Category name already exists");
     }
@@ -452,19 +373,13 @@ class EventCategoryServiceTest {
     void shouldCreateCategoryWhenEventOrganizerNamePriceAndCapacityAreValid() {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                organizerId,
-                event.getId(),
-                "Pista",
-                10.00,
-                100
-        );
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, 100);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
         when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Category category = sut.createCategory(request);
+        Category category = sut.createCategory(organizerId, event.getId(), request);
 
         assertThat(category).isNotNull();
         assertThat(category.getEvent()).isEqualTo(event);

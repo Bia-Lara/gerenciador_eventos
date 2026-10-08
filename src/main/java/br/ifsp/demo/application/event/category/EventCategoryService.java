@@ -1,10 +1,10 @@
 package br.ifsp.demo.application.event.category;
 
-import br.ifsp.demo.domain.Category;
-import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.application.event.EventRepository;
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.domain.Category;
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.exception.*;
 import br.ifsp.demo.infrastructure.security.user.User;
@@ -57,25 +57,24 @@ public class EventCategoryService {
         categoryRepository.delete(category);
     }
 
+    public Category createCategory(UUID organizerId, UUID eventId, CreateCategoryRequest request) {
+        validateCreateCategoryIllegalArguments(organizerId, eventId);
 
-    public Category createCategory(CreateCategoryRequest request) {
-        validateCreateCategoryIllegalArguments(request);
-
-        Event event = eventRepository.findById(request.eventId()).orElseThrow(() -> new EventNotFoundException(request.eventId()));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
         event.ensureNotStarted(LocalDateTime.now(clock));
 
-        userRepository.findById(request.organizerId()).orElseThrow(() -> new UserNotFoundException(request.organizerId()));
-        event.ensureOrganizerCanCreateCategory(request.organizerId());
+        userRepository.findById(organizerId).orElseThrow(() -> new UserNotFoundException(organizerId));
+        event.ensureOrganizerCanCreateCategory(organizerId);
 
         Category category = event.addCategory(request.name(), request.capacity(), request.price());
         return categoryRepository.save(category);
     }
 
-    private void validateCreateCategoryIllegalArguments(CreateCategoryRequest request) {
-        if (request.eventId() == null) {
+    private void validateCreateCategoryIllegalArguments(UUID organizerId, UUID eventId) {
+        if (eventId == null) {
             throw new IllegalArgumentException("Event is required");
         }
-        if (request.organizerId() == null) {
+        if (organizerId == null) {
             throw new IllegalArgumentException("Organizer is required");
         }
     }

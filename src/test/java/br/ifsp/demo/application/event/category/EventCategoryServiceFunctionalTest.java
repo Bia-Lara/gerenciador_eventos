@@ -73,11 +73,11 @@ class EventCategoryServiceFunctionalTest {
     void shouldThrowIllegalArgumentExceptionWhenCategoryCapacityIsZeroOrNegative(int capacity) {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        var request = new CreateCategoryRequest(organizerId, event.getId(), "Pista", 10.00, capacity);
+        var request = new CreateCategoryRequest("Pista", 10.00, capacity);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -86,12 +86,12 @@ class EventCategoryServiceFunctionalTest {
     void shouldCreateCategoryWhenCapacityIsOne() {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        var request = new CreateCategoryRequest(organizerId, event.getId(), "Pista", 10.00, 1);
+        var request = new CreateCategoryRequest("Pista", 10.00, 1);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
         when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Category category = sut.createCategory(request);
+        Category category = sut.createCategory(organizerId, event.getId(), request);
 
         assertThat(category.getCapacity()).isEqualTo(1);
     }
@@ -101,11 +101,11 @@ class EventCategoryServiceFunctionalTest {
     void shouldThrowIllegalArgumentExceptionWhenCategoryPriceIsSlightlyNegative() {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        var request = new CreateCategoryRequest(organizerId, event.getId(), "Pista", -0.01, 100);
+        var request = new CreateCategoryRequest("Pista", -0.01, 100);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
 
-        assertThatThrownBy(() -> sut.createCategory(request))
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Category price must not be negative");
     }
@@ -116,12 +116,12 @@ class EventCategoryServiceFunctionalTest {
     void shouldCreateCategoryWhenPriceIsZeroOrPositive(double price) {
         UUID organizerId = UUID.randomUUID();
         Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
-        var request = new CreateCategoryRequest(organizerId, event.getId(), "Pista", price, 100);
+        var request = new CreateCategoryRequest("Pista", price, 100);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
         when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Category category = sut.createCategory(request);
+        Category category = sut.createCategory(organizerId, event.getId(), request);
 
         assertThat(category.getPrice()).isEqualTo(price);
     }
