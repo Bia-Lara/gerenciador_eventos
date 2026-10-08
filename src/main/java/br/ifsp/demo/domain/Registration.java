@@ -51,6 +51,10 @@ public class Registration {
             throw new NullValueException("User");
         }
 
+        if (this.status == RegistrationStatus.CANCELADA) {
+            throw new IllegalStateException("Registration already cancelled");
+        }
+
         this.status = RegistrationStatus.CANCELADA;
     }
 }
