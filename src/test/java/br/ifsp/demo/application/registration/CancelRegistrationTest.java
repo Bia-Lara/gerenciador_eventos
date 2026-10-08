@@ -4,6 +4,7 @@ import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
+import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.NullValueException;
 import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,5 +56,18 @@ public class CancelRegistrationTest {
     void shouldThrowIllegalStateExceptionWhenRegistrationAlreadyCancelled() {
         registration.cancel(userId);
         assertThrows(IllegalStateException.class, () -> registration.cancel(userId));
+    }
+
+    @Test
+    @DisplayName("Should throw event already started exception when event already started")
+    void shouldThrowEventAlreadyStartedExceptionWhenEventAlreadyStarted() {
+        LocalDateTime startedTime = LocalDateTime.now().minusMinutes(30);
+        LocalDateTime endTime = LocalDateTime.now().plusHours(1);
+        event = new Event("Test Event", startedTime, endTime, UUID.randomUUID());
+        category = event.addCategory("Test Category", 10, 50.0);
+        User user = new User();
+        registration = new Registration(category, user);
+
+        assertThrows(EventAlreadyStartedException.class, () -> registration.cancel(userId));
     }
 }
