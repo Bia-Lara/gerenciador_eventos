@@ -17,7 +17,7 @@ public class CancelRegistrationServiceImpl implements CancelRegistrationService 
     }
 
     @Override
-    public void execute(UUID registrationId, UUID userId) {
+    public Registration execute(UUID registrationId, UUID userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
@@ -26,5 +26,7 @@ public class CancelRegistrationServiceImpl implements CancelRegistrationService 
 
         registration.cancel(userId);
         registrationRepository.save(registration);
+
+        return registration;
     }
 }
