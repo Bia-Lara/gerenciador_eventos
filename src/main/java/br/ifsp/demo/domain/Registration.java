@@ -50,5 +50,7 @@ public class Registration {
         if (userId == null) {
             throw new NullValueException("User");
         }
+
+        this.status = RegistrationStatus.CANCELADA;
     }
 }
