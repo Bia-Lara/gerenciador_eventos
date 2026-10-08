@@ -32,7 +32,7 @@ public class CancelRegistrationServiceTest {
 
     @BeforeEach
     void setUp() {
-        sut = new CancelRegistrationServiceImpl(registrationRepository);
+        sut = new CancelRegistrationServiceImpl(registrationRepository, userRepository);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class CancelRegistrationServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(new User()));
         when(registrationRepository.findById(registrationId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> sut.execute(registrationId, UUID.randomUUID()));
+        assertThrows(EntityNotFoundException.class, () -> sut.execute(registrationId, userId));
     }
 
     @Test
