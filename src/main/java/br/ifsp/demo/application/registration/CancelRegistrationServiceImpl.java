@@ -4,9 +4,11 @@ import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.exception.EntityNotFoundException;
 import br.ifsp.demo.exception.UserNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Service
 public class CancelRegistrationServiceImpl implements CancelRegistrationService {
     private final RegistrationRepository registrationRepository;
     private final UserRepository userRepository;

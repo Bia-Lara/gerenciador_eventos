@@ -1,5 +1,6 @@
 package br.ifsp.demo.controller;
 
+import br.ifsp.demo.application.registration.CancelRegistrationService;
 import br.ifsp.demo.application.registration.RegisterToEventRequest;
 import br.ifsp.demo.application.registration.RegistrationService;
 import br.ifsp.demo.domain.Registration;
@@ -20,10 +21,12 @@ public class RegistrationController {
 
     private final AuthenticationInfoService authService;
     private final RegistrationService registrationService;
+    private final CancelRegistrationService cancelRegistrationService;
 
-    public RegistrationController(AuthenticationInfoService authService, RegistrationService registrationService) {
+    public RegistrationController(AuthenticationInfoService authService, RegistrationService registrationService, CancelRegistrationService cancelRegistrationService) {
         this.authService = authService;
         this.registrationService = registrationService;
+        this.cancelRegistrationService = cancelRegistrationService;
     }
 
     @PostMapping("/{eventId}/registrations")
@@ -31,5 +34,12 @@ public class RegistrationController {
         UUID userId = authService.getAuthenticatedUserId();
         Registration registration = registrationService.register(new RegisterToEventRequest(userId, eventId, body.categoryId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(RegistrationResponse.from(registration));
+    }
+
+    @PostMapping("/registrations/{registrationId}/cancel")
+    public ResponseEntity<Void> cancel(@PathVariable UUID registrationId) {
+        UUID userId = authService.getAuthenticatedUserId();
+        cancelRegistrationService.execute(registrationId, userId);
+        return ResponseEntity.noContent().build();
     }
 }
