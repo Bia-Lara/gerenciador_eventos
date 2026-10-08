@@ -49,4 +49,11 @@ public class CancelRegistrationTest {
 
         assertThat(registration.getStatus()).isEqualTo(RegistrationStatus.CANCELADA);
     }
+
+    @Test
+    @DisplayName("Should throw illegal state exception when registration already cancelled")
+    void shouldThrowIllegalStateExceptionWhenRegistrationAlreadyCancelled() {
+        registration.cancel(userId);
+        assertThrows(IllegalStateException.class, () -> registration.cancel(userId));
+    }
 }
