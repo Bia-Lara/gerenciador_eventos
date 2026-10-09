@@ -4,6 +4,7 @@ import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.exception.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -16,6 +17,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final Clock clock;
 
+    @Autowired
     public EventService(UserRepository userRepository, EventRepository eventRepository) {
         this(userRepository, eventRepository, Clock.systemDefaultZone());
     }
