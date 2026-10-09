@@ -1,6 +1,6 @@
 package br.ifsp.demo.infrastructure.security.config;
 
-import br.ifsp.demo.infrastructure.security.user.JpaUserRepository;
+import br.ifsp.demo.infrastructure.security.user.FakeUserStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,15 +15,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class ApplicationConfig {
 
-    private final JpaUserRepository repository;
+    private final FakeUserStore userStore;
 
-    public ApplicationConfig(JpaUserRepository repository) {
-        this.repository = repository;
+    public ApplicationConfig(FakeUserStore userStore) {
+        this.userStore = userStore;
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> repository
+        return username -> userStore
                 .findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found!"));
     }

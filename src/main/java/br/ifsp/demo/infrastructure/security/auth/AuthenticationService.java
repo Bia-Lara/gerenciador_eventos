@@ -1,52 +1,35 @@
 package br.ifsp.demo.infrastructure.security.auth;
 
-import br.ifsp.demo.exception.EntityAlreadyExistsException;
 import br.ifsp.demo.infrastructure.security.config.JwtService;
-import br.ifsp.demo.infrastructure.security.user.JpaUserRepository;
-import br.ifsp.demo.infrastructure.security.user.Role;
+import br.ifsp.demo.infrastructure.security.user.FakeUserStore;
 import br.ifsp.demo.infrastructure.security.user.User;
-import lombok.AllArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
-@AllArgsConstructor
 public class AuthenticationService {
-    private final JpaUserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final FakeUserStore userStore;
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+
+    public AuthenticationService(FakeUserStore userStore, JwtService jwtService) {
+        this.userStore = userStore;
+        this.jwtService = jwtService;
+    }
 
     public RegisterUserResponse register(RegisterUserRequest request) {
-
-        userRepository.findByEmail(request.email()).ifPresent(unused -> {
-            throw new EntityAlreadyExistsException("Email already registered: " + request.email());});
-
-        String encryptedPassword = passwordEncoder.encode(request.password());
-
-        final UUID id = UUID.randomUUID();
-        final User user = User.builder()
-                .id(id)
-                .name(request.name())
-                .lastname(request.lastname())
-                .email(request.email())
-                .password(encryptedPassword)
-                .role(Role.USER)
-                .build();
-
-        userRepository.save(user);
-        return new RegisterUserResponse(id);
+        User user = userStore.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("Users are fake; use a predefined fake email"));
+        return new RegisterUserResponse(user.getId());
     }
 
     public AuthResponse authenticate(AuthRequest request) {
-        final var authentication = new UsernamePasswordAuthenticationToken(request.username(), request.password());
-        authenticationManager.authenticate(authentication);
+        final User user = userStore.findByEmail(request.username())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found!"));
 
-        final User user = userRepository.findByEmail(request.username()).orElseThrow();
+        if (!FakeUserStore.FAKE_PASSWORD.equals(request.password())) {
+            throw new IllegalArgumentException("Invalid password");
+        }
+
         final String token = jwtService.generateToken(user);
 
         return new AuthResponse(token);
