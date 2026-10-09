@@ -1,11 +1,18 @@
 package br.ifsp.demo.infrastructure.repository;
 
+import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
+import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.infrastructure.security.user.User;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,9 +21,11 @@ import java.util.UUID;
 public class JdbcRegistrationRepository implements RegistrationRepository {
 
     private final JdbcTemplate jdbc;
+    private final UserRepository userRepository;
 
-    public JdbcRegistrationRepository(JdbcTemplate jdbc) {
+    public JdbcRegistrationRepository(JdbcTemplate jdbc, UserRepository userRepository) {
         this.jdbc = jdbc;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -83,7 +92,29 @@ public class JdbcRegistrationRepository implements RegistrationRepository {
 
     @Override
     public List<Registration> findByUserId(UUID userId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return jdbc.query(
+                """
+                SELECT
+                    r.id AS registration_id,
+                    r.user_id,
+                    r.status,
+                    c.id AS category_id,
+                    c.name AS category_name,
+                    c.capacity AS category_capacity,
+                    c.price AS category_price,
+                    e.id AS event_id,
+                    e.name AS event_name,
+                    e.start_date_time,
+                    e.end_date_time,
+                    e.organizer_id
+                FROM registration r
+                JOIN category c ON c.id = r.category_id
+                JOIN event e ON e.id = c.event_id
+                WHERE r.user_id = ?
+                """,
+                (rs, rowNum) -> mapRegistration(rs),
+                userId.toString()
+        );
     }
 
     @Override
