@@ -39,7 +39,7 @@ public class EventService {
                 organizerId
         );
 
-        return eventRepository.save(event);
+        return eventRepository.create(event);
     }
 
     private void validateIllegalArguments(UUID organizerId, CreateEventRequest request) {
