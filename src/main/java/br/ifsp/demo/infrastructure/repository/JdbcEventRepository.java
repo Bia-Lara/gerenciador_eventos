@@ -34,7 +34,7 @@ public class JdbcEventRepository implements EventRepository {
     }
 
     @Override
-    public Event save(Event event) {
+    public Event create(Event event) {
         jdbc.update(
                 "INSERT INTO event (id, name, start_date_time, end_date_time, organizer_id) VALUES (?, ?, ?, ?, ?)",
                 event.getId().toString(),
@@ -42,6 +42,19 @@ public class JdbcEventRepository implements EventRepository {
                 event.getStartDateTime().toString(),
                 event.getEndDateTime().toString(),
                 event.getOrganizerId().toString()
+        );
+        return event;
+    }
+
+    @Override
+    public Event save(Event event) {
+        jdbc.update(
+                "UPDATE event SET name = ?, start_date_time = ?, end_date_time = ?, organizer_id = ? WHERE id = ?",
+                event.getName(),
+                event.getStartDateTime().toString(),
+                event.getEndDateTime().toString(),
+                event.getOrganizerId().toString(),
+                event.getId().toString()
         );
         return event;
     }

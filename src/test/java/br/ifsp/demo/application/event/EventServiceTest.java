@@ -90,7 +90,7 @@ class EventServiceTest {
         );
 
         when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
-        when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(eventRepository.create(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Event event = sut.createEvent(organizerId, request);
 
