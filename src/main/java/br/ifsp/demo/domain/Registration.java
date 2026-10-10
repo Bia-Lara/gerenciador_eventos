@@ -3,6 +3,7 @@ package br.ifsp.demo.domain;
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.NullValueException;
+import br.ifsp.demo.exception.UnauthorizedUserException;
 import br.ifsp.demo.infrastructure.security.user.User;
 
 import java.time.LocalDateTime;
@@ -59,6 +60,10 @@ public class Registration {
 
         if (category.getEvent().getStartDateTime().isBefore(LocalDateTime.now())) {
             throw new EventAlreadyStartedException();
+        }
+
+        if (!this.user.getId().equals(userId)) {
+            throw new UnauthorizedUserException();
         }
 
         this.status = RegistrationStatus.CANCELADA;
