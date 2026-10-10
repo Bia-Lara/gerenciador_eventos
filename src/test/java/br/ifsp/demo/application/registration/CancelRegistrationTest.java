@@ -6,6 +6,7 @@ import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
 import br.ifsp.demo.exception.EventAlreadyStartedException;
 import br.ifsp.demo.exception.NullValueException;
+import br.ifsp.demo.exception.UnauthorizedUserException;
 import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,6 +38,7 @@ public class CancelRegistrationTest {
         category = event.addCategory("Test Category", 10, 50.0);
 
         User user = new User();
+        user.setId(userId);
         registration = new Registration(category, user);
     }
 
@@ -72,5 +74,16 @@ public class CancelRegistrationTest {
         registration = new Registration(category, user);
 
         assertThrows(EventAlreadyStartedException.class, () -> registration.cancel(userId));
+    }
+
+    @Test
+    @DisplayName("Should throw exception when user does not own registration")
+    void shouldThrowExceptionWhenUserDoesNotOwnRegistration() {
+        UUID anotherUserId = UUID.randomUUID();
+
+        assertThrows(
+                UnauthorizedUserException.class,
+                () -> registration.cancel(anotherUserId)
+        );
     }
 }
