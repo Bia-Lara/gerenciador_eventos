@@ -49,7 +49,7 @@ public class RegistrationService {
         }
 
         Registration registration = new Registration(category, user);
-        return registrationRepository.save(registration);
+        return registrationRepository.create(registration);
     }
 
     private void validateIllegalArguments(RegisterToEventRequest request) {

@@ -77,7 +77,7 @@ class RegistrationServiceFunctionalTest {
         UUID userId = UUID.randomUUID();
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(registrationRepository.create(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Registration result = sut.register(new RegisterToEventRequest(userId, event.getId(), category.getId()));
 
@@ -112,13 +112,13 @@ class RegistrationServiceFunctionalTest {
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(active);
-        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(registrationRepository.create(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Registration result = sut.register(new RegisterToEventRequest(userId, event.getId(), category.getId()));
 
         assertThat(result.getUser()).isSameAs(user);
         assertThat(result.getCategory()).isSameAs(category);
         assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
-        verify(registrationRepository).save(any(Registration.class));
+        verify(registrationRepository).create(any(Registration.class));
     }
 }
