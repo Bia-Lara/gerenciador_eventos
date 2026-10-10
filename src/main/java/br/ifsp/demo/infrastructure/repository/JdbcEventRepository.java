@@ -63,19 +63,6 @@ public class JdbcEventRepository implements EventRepository {
     }
 
     @Override
-    public Event save(Event event) {
-        jdbc.update(
-                "UPDATE event SET name = ?, start_date_time = ?, end_date_time = ?, organizer_id = ? WHERE id = ?",
-                event.getName(),
-                event.getStartDateTime().toString(),
-                event.getEndDateTime().toString(),
-                event.getOrganizerId().toString(),
-                event.getId().toString()
-        );
-        return event;
-    }
-
-    @Override
     public List<Event> findByDate(LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
