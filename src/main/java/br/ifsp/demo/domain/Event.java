@@ -196,6 +196,12 @@ public class Event {
         return event;
     }
 
+    public static Event restoreWithStatus(UUID id, String name, LocalDateTime start, LocalDateTime end, UUID organizerId, EventStatus status) {
+        Event event = restore(id, name, start, end, organizerId);
+        event.status = status;
+        return event;
+    }
+
     public Category restoreCategory(UUID id, String name, Integer capacity, Double price) {
         Category category = addCategory(name, capacity, price);
         category.setId(id);

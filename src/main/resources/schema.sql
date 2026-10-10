@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS event (
     name TEXT NOT NULL,
     start_date_time TEXT NOT NULL,
     end_date_time TEXT NOT NULL,
-    organizer_id TEXT NOT NULL
+    organizer_id TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'ACTIVE'
 );
 
 CREATE TABLE IF NOT EXISTS category (
