@@ -2,6 +2,7 @@ package br.ifsp.demo.infrastructure.repository;
 
 import br.ifsp.demo.application.event.EventRepository;
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.domain.enumerations.EventStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -25,7 +26,7 @@ public class JdbcEventRepository implements EventRepository {
     @Override
     public Optional<Event> findById(UUID id) {
         List<Event> events = jdbc.query(
-                "SELECT id, name, start_date_time, end_date_time, organizer_id FROM event WHERE id = ?",
+                "SELECT id, name, start_date_time, end_date_time, organizer_id, status FROM event WHERE id = ?",
                 (rs, rowNum) -> mapEvent(rs),
                 id.toString()
         );
@@ -36,12 +37,13 @@ public class JdbcEventRepository implements EventRepository {
     @Override
     public Event create(Event event) {
         jdbc.update(
-                "INSERT INTO event (id, name, start_date_time, end_date_time, organizer_id) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO event (id, name, start_date_time, end_date_time, organizer_id, status) VALUES (?, ?, ?, ?, ?, ?)",
                 event.getId().toString(),
                 event.getName(),
                 event.getStartDateTime().toString(),
                 event.getEndDateTime().toString(),
-                event.getOrganizerId().toString()
+                event.getOrganizerId().toString(),
+                event.getStatus().name()
         );
         return event;
     }
@@ -49,11 +51,12 @@ public class JdbcEventRepository implements EventRepository {
     @Override
     public Event save(Event event) {
         jdbc.update(
-                "UPDATE event SET name = ?, start_date_time = ?, end_date_time = ?, organizer_id = ? WHERE id = ?",
+                "UPDATE event SET name = ?, start_date_time = ?, end_date_time = ?, organizer_id = ?, status = ? WHERE id = ?",
                 event.getName(),
                 event.getStartDateTime().toString(),
                 event.getEndDateTime().toString(),
                 event.getOrganizerId().toString(),
+                event.getStatus().name(),
                 event.getId().toString()
         );
         return event;
@@ -65,7 +68,7 @@ public class JdbcEventRepository implements EventRepository {
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
         return jdbc.query(
-                "SELECT id, name, start_date_time, end_date_time, organizer_id FROM event WHERE start_date_time >= ? AND start_date_time < ?",
+                "SELECT id, name, start_date_time, end_date_time, organizer_id, status FROM event WHERE start_date_time >= ? AND start_date_time < ?",
                 (rs, rowNum) -> mapEvent(rs),
                 start.toString(),
                 end.toString()
@@ -75,19 +78,20 @@ public class JdbcEventRepository implements EventRepository {
     @Override
     public List<Event> findByOrganizerId(UUID organizerId) {
         return jdbc.query(
-                "SELECT id, name, start_date_time, end_date_time, organizer_id FROM event WHERE organizer_id = ?",
+                "SELECT id, name, start_date_time, end_date_time, organizer_id, status FROM event WHERE organizer_id = ?",
                 (rs, rowNum) -> mapEvent(rs),
                 organizerId.toString()
         ).stream().map(this::loadCategories).toList();
     }
 
     private Event mapEvent(ResultSet rs) throws SQLException {
-        return Event.restore(
+        return Event.restoreWithStatus(
                 UUID.fromString(rs.getString("id")),
                 rs.getString("name"),
                 LocalDateTime.parse(rs.getString("start_date_time")),
                 LocalDateTime.parse(rs.getString("end_date_time")),
-                UUID.fromString(rs.getString("organizer_id"))
+                UUID.fromString(rs.getString("organizer_id")),
+                EventStatus.valueOf(rs.getString("status"))
         );
     }
 
