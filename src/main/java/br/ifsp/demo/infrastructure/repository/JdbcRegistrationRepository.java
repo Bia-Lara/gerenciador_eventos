@@ -79,13 +79,25 @@ public class JdbcRegistrationRepository implements RegistrationRepository {
     }
 
     @Override
-    public Registration save(Registration registration) {
+    public Registration create(Registration registration) {
         jdbc.update(
                 "INSERT INTO registration (id, user_id, category_id, status) VALUES (?, ?, ?, ?)",
                 registration.getId().toString(),
                 registration.getUser().getId().toString(),
                 registration.getCategory().getId().toString(),
                 registration.getStatus().name()
+        );
+        return registration;
+    }
+
+    @Override
+    public Registration save(Registration registration) {
+        jdbc.update(
+                "UPDATE registration SET user_id = ?, category_id = ?, status = ? WHERE id = ?",
+                registration.getUser().getId().toString(),
+                registration.getCategory().getId().toString(),
+                registration.getStatus().name(),
+                registration.getId().toString()
         );
         return registration;
     }

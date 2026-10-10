@@ -150,7 +150,7 @@ class RegistrationServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(registrationRepository.existsActiveByUserIdAndEventId(userId, event.getId())).thenReturn(false);
         when(registrationRepository.countActiveByCategoryId(category.getId())).thenReturn(1L);
-        when(registrationRepository.save(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(registrationRepository.create(any(Registration.class))).thenAnswer(inv -> inv.getArgument(0));
         var request = new RegisterToEventRequest(userId, event.getId(), category.getId());
 
         Registration result = sut.register(request);
@@ -159,6 +159,6 @@ class RegistrationServiceTest {
         assertThat(result.getCategory()).isSameAs(category);
         assertThat(result.getCategory().getEvent().getId()).isEqualTo(event.getId());
         assertThat(result.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
-        verify(registrationRepository).save(any(Registration.class));
+        verify(registrationRepository).create(any(Registration.class));
     }
 }

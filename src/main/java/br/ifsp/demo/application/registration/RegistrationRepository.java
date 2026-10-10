@@ -10,6 +10,7 @@ public interface RegistrationRepository {
     boolean existsActiveByEventId(UUID eventId);
     boolean existsActiveByUserIdAndEventId(UUID userId, UUID eventId);
     long countActiveByCategoryId(UUID categoryId);
+    Registration create(Registration registration);
     Registration save(Registration registration);
     List<Registration> findByUserId(UUID userId);
     boolean existsByCategoryId(UUID categoryId);
