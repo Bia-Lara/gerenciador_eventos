@@ -1,0 +1,95 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegistrationRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">br.ifsp.demo.application.registration</a>
+</div>
+
+<h1>Coverage Summary for Class: RegistrationRepository (br.ifsp.demo.application.registration)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">RegistrationRepository$MockitoMock$VMpKIPwS</td>
+  </tr>
+  <tr>
+    <td class="name">RegistrationRepository$MockitoMock$VMpKIPwS$auxiliary$oa5eK1bx</td>
+  </tr>
+  <tr>
+    <td class="name">RegistrationRepository$MockitoMock$VMpKIPwS$auxiliary$zojO9NsX</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package br.ifsp.demo.application.registration;
+&nbsp;
+&nbsp;import br.ifsp.demo.domain.Registration;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.UUID;
+&nbsp;
+&nbsp;public interface RegistrationRepository {
+&nbsp;    boolean existsActiveByEventId(UUID eventId);
+&nbsp;    boolean existsActiveByUserIdAndEventId(UUID userId, UUID eventId);
+&nbsp;    long countActiveByCategoryId(UUID categoryId);
+&nbsp;    Registration create(Registration registration);
+&nbsp;    Registration save(Registration registration);
+&nbsp;    List&lt;Registration&gt; findByUserId(UUID userId);
+&nbsp;    boolean existsByCategoryId(UUID categoryId);
+&nbsp;    Optional&lt;Registration&gt; findById(UUID registrationId);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-10-27 19:32</div>
+</div>
+</body>
+</html>
