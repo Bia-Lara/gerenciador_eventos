@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -72,9 +73,11 @@ public class CancelRegistrationServiceTest {
         LocalDateTime end = start.plusHours(1);
         Event event = new Event("Test Event", start, end, UUID.randomUUID());
         Category category = event.addCategory("Test Category", 10, 50.0);
-        User user = new User();
-        Registration registration = new Registration(category, user);
         UUID userId = UUID.randomUUID();
+        User user = new User();
+        ReflectionTestUtils.setField(user, "id", userId);
+
+        Registration registration = new Registration(category, user);
         UUID registrationId = registration.getId();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
