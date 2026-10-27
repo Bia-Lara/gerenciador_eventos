@@ -23,6 +23,16 @@ public class CategoryTest {
                 .hasMessage("Category capacity is required");
     }
 
+    @Test
+    @DisplayName("Should throw when capacity is negative")
+    void shouldThrowWhenCapacityIsNegative() {
+        Event event = validEvent();
+
+        assertThatThrownBy(() -> new Category(event, "Name", -1, 10.0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Category capacity must not be negative");
+    }
+
     private Event validEvent() {
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         return new Event("Event", start, start.plusHours(2), UUID.randomUUID());
