@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f4ef">
+    <title>Encontro | Gestão de eventos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="/" aria-label="Encontro, início">
+        <span class="brand-mark">e.</span>
+        <span>encontro<span class="brand-period">.</span></span>
+    </a>
+    <div class="topbar-right">
+        <span id="connection-status" class="connection-status"><span class="status-dot"></span>API conectada</span>
+        <button id="logout-button" class="button button-quiet hidden" type="button">Sair</button>
+    </div>
+</header>
+
+<main>
+    <section id="auth-view" class="auth-view">
+        <div class="auth-intro">
+            <p class="eyebrow">SEU PRÓXIMO ENCONTRO COMEÇA AQUI</p>
+            <h1>Ideias boas<br>merecem <span>um lugar.</span></h1>
+            <p class="intro-copy">Organize eventos, reúna pessoas e cuide de cada detalhe em um só espaço.</p>
+            <div class="intro-note"><span class="note-mark">✳</span><span>Um bom evento começa com um plano simples.</span></div>
+        </div>
+        <section class="auth-panel" aria-labelledby="auth-title">
+            <div class="auth-tabs" role="tablist" aria-label="Acesso">
+                <button class="auth-tab active" id="login-tab" type="button" role="tab" aria-selected="true" aria-controls="login-form">Entrar</button>
+                <button class="auth-tab" id="register-tab" type="button" role="tab" aria-selected="false" aria-controls="register-form">Criar conta</button>
+            </div>
+            <div class="auth-heading">
+                <p class="eyebrow">BEM-VINDA(O) AO ENCONTRO</p>
+                <h2 id="auth-title">Entre na sua conta</h2>
+                <p id="auth-description">Acesse seus eventos e continue de onde parou.</p>
+            </div>
+            <form id="login-form" class="form-stack" autocomplete="on">
+                <label for="login-email">E-mail</label>
+                <input id="login-email" name="username" type="email" autocomplete="email" placeholder="voce@exemplo.com" required>
+                <label for="login-password">Senha</label>
+                <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" required>
+                <button class="button button-primary button-wide" type="submit">Entrar na plataforma <span aria-hidden="true">↗</span></button>
+            </form>
+            <form id="register-form" class="form-stack hidden" autocomplete="on">
+                <div class="form-row">
+                    <div class="field-group"><label for="register-name">Nome</label><input id="register-name" name="name" autocomplete="given-name" placeholder="Seu nome" required></div>
+                    <div class="field-group"><label for="register-lastname">Sobrenome</label><input id="register-lastname" name="lastname" autocomplete="family-name" placeholder="Seu sobrenome" required></div>
+                </div>
+                <label for="register-email">E-mail</label>
+                <input id="register-email" name="email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required>
+                <label for="register-password">Senha</label>
+                <input id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="Pelo menos 8 caracteres" required>
+                <button class="button button-primary button-wide" type="submit">Criar minha conta <span aria-hidden="true">↗</span></button>
+            </form>
+            <p id="auth-feedback" class="feedback" role="status" aria-live="polite"></p>
+        </section>
+    </section>
+
+    <section id="dashboard-view" class="dashboard-view hidden">
+        <nav class="workspace-tabs" role="tablist" aria-label="Área de trabalho">
+            <button id="organizer-tab" class="workspace-tab active" type="button" role="tab" aria-selected="true" aria-controls="organizer-panel" data-workspace="organizer">Organizar</button>
+            <button id="participation-tab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="participation-panel" data-workspace="participation">Inscrever-se</button>
+            <button id="registrations-tab" class="workspace-tab" type="button" role="tab" aria-selected="false" aria-controls="registrations-panel" data-workspace="registrations">Minhas inscrições</button>
+        </nav>
+
+        <section id="organizer-panel" class="workspace-panel" role="tabpanel" aria-labelledby="organizer-tab">
+        <div class="dashboard-heading">
+            <div>
+                <p class="eyebrow">ESPAÇO DE ORGANIZAÇÃO</p>
+                <h1 id="welcome-title">Seus eventos<span class="brand-period">.</span></h1>
+                <p class="dashboard-subtitle">Tudo o que você está preparando, em um só lugar.</p>
+            </div>
+            <div class="dashboard-actions">
+                <button id="sample-data-button" class="button button-outline" type="button">Gerar dados de exemplo</button>
+                <button id="new-event-button" class="button button-primary" type="button"><span class="plus">+</span> Novo evento</button>
+            </div>
+        </div>
+
+        <div class="summary-grid" aria-label="Resumo dos eventos">
+            <article class="summary-item summary-total"><span class="summary-label">NO SEU ESPAÇO</span><strong id="total-count">0</strong><span>eventos criados</span></article>
+            <article class="summary-item summary-upcoming"><span class="summary-label">EM BREVE</span><strong id="upcoming-count">0</strong><span>eventos por acontecer</span></article>
+            <article class="summary-item summary-cancelled"><span class="summary-label">CANCELADOS</span><strong id="cancelled-count">0</strong><span>eventos encerrados</span></article>
+            <article class="summary-aside"><span class="aside-symbol">✳</span><p>As melhores memórias começam com um convite.</p></article>
+        </div>
+
+        <section class="events-section" aria-labelledby="events-heading">
+            <div class="section-heading">
+                <div><p class="eyebrow">ACOMPANHAMENTO</p><h2 id="events-heading">Seus eventos</h2></div>
+                <div class="event-filters">
+                    <label class="date-filter">Data<input id="event-date" type="date"></label>
+                    <label class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><span class="visually-hidden">Buscar eventos</span><input id="event-search" type="search" placeholder="Buscar evento"></label>
+                </div>
+            </div>
+            <div id="events-list" class="events-list" aria-live="polite"></div>
+            <div id="empty-state" class="empty-state hidden">
+                <span class="empty-symbol">✳</span>
+                <h3>Nenhum evento por aqui, ainda.</h3>
+                <p>Comece criando seu primeiro encontro.</p>
+                <button class="button button-outline" id="empty-create-button" type="button">Criar primeiro evento <span aria-hidden="true">↗</span></button>
+            </div>
+            <p id="dashboard-feedback" class="feedback" role="status" aria-live="polite"></p>
+        </section>
+        </section>
+
+        <section id="participation-panel" class="workspace-panel hidden" role="tabpanel" aria-labelledby="participation-tab">
+            <div class="section-heading workspace-heading">
+                <div><p class="eyebrow">PARTICIPAÇÃO</p><h1>Inscrever-se<span class="brand-period">.</span></h1><p class="dashboard-subtitle">Selecione um evento e uma categoria para confirmar sua inscrição.</p></div>
+            </div>
+            <form id="participation-form" class="participation-form">
+                <label class="field-group" for="registration-event-id">Evento
+                    <select id="registration-event-id" name="eventId" required>
+                        <option value="">Selecione um evento</option>
+                    </select>
+                </label>
+                <label class="field-group" for="registration-category-id">Categoria
+                    <select id="registration-category-id" name="categoryId" required disabled>
+                        <option value="">Selecione primeiro um evento</option>
+                    </select>
+                </label>
+                <button class="button button-primary" type="submit">Confirmar inscrição</button>
+            </form>
+            <p id="participation-hint" class="event-time">A lista inclui eventos futuros da sua conta.</p>
+            <p id="participation-feedback" class="feedback" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="registrations-panel" class="workspace-panel hidden" role="tabpanel" aria-labelledby="registrations-tab">
+            <div class="section-heading workspace-heading">
+                <div><p class="eyebrow">SUA AGENDA</p><h1>Minhas inscrições<span class="brand-period">.</span></h1><p class="dashboard-subtitle">Acompanhe os eventos em que você se inscreveu.</p></div>
+                <div class="registration-controls">
+                    <label class="field-group registration-filter">Filtrar inscrições
+                        <select id="registration-filter">
+                            <option value="TODOS">Todas</option>
+                            <option value="ATIVOS">Ativas</option>
+                            <option value="INATIVOS">Encerradas</option>
+                        </select>
+                    </label>
+                    <label class="date-filter">Data<input id="registration-date" type="date"></label>
+                </div>
+            </div>
+            <p id="registrations-feedback" class="feedback" role="status" aria-live="polite"></p>
+            <div id="registrations-list" class="registration-list" aria-live="polite"></div>
+            <div id="registrations-empty" class="empty-state hidden">
+                <span class="empty-symbol">✳</span>
+                <h2>Nenhuma inscrição por aqui.</h2>
+                <p>Suas inscrições aparecerão aqui.</p>
+                <button class="button button-outline" type="button" data-workspace-link="participation">Inscrever-se <span aria-hidden="true">↗</span></button>
+            </div>
+        </section>
+    </section>
+</main>
+
+<dialog id="event-dialog" class="dialog">
+    <form id="event-form" class="dialog-content">
+        <div class="dialog-heading"><div><p class="eyebrow">DETALHES DO ENCONTRO</p><h2 id="event-dialog-title">Novo evento</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Fechar">×</button></div>
+        <label for="event-name">Nome do evento</label>
+        <input id="event-name" name="name" maxlength="120" placeholder="Ex.: Feira de ideias" required>
+        <div class="form-row">
+            <div class="field-group"><label for="event-start">Início</label><input id="event-start" name="startDateTime" type="datetime-local" required></div>
+            <div class="field-group"><label for="event-end">Término</label><input id="event-end" name="endDateTime" type="datetime-local" required></div>
+        </div>
+        <p id="event-feedback" class="feedback" role="status" aria-live="polite"></p>
+        <div class="dialog-actions"><button class="button button-outline" type="button" data-close-dialog>Voltar</button><button class="button button-primary" type="submit">Salvar evento</button></div>
+    </form>
+</dialog>
+
+<template id="category-template">
+    <details class="category-manager">
+        <summary>Categorias <span class="category-count"></span></summary>
+        <form class="category-form">
+            <label class="visually-hidden" data-category-label>Nome da categoria</label>
+            <input data-category-name maxlength="80" placeholder="Ex.: Entrada inteira" required>
+            <input data-category-capacity type="number" min="1" placeholder="Vagas" aria-label="Capacidade" required>
+            <input data-category-price type="number" min="0" step="0.01" placeholder="Preço (R$)" aria-label="Preço em reais" required>
+            <button class="button button-small button-outline" type="submit">Adicionar</button>
+        </form>
+        <ul class="category-list"></ul>
+    </details>
+</template>
+</body>
+</html>
