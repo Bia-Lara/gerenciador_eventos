@@ -42,9 +42,10 @@ A interface usa a API na mesma origem (`/api/v1`):
 - `GET /events/mine`, `POST /events`, `PUT /events/{eventId}` e `POST /events/{eventId}/cancel` para organização.
 - `POST /events/{eventId}/categories` e `DELETE /events/{eventId}/categories/{categoryId}` para categorias.
 - `POST /events/{eventId}/registrations` para se inscrever e `GET /registrations?filter=TODOS|ATIVOS|INATIVOS` para consultar eventos inscritos.
+- `GET /registrations/details?filter=TODOS|ATIVOS|INATIVOS` para consultar cada inscrição com seu ID, evento, categoria e status.
 - `POST /events/registrations/{registrationId}/cancel` para cancelar uma inscrição ainda não iniciada.
 
-O back-end atual não fornece um catálogo global de eventos nem retorna o ID da inscrição na consulta de inscrições. O front filtra por data os eventos que a conta consegue consultar e mantém localmente os IDs das inscrições feitas nesta sessão/navegador para oferecer cancelamento.
+O back-end atual não fornece um catálogo global de eventos. O front filtra por data os eventos que a conta consegue consultar; a consulta detalhada de inscrições permite cancelar registros existentes sem depender de IDs guardados no navegador.
 
 A documentação OpenAPI fica disponível em [http://localhost:8091/api/v1/api-docs](http://localhost:8091/api/v1/api-docs). As rotas de API protegidas continuam exigindo autenticação; somente cadastro, login, documentação e arquivos estáticos da interface são públicos.
 

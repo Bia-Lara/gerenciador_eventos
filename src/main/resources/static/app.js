@@ -1,8 +1,6 @@
 const API_BASE = "/api/v1";
 const TOKEN_KEY = "encontro.jwt";
 const NAME_KEY = "encontro.name";
-const USER_KEY = "encontro.user";
-const REGISTRATION_STORAGE_KEY = "encontro.registrations";
 
 const authView = document.querySelector("#auth-view");
 const dashboardView = document.querySelector("#dashboard-view");
@@ -121,7 +119,6 @@ function selectAuthMode(mode) {
 function signOut(message = "") {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(NAME_KEY);
-    localStorage.removeItem(USER_KEY);
     events = [];
     showAuth("login", message);
 }
@@ -302,21 +299,6 @@ function prepareRegistration(eventId, categoryId) {
     selectWorkspaceView("participation");
 }
 
-function getTrackedRegistrations() {
-    const user = localStorage.getItem(USER_KEY);
-    if (!user) return [];
-    try {
-        return JSON.parse(localStorage.getItem(`${REGISTRATION_STORAGE_KEY}.${encodeURIComponent(user)}`) || "[]");
-    } catch {
-        return [];
-    }
-}
-
-function saveTrackedRegistrations(items) {
-    const user = localStorage.getItem(USER_KEY);
-    if (user) localStorage.setItem(`${REGISTRATION_STORAGE_KEY}.${encodeURIComponent(user)}`, JSON.stringify(items));
-}
-
 async function submitRegistration(event) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -326,13 +308,10 @@ async function submitRegistration(event) {
     submit.disabled = true;
     setFeedback(document.querySelector("#participation-feedback"));
     try {
-        const registration = await api(`/events/${eventId}/registrations`, {
+        await api(`/events/${eventId}/registrations`, {
             method: "POST",
             body: JSON.stringify({ categoryId })
         });
-        const tracked = getTrackedRegistrations();
-        tracked.push({ ...registration, eventName: events.find(item => item.id === eventId)?.name || "Evento" });
-        saveTrackedRegistrations(tracked);
         form.reset();
         await loadRegistrations();
         selectWorkspaceView("registrations");
@@ -348,108 +327,64 @@ async function loadRegistrations() {
     setFeedback(document.querySelector("#registrations-feedback"));
     const filter = document.querySelector("#registration-filter").value;
     try {
-        const registrationRequest = api(`/registrations?filter=${encodeURIComponent(filter)}`);
-        if (filter === "TODOS") {
-            const [allRegistrations, activeRegistrations] = await Promise.all([
-                registrationRequest,
-                api("/registrations?filter=ATIVOS")
-            ]);
-            registrations = allRegistrations;
-            activeRegistrationCounts = countRegistrationsByEvent(activeRegistrations);
-        } else {
-            registrations = await registrationRequest;
-            activeRegistrationCounts = filter === "ATIVOS"
-                ? countRegistrationsByEvent(registrations)
-                : new Map();
-        }
+        registrations = await api(`/registrations/details?filter=${encodeURIComponent(filter)}`);
         renderRegistrations();
     } catch (error) {
         setFeedback(document.querySelector("#registrations-feedback"), error.message);
     }
 }
 
-function countRegistrationsByEvent(items) {
-    return items.reduce((counts, event) => {
-        counts.set(event.id, (counts.get(event.id) || 0) + 1);
-        return counts;
-    }, new Map());
-}
-
 function renderRegistrations() {
     const date = document.querySelector("#registration-date").value;
-    const filter = document.querySelector("#registration-filter").value;
-    const visibleEvents = registrations.filter(event => !date || event.startDateTime.slice(0, 10) === date)
+    const visibleRegistrations = registrations.filter(registration => !date || registration.startDateTime.slice(0, 10) === date)
         .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
     const list = document.querySelector("#registrations-list");
-    const trackedByEvent = getTrackedRegistrations().reduce((grouped, registration) => {
-        const eventRegistrations = grouped.get(registration.eventId) || [];
-        eventRegistrations.push(registration);
-        grouped.set(registration.eventId, eventRegistrations);
-        return grouped;
+    const totalCounts = visibleRegistrations.reduce((counts, registration) => {
+        counts.set(registration.eventId, (counts.get(registration.eventId) || 0) + 1);
+        return counts;
     }, new Map());
-    const totalCounts = countRegistrationsByEvent(registrations);
     const occurrenceCounts = new Map();
-    list.replaceChildren(...visibleEvents.map(event => {
-        const occurrence = (occurrenceCounts.get(event.id) || 0) + 1;
-        occurrenceCounts.set(event.id, occurrence);
-        const eventRegistrations = trackedByEvent.get(event.id) || [];
-        const eventHasNotStarted = new Date(event.startDateTime) > new Date();
-        const matchingRegistrations = filter === "ATIVOS"
-            ? eventRegistrations.filter(registration => registration.status === "ATIVA")
-            : filter === "INATIVOS" && eventHasNotStarted
-                ? eventRegistrations.filter(registration => registration.status === "CANCELADA")
-                : eventRegistrations;
-        const trackedRegistration = matchingRegistrations[occurrence - 1];
+    list.replaceChildren(...visibleRegistrations.map(registration => {
+        const occurrence = (occurrenceCounts.get(registration.eventId) || 0) + 1;
+        occurrenceCounts.set(registration.eventId, occurrence);
         const card = document.createElement("article");
         card.className = "registration-card";
         const details = document.createElement("div");
         const title = document.createElement("h2");
-        title.textContent = event.name;
+        title.textContent = registration.eventName;
         const time = document.createElement("p");
-        time.textContent = `${formatDate(event.startDateTime)} · ${formatTime(event.startDateTime)} às ${formatTime(event.endDateTime)} · Inscrição ${occurrence} de ${totalCounts.get(event.id)}`;
+        time.textContent = `${formatDate(registration.startDateTime)} · ${formatTime(registration.startDateTime)} às ${formatTime(registration.endDateTime)} · Inscrição ${occurrence} de ${totalCounts.get(registration.eventId)}`;
         details.append(title, time);
         const content = document.createElement("div");
         content.className = "registration-main";
         content.append(details);
         card.append(content);
-        const inferredStatus = filter === "ATIVOS"
-            ? "ATIVA"
-            : filter === "INATIVOS"
-                ? eventHasNotStarted ? "CANCELADA" : "ENCERRADA"
-                : eventHasNotStarted
-                    ? occurrence <= (activeRegistrationCounts.get(event.id) || 0) ? "ATIVA" : "CANCELADA"
-                    : "EVENTO ENCERRADO";
-        const statusText = filter === "ATIVOS" ? "ATIVA"
-            : filter === "INATIVOS" && eventHasNotStarted ? "CANCELADA"
-                : filter === "INATIVOS" && trackedRegistration?.status !== "CANCELADA" ? "ENCERRADA"
-                    : trackedRegistration?.status === "CANCELADA" ? "CANCELADA"
-                        : trackedRegistration?.status === "ATIVA" ? "ATIVA"
-                            : inferredStatus;
-        const category = trackedRegistration
-            ? event.categories?.find(item => item.id === trackedRegistration.categoryId)
-            : null;
+        const eventHasNotStarted = new Date(registration.startDateTime) > new Date();
+        const statusText = registration.status === "CANCELADA"
+            ? "CANCELADA"
+            : registration.eventStatus === "CANCELLED"
+                ? "EVENTO CANCELADO"
+                : eventHasNotStarted ? "ATIVA" : "ENCERRADA";
         const status = document.createElement("span");
         status.className = `event-status${statusText === "CANCELADA" ? " cancelled" : ""}`;
         status.textContent = statusText;
         content.append(status);
-        if (category) {
-            const categoryLabel = document.createElement("span");
-            categoryLabel.className = "registration-category";
-            categoryLabel.textContent = category.name;
-            content.append(categoryLabel);
-        }
-        if (trackedRegistration?.status === "ATIVA" && statusText === "ATIVA" && eventHasNotStarted) {
+        const categoryLabel = document.createElement("span");
+        categoryLabel.className = "registration-category";
+        categoryLabel.textContent = `${registration.categoryName} · ${formatCurrency(registration.price)}`;
+        content.append(categoryLabel);
+        if (registration.status === "ATIVA" && statusText === "ATIVA" && eventHasNotStarted) {
             const cancelButton = document.createElement("button");
             cancelButton.className = "text-button";
             cancelButton.type = "button";
             cancelButton.textContent = "Cancelar inscrição";
-            cancelButton.addEventListener("click", () => cancelRegistration(trackedRegistration, cancelButton));
+            cancelButton.addEventListener("click", () => cancelRegistration(registration, cancelButton));
             card.append(cancelButton);
         }
         return card;
     }));
     document.querySelector("#registrations-empty").classList.toggle("hidden", registrations.length > 0);
-    if (visibleEvents.length === 0 && registrations.length > 0) {
+    if (visibleRegistrations.length === 0 && registrations.length > 0) {
         list.innerHTML = '<p class="event-time">Nenhuma inscrição corresponde à data selecionada.</p>';
     }
 }
@@ -458,11 +393,7 @@ async function cancelRegistration(registration, button) {
     if (!window.confirm(`Cancelar sua inscrição em "${registration.eventName}"?`)) return;
     button.disabled = true;
     try {
-        await api(`/events/registrations/${registration.id}/cancel`, { method: "POST" });
-        const tracked = getTrackedRegistrations().map(item => item.id === registration.id
-            ? { ...item, status: "CANCELADA" }
-            : item);
-        saveTrackedRegistrations(tracked);
+        await api(`/events/registrations/${registration.registrationId}/cancel`, { method: "POST" });
         await loadRegistrations();
         setFeedback(document.querySelector("#registrations-feedback"), "Inscrição cancelada.", true);
     } catch (error) {
@@ -682,7 +613,6 @@ loginForm.addEventListener("submit", async event => {
             body: JSON.stringify({ username: formData.get("username"), password: formData.get("password") })
         });
         localStorage.setItem(TOKEN_KEY, result.token);
-        localStorage.setItem(USER_KEY, String(formData.get("username")).toLowerCase());
         await showDashboard();
     } catch (error) {
         setFeedback(feedback, error.message);
@@ -711,7 +641,6 @@ registerForm.addEventListener("submit", async event => {
         });
         localStorage.setItem(TOKEN_KEY, result.token);
         localStorage.setItem(NAME_KEY, name.split(" ")[0]);
-        localStorage.setItem(USER_KEY, String(email).toLowerCase());
         await showDashboard();
     } catch (error) {
         setFeedback(feedback, error.message);
