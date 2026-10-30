@@ -102,6 +102,20 @@ class RegistrationQueryServiceTest {
         assertThat(result).containsExactly(upcoming.getCategory().getEvent(), started.getCategory().getEvent(), canceled.getCategory().getEvent());
     }
 
+    @Test
+    @DisplayName("shouldReturnRegistrationDetailsForUser")
+    void shouldReturnRegistrationDetailsForUser() {
+        UUID userId = UUID.randomUUID();
+        User user = mock(User.class);
+        Registration registration = registration(user, NOW.plusDays(1), RegistrationStatus.ATIVA);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(registrationRepository.findByUserId(userId)).thenReturn(List.of(registration));
+
+        List<Registration> result = sut.listRegistrationsByUser(userId, RegistrationFilter.TODOS);
+
+        assertThat(result).containsExactly(registration);
+    }
+
     private Registration registration(User user, LocalDateTime eventStart, RegistrationStatus status) {
         Event event = new Event("Evento", eventStart, eventStart.plusDays(1), UUID.randomUUID());
         Category category = event.addCategory("Pista", 100, 50.0);
