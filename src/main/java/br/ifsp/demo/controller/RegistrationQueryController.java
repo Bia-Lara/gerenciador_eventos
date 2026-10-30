@@ -3,6 +3,7 @@ package br.ifsp.demo.controller;
 import br.ifsp.demo.application.registration.RegistrationQueryService;
 import br.ifsp.demo.domain.enumerations.RegistrationFilter;
 import br.ifsp.demo.dto.EventResponse;
+import br.ifsp.demo.dto.RegistrationDetailResponse;
 import br.ifsp.demo.infrastructure.security.auth.AuthenticationInfoService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,13 @@ public class RegistrationQueryController {
     public RegistrationQueryController(AuthenticationInfoService authService, RegistrationQueryService registrationQueryService) {
         this.authService = authService;
         this.registrationQueryService = registrationQueryService;
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<List<RegistrationDetailResponse>> listDetails(@RequestParam(defaultValue = "TODOS") RegistrationFilter filter) {
+        UUID userId = authService.getAuthenticatedUserId();
+        return ResponseEntity.ok(registrationQueryService.listRegistrationsByUser(userId, filter)
+                .stream().map(RegistrationDetailResponse::from).toList());
     }
 
     @GetMapping

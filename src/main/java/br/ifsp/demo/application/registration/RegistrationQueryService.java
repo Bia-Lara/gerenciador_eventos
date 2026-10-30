@@ -29,6 +29,12 @@ public class RegistrationQueryService {
     }
 
     public List<Event> listEventsByUser(UUID userId, RegistrationFilter filter) {
+        return listRegistrationsByUser(userId, filter).stream()
+                .map(registration -> registration.getCategory().getEvent())
+                .toList();
+    }
+
+    public List<Registration> listRegistrationsByUser(UUID userId, RegistrationFilter filter) {
         validateIllegalArguments(userId, filter);
 
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
@@ -42,7 +48,7 @@ public class RegistrationQueryService {
             registrations = registrations.filter(r -> !isActive(r, now));
         }
 
-        return registrations.map(r -> r.getCategory().getEvent()).toList();
+        return registrations.toList();
     }
 
     private boolean isActive(Registration registration, LocalDateTime now) {
