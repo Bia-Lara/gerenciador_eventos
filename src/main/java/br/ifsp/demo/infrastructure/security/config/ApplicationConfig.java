@@ -1,6 +1,5 @@
 package br.ifsp.demo.infrastructure.security.config;
 
-import br.ifsp.demo.infrastructure.security.user.FakeUserStore;
 import br.ifsp.demo.infrastructure.security.user.JpaUserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,18 +17,16 @@ import java.util.Locale;
 @Configuration
 public class ApplicationConfig {
 
-    private final FakeUserStore userStore;
-    private final JpaUserRepository userRepository;
+    private final JpaUserRepository repository;
 
-    public ApplicationConfig(FakeUserStore userStore, JpaUserRepository userRepository) {
-        this.userStore = userStore;
-        this.userRepository = userRepository;
+    public ApplicationConfig(JpaUserRepository repository) {
+        this.repository = repository;
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByEmail(username.trim().toLowerCase(Locale.ROOT))
-                .or(() -> userStore.findByEmail(username))
+        return username -> repository
+                .findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found!"));
     }
 
