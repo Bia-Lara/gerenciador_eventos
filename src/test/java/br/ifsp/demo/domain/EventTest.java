@@ -356,7 +356,29 @@ class EventTest {
             assertThat(event.equals(differentEvent)).isFalse();
         }
 
+        @Test
+        @DisplayName("should return false when startDateTimes are different")
+        void shouldReturnFalseWhenStartDateTimesAreDifferent() {
+            UUID id = UUID.randomUUID();
 
+            Event event = Event.restore(
+                    id,
+                    "Test Event",
+                    startTime,
+                    endTime,
+                    organizerId
+            );
+
+            Event differentEvent = Event.restore(
+                    id,
+                    "Test Event",
+                    startTime.plusMinutes(1),
+                    endTime,
+                    organizerId
+            );
+
+            assertThat(event.equals(differentEvent)).isFalse();
+        }
 
     }
 }
