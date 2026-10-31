@@ -380,6 +380,30 @@ class EventTest {
             assertThat(event.equals(differentEvent)).isFalse();
         }
 
+        @Test
+        @DisplayName("should return false when endDateTimes are different")
+        void shouldReturnFalseWhenEndDateTimesAreDifferent() {
+            UUID id = UUID.randomUUID();
+
+            Event event = Event.restore(
+                    id,
+                    "Test Event",
+                    startTime,
+                    endTime,
+                    organizerId
+            );
+
+            Event differentEvent = Event.restore(
+                    id,
+                    "Test Event",
+                    startTime,
+                    endTime.plusMinutes(1),
+                    organizerId
+            );
+
+            assertThat(event.equals(differentEvent)).isFalse();
+        }
+
     }
 }
 
