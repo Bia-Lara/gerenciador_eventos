@@ -84,6 +84,23 @@ public class JdbcEventRepository implements EventRepository {
         ).stream().map(this::loadCategories).toList();
     }
 
+    @Override
+    public List<Event> findAvailableForRegistration(UUID userId, LocalDateTime now) {
+        return jdbc.query(
+                """
+                SELECT id, name, start_date_time, end_date_time, organizer_id, status
+                FROM event
+                WHERE organizer_id <> ?
+                  AND datetime(start_date_time) > datetime(?)
+                  AND status = 'ACTIVE'
+                ORDER BY datetime(start_date_time)
+                """,
+                (rs, rowNum) -> mapEvent(rs),
+                userId.toString(),
+                now.toString()
+        ).stream().map(this::loadCategories).toList();
+    }
+
     private Event mapEvent(ResultSet rs) throws SQLException {
         return Event.restoreWithStatus(
                 UUID.fromString(rs.getString("id")),

@@ -50,6 +50,18 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(apiException, forbidden);
     }
 
+    @ExceptionHandler(value = ActionNotAllowedException.class)
+    public ResponseEntity<?> handleActionNotAllowedException(ActionNotAllowedException e){
+        final HttpStatus forbidden = FORBIDDEN;
+        final ApiException apiException = ApiException.builder()
+                .status(forbidden)
+                .message(e.getMessage())
+                .developerMessage(e.getClass().getName())
+                .timestamp(ZonedDateTime.now(ZoneId.of("Z")))
+                .build();
+        return new ResponseEntity<>(apiException, forbidden);
+    }
+
     @ExceptionHandler(value = EntityNotFoundException.class)
     public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException e){
         final HttpStatus notFound = NOT_FOUND;

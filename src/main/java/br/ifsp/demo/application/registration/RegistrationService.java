@@ -39,6 +39,9 @@ public class RegistrationService {
         }
 
         User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(request.userId()));
+        if (event.getOrganizerId().equals(request.userId())) {
+            throw new ActionNotAllowedException("Event organizer cannot register to their own event");
+        }
 
         Category category = event.findCategory(request.categoryId()).orElseThrow(() -> new CategoryNotFoundException(request.categoryId()));
         if (registrationRepository.existsActiveByUserIdAndEventId(request.userId(), request.eventId())) {

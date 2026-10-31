@@ -47,6 +47,13 @@ public class EventController {
                 .stream().map(EventResponse::from).toList());
     }
 
+    @GetMapping("/available")
+    public ResponseEntity<List<EventResponse>> listAvailableForRegistration() {
+        UUID userId = authService.getAuthenticatedUserId();
+        return ResponseEntity.ok(eventQueryService.listAvailableForRegistration(userId)
+                .stream().map(EventResponse::from).toList());
+    }
+
     @PutMapping("/{eventId}")
     public ResponseEntity<EventResponse> edit(@PathVariable UUID eventId, @RequestBody EditEventRequest request) {
         UUID userId = authService.getAuthenticatedUserId();

@@ -119,4 +119,20 @@ class EventQueryServiceTest {
 
         assertThat(events).containsExactly(first, second);
     }
+
+    @Test
+    @DisplayName("shouldReturnEventsAvailableForRegistration")
+    void shouldReturnEventsAvailableForRegistration() {
+        UUID userId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), UUID.randomUUID());
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
+        when(eventRepository.findAvailableForRegistration(
+                org.mockito.ArgumentMatchers.eq(userId),
+                org.mockito.ArgumentMatchers.any(LocalDateTime.class)
+        )).thenReturn(List.of(event));
+
+        List<Event> events = sut.listAvailableForRegistration(userId);
+
+        assertThat(events).containsExactly(event);
+    }
 }

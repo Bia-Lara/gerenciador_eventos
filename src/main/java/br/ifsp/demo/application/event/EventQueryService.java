@@ -6,6 +6,7 @@ import br.ifsp.demo.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -27,6 +28,14 @@ public class EventQueryService {
         }
         userRepository.findById(organizerId).orElseThrow(() -> new UserNotFoundException(organizerId));
         return eventRepository.findByOrganizerId(organizerId);
+    }
+
+    public List<Event> listAvailableForRegistration(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User is required");
+        }
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        return eventRepository.findAvailableForRegistration(userId, LocalDateTime.now());
     }
 
     public List<Event> findByDate(LocalDate date) {

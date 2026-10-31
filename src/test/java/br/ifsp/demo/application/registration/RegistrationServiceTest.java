@@ -106,6 +106,23 @@ class RegistrationServiceTest {
     }
 
     @Test
+    @DisplayName("shouldNotAllowEventOrganizerToRegister")
+    void shouldNotAllowEventOrganizerToRegister() {
+        UUID organizerId = UUID.randomUUID();
+        Event event = new Event("Show", NOW.plusDays(1), NOW.plusDays(2), organizerId);
+        Category category = event.addCategory("Pista", 100, 50.0);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+        var request = new RegisterToEventRequest(organizerId, event.getId(), category.getId());
+
+        assertThatThrownBy(() -> sut.register(request))
+                .isInstanceOf(ActionNotAllowedException.class)
+                .hasMessage("Event organizer cannot register to their own event");
+
+        verify(registrationRepository, never()).create(any(Registration.class));
+    }
+
+    @Test
     @DisplayName("shouldThrowCategoryNotFoundExceptionWhenCategoryDoesNotExistInEvent")
     void shouldThrowCategoryNotFoundExceptionWhenCategoryDoesNotExistInEvent() {
         UUID userId = UUID.randomUUID();
