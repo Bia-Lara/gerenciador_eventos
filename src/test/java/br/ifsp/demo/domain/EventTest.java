@@ -300,6 +300,14 @@ class EventTest {
             assertThat(event.equals(null)).isFalse();
         }
 
+        @Test
+        void shouldReturnFalseWhenComparedWithAnotherType() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+            Object anotherType = new Object();
+
+            assertThat(event.equals(anotherType)).isFalse();
+        }
+
     }
 }
 
