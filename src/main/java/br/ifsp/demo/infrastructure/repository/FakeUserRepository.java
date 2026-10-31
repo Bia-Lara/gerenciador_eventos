@@ -2,6 +2,7 @@ package br.ifsp.demo.infrastructure.repository;
 
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.infrastructure.security.user.FakeUserStore;
+import br.ifsp.demo.infrastructure.security.user.JpaUserRepository;
 import br.ifsp.demo.infrastructure.security.user.User;
 import org.springframework.stereotype.Repository;
 
