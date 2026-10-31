@@ -78,6 +78,9 @@ function messageForFailure(status, path, detail) {
     if (message.includes("cannot cancel event with active registrations")) {
         return "Não foi possível cancelar: há participantes inscritos neste evento.";
     }
+    if (message.includes("category has registrations")) {
+        return "Não foi possível excluir esta categoria porque existem inscrições vinculadas a ela.";
+    }
     if (message.includes("event has already started")) {
         return path.includes("/registrations")
             ? "Não foi possível se inscrever porque o evento já começou."
