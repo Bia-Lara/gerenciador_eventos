@@ -14,6 +14,7 @@ const eventDialog = document.querySelector("#event-dialog");
 const eventForm = document.querySelector("#event-form");
 const eventFeedback = document.querySelector("#event-feedback");
 let events = [];
+let participationEvents = [];
 let registrations = [];
 let activeRegistrationCounts = new Map();
 let editingEventId = null;
@@ -147,7 +148,7 @@ function selectWorkspaceView(view) {
         tab.setAttribute("aria-selected", String(selected));
     });
     Object.entries(panels).forEach(([name, panel]) => panel.classList.toggle("hidden", name !== view));
-    if (view === "participation") renderParticipationOptions();
+    if (view === "participation") loadAvailableEvents();
     if (view === "registrations") loadRegistrations();
 }
 
@@ -178,7 +179,6 @@ function renderEvents() {
         && (!date || event.startDateTime.slice(0, 10) === date));
     eventsList.replaceChildren(...visible.map(createEventCard));
     emptyState.classList.toggle("hidden", events.length > 0);
-    renderParticipationOptions();
     if (events.length > 0 && visible.length === 0) {
         eventsList.innerHTML = '<p class="event-time">Nenhum evento corresponde à busca.</p>';
     }
@@ -188,8 +188,7 @@ function renderParticipationOptions(selectedEventId = null, selectedCategoryId =
     const eventSelect = document.querySelector("#registration-event-id");
     const categorySelect = document.querySelector("#registration-category-id");
     const previousEventId = selectedEventId ?? eventSelect.value;
-    const availableEvents = [...events]
-        .filter(event => !isCancelled(event) && new Date(event.startDateTime) > new Date())
+    const availableEvents = [...participationEvents]
         .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
 
     eventSelect.replaceChildren(new Option(
@@ -219,8 +218,20 @@ function renderParticipationOptions(selectedEventId = null, selectedCategoryId =
         categorySelect.value = selectedCategoryId;
     }
     document.querySelector("#participation-hint").textContent = availableEvents.length
-        ? "A lista inclui eventos futuros da sua conta."
-        : "Crie um evento futuro na aba Organizar para disponibilizar a inscrição.";
+        ? "A lista inclui eventos futuros de outros organizadores."
+        : "Não há eventos futuros de outros organizadores disponíveis para inscrição.";
+}
+
+async function loadAvailableEvents() {
+    setFeedback(document.querySelector("#participation-feedback"));
+    try {
+        participationEvents = await api("/events/available");
+        renderParticipationOptions();
+    } catch (error) {
+        participationEvents = [];
+        renderParticipationOptions();
+        setFeedback(document.querySelector("#participation-feedback"), error.message);
+    }
 }
 
 function localDateTimeAfter(hoursFromNow) {
@@ -292,11 +303,6 @@ async function createSampleData() {
     } finally {
         button.disabled = false;
     }
-}
-
-function prepareRegistration(eventId, categoryId) {
-    renderParticipationOptions(eventId, categoryId);
-    selectWorkspaceView("participation");
 }
 
 async function submitRegistration(event) {
@@ -481,11 +487,6 @@ function createCategoryManager(event) {
         description.textContent = `${category.name} · ${category.capacity} vagas · ${formatCurrency(category.price)}`;
         const actions = document.createElement("div");
         actions.className = "category-actions";
-        const register = document.createElement("button");
-        register.className = "button button-small button-outline";
-        register.type = "button";
-        register.textContent = "Inscrever-se";
-        register.addEventListener("click", () => prepareRegistration(event.id, category.id));
         const remove = document.createElement("button");
         remove.className = "text-button";
         remove.type = "button";
@@ -501,7 +502,7 @@ function createCategoryManager(event) {
                 setFeedback(dashboardFeedback, error.message);
             }
         });
-        actions.append(register, remove);
+        actions.append(remove);
         item.append(description, actions);
         list.append(item);
     }

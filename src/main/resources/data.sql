@@ -10,8 +10,21 @@ ON CONFLICT(id) DO UPDATE SET
     organizer_id = excluded.organizer_id,
     status = excluded.status;
 
+INSERT INTO event (id, name, start_date_time, end_date_time, organizer_id, status) VALUES
+    ('10000000-0000-0000-0000-000000000005', 'Encontro de demonstração de outro organizador',
+     strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime', '+7 days', 'start of day', '+10 hours'),
+     strftime('%Y-%m-%dT%H:%M:%S', 'now', 'localtime', '+7 days', 'start of day', '+12 hours'),
+     '00000000-0000-0000-0000-000000000003', 'ACTIVE')
+ON CONFLICT(id) DO UPDATE SET
+    name = excluded.name,
+    start_date_time = excluded.start_date_time,
+    end_date_time = excluded.end_date_time,
+    organizer_id = excluded.organizer_id,
+    status = excluded.status;
+
 INSERT INTO category (id, event_id, name, capacity, price) VALUES
-    ('20000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000004', 'Participação geral', 40, 25.00)
+    ('20000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000004', 'Participação geral', 40, 25.00),
+    ('20000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000005', 'Inscrição de demonstração', 40, 25.00)
 ON CONFLICT(id) DO UPDATE SET
     event_id = excluded.event_id,
     name = excluded.name,

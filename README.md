@@ -27,8 +27,8 @@ Abra [http://localhost:8091](http://localhost:8091). O front-end está em `src/m
 
 1. Selecione **Criar conta** e informe nome, sobrenome, e-mail e senha. Após o cadastro, a interface autentica a conta automaticamente.
 2. Entre com e-mail e senha para abrir o painel.
-3. Use **Gerar dados de exemplo** para criar três eventos e categorias na sua conta, usando os endpoints existentes.
-4. Na aba **Organizar**, filtre os eventos da conta por data. Para inscrição, selecione um evento futuro e uma categoria na aba **Inscrever-se**; o formulário também pode ser preenchido pelo botão de inscrição em uma categoria do evento.
+3. Use **Gerar dados de exemplo** para criar três eventos e categorias na sua conta.
+4. Na aba **Organizar**, filtre os eventos da conta por data. Para se inscrever, selecione um evento futuro de outro organizador e uma categoria na aba **Inscrever-se**. O organizador não pode se inscrever no próprio evento.
 5. Consulte seus eventos inscritos em **Minhas inscrições** ou organize eventos na aba **Organizar**. Em cada evento organizado, expanda **Categorias** para gerenciar capacidade e preço.
 6. Use **Sair** para encerrar a sessão neste navegador.
 
@@ -39,13 +39,14 @@ O JWT é armazenado no `localStorage` do navegador e enviado no cabeçalho `Auth
 A interface usa a API na mesma origem (`/api/v1`):
 
 - `POST /register` e `POST /authenticate` para cadastro e autenticação.
-- `GET /events/mine`, `POST /events`, `PUT /events/{eventId}` e `POST /events/{eventId}/cancel` para organização.
+- `GET /events/mine` para listar eventos organizados e `GET /events/available` para listar eventos futuros de outros organizadores disponíveis para inscrição.
+- `POST /events`, `PUT /events/{eventId}` e `POST /events/{eventId}/cancel` para organização.
 - `POST /events/{eventId}/categories` e `DELETE /events/{eventId}/categories/{categoryId}` para categorias.
 - `POST /events/{eventId}/registrations` para se inscrever e `GET /registrations?filter=TODOS|ATIVOS|INATIVOS` para consultar eventos inscritos.
 - `GET /registrations/details?filter=TODOS|ATIVOS|INATIVOS` para consultar cada inscrição com seu ID, evento, categoria e status.
 - `POST /events/registrations/{registrationId}/cancel` para cancelar uma inscrição ainda não iniciada.
 
-O back-end atual não fornece um catálogo global de eventos. O front filtra por data os eventos que a conta consegue consultar; a consulta detalhada de inscrições permite cancelar registros existentes sem depender de IDs guardados no navegador.
+O banco inclui um evento futuro de demonstração pertencente a outro usuário simulado, disponível para inscrições. O back-end valida a regra de não permitir autoinscrição mesmo que a interface seja contornada.
 
 A documentação OpenAPI fica disponível em [http://localhost:8091/api/v1/api-docs](http://localhost:8091/api/v1/api-docs). As rotas de API protegidas continuam exigindo autenticação; somente cadastro, login, documentação e arquivos estáticos da interface são públicos.
 
