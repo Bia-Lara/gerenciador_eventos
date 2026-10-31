@@ -294,6 +294,7 @@ class EventTest {
     @DisplayName("Equals")
     class EqualsTests {
         @Test
+        @DisplayName("should return false when compared with null")
         void shouldReturnFalseWhenComparedWithNull() {
             Event event = new Event("Test Event", startTime, endTime, organizerId);
 
@@ -301,12 +302,37 @@ class EventTest {
         }
 
         @Test
+        @DisplayName("should return false when compared with another type")
         void shouldReturnFalseWhenComparedWithAnotherType() {
             Event event = new Event("Test Event", startTime, endTime, organizerId);
             Object anotherType = new Object();
 
             assertThat(event.equals(anotherType)).isFalse();
         }
+
+        @Test
+        @DisplayName("should return false when ids are different")
+        void shouldReturnFalseWhenIdsAreDifferent() {
+            Event event = Event.restore(
+                    UUID.randomUUID(),
+                    "Test Event",
+                    startTime,
+                    endTime,
+                    organizerId
+            );
+
+            Event differentEvent = Event.restore(
+                    UUID.randomUUID(),
+                    "Test Event",
+                    startTime,
+                    endTime,
+                    organizerId
+            );
+
+            assertThat(event.equals(differentEvent)).isFalse();
+        }
+
+
 
     }
 }
