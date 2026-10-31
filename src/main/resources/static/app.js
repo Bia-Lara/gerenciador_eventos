@@ -1,6 +1,7 @@
 const API_BASE = "/api/v1";
 const TOKEN_KEY = "encontro.jwt";
 const NAME_KEY = "encontro.name";
+const CATEGORY_REGISTRATION_ERROR = "Não é possível remover esta categoria porque há usuários inscritos.";
 
 const authView = document.querySelector("#auth-view");
 const dashboardView = document.querySelector("#dashboard-view");
@@ -79,7 +80,7 @@ function messageForFailure(status, path, detail) {
         return "Não foi possível cancelar: há participantes inscritos neste evento.";
     }
     if (message.includes("category has registrations")) {
-        return "Não foi possível excluir esta categoria porque existem inscrições vinculadas a ela.";
+        return CATEGORY_REGISTRATION_ERROR;
     }
     if (message.includes("event has already started")) {
         return path.includes("/registrations")
@@ -502,7 +503,11 @@ function createCategoryManager(event) {
                 await loadEvents();
                 setFeedback(dashboardFeedback, "Categoria removida.", true);
             } catch (error) {
-                setFeedback(dashboardFeedback, error.message);
+                if (error.message === CATEGORY_REGISTRATION_ERROR) {
+                    window.alert(error.message);
+                } else {
+                    setFeedback(dashboardFeedback, error.message);
+                }
             }
         });
         actions.append(remove);
