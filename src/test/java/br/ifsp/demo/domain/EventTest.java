@@ -287,5 +287,19 @@ class EventTest {
             assertThat(event.getEndDateTime()).isEqualTo(newEnd);
         }
     }
+
+    @Nested
+    @Tag("Structural")
+    @Tag("UnitTest")
+    @DisplayName("Equals")
+    class EqualsTests {
+        @Test
+        void shouldReturnFalseWhenComparedWithNull() {
+            Event event = new Event("Test Event", startTime, endTime, organizerId);
+
+            assertThat(event.equals(null)).isFalse();
+        }
+
+    }
 }
 
