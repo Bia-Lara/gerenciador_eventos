@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -478,6 +479,30 @@ class EventTest {
 
             assertThat(result).isPresent();
             assertThat(result.orElseThrow().getId()).isEqualTo(vip.getId());
+        }
+
+        @Test
+        @DisplayName("should calculate hash code based on event fields")
+        void shouldCalculateHashCodeBasedOnEventFields() {
+            UUID id = UUID.randomUUID();
+
+            Event event = Event.restore(
+                    id,
+                    "Test Event",
+                    startTime,
+                    endTime,
+                    organizerId
+            );
+
+            int expectedHash = Objects.hash(
+                    id,
+                    "Test Event",
+                    startTime,
+                    endTime,
+                    organizerId
+            );
+
+            assertThat(event.hashCode()).isEqualTo(expectedHash);
         }
     }
 }
