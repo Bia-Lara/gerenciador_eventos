@@ -443,6 +443,24 @@ class EventTest {
                             "Category capacity must be greater than zero"
                     );
         }
+
+
+        @Test
+        @DisplayName("should remove only the category with matching ID")
+        void shouldRemoveOnlyMatchingCategory() {
+            Event event = new Event(
+                    "Test Event", startTime, endTime, organizerId
+            );
+
+            Category general = event.addCategory("General", 100, 10.0);
+            Category vip = event.addCategory("VIP", 50, 20.0);
+
+            event.removeCategory(general.getId());
+
+            assertThat(event.getCategories().size()).isEqualTo(1);
+            assertThat(event.getCategories().getFirst().getId())
+                    .isEqualTo(vip.getId());
+        }
     }
 }
 
