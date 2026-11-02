@@ -405,6 +405,45 @@ class EventTest {
 
     }
 
+    @Nested
+    @Tag("Mutation")
+    class MutationTests {
+
+        @Test
+        @DisplayName("should reject zero category capacity")
+        void shouldRejectZeroCategoryCapacity() {
+            Event event = new Event(
+                    "Test Event",
+                    startTime,
+                    endTime,
+                    organizerId
+            );
+
+            assertThatThrownBy(() ->
+                    event.addCategory("General", 0, 10.0)
+            )
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage(
+                            "Category capacity must be greater than zero"
+                    );
+        }
+
+        @Test
+        @DisplayName("should distinguish zero capacity from negative capacity")
+        void shouldDistinguishZeroFromNegativeCapacity() {
+            Event event = new Event(
+                    "Test Event", startTime, endTime, organizerId
+            );
+
+            assertThatThrownBy(() ->
+                    event.addCategory("General", 0, 10.0)
+            )
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage(
+                            "Category capacity must be greater than zero"
+                    );
+        }
+    }
 }
 
 
