@@ -290,7 +290,6 @@ class EventTest {
 
     @Nested
     @Tag("Structural")
-    @Tag("UnitTest")
     @DisplayName("Equals")
     class EqualsTests {
         @Test
@@ -405,5 +404,7 @@ class EventTest {
         }
 
     }
+
 }
+
 
