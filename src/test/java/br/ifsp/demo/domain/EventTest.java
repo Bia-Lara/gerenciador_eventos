@@ -504,6 +504,30 @@ class EventTest {
 
             assertThat(event.hashCode()).isEqualTo(expectedHash);
         }
+
+
+        @Test
+        @DisplayName("should return non-null event when restoring with status")
+        void shouldReturnNonNullEventWhenRestoringWithStatus() {
+            UUID id = UUID.randomUUID();
+
+            Event restoredEvent = Event.restoreWithStatus(
+                    id,
+                    "Test Event",
+                    startTime,
+                    endTime,
+                    organizerId,
+                    EventStatus.CANCELLED
+            );
+
+            assertThat(restoredEvent)
+                    .as("Restored event must not be null")
+                    .isNotNull();
+
+            assertThat(restoredEvent.getId()).isEqualTo(id);
+            assertThat(restoredEvent.getStatus())
+                    .isEqualTo(EventStatus.CANCELLED);
+        }
     }
 }
 
