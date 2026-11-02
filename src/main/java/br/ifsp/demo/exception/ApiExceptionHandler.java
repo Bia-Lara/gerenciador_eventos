@@ -40,6 +40,18 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(value = IllegalStateException.class)
     public ResponseEntity<?> handleIllegalStateException(IllegalStateException e){
+        final HttpStatus conflict = CONFLICT;
+        final ApiException apiException = ApiException.builder()
+                .status(conflict)
+                .message(e.getMessage())
+                .developerMessage(e.getClass().getName())
+                .timestamp(ZonedDateTime.now(ZoneId.of("Z")))
+                .build();
+        return new ResponseEntity<>(apiException, conflict);
+    }
+
+    @ExceptionHandler(value = UnauthorizedUserException.class)
+    public ResponseEntity<?> handleUnauthorizedUserException(UnauthorizedUserException e){
         final HttpStatus forbidden = FORBIDDEN;
         final ApiException apiException = ApiException.builder()
                 .status(forbidden)
@@ -76,6 +88,30 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(value = EntityAlreadyExistsException.class)
     public ResponseEntity<?> handleEntityAlreadyExistsException(EntityAlreadyExistsException e){
+        final HttpStatus conflict = CONFLICT;
+        final ApiException apiException = ApiException.builder()
+                .status(conflict)
+                .message(e.getMessage())
+                .developerMessage(e.getClass().getName())
+                .timestamp(ZonedDateTime.now(ZoneId.of("Z")))
+                .build();
+        return new ResponseEntity<>(apiException, conflict);
+    }
+
+    @ExceptionHandler(value = CategoryFullException.class)
+    public ResponseEntity<?> handleCategoryFullException(CategoryFullException e){
+        final HttpStatus conflict = CONFLICT;
+        final ApiException apiException = ApiException.builder()
+                .status(conflict)
+                .message(e.getMessage())
+                .developerMessage(e.getClass().getName())
+                .timestamp(ZonedDateTime.now(ZoneId.of("Z")))
+                .build();
+        return new ResponseEntity<>(apiException, conflict);
+    }
+
+    @ExceptionHandler(value = DuplicateRegistrationException.class)
+    public ResponseEntity<?> handleDuplicateRegistrationException(DuplicateRegistrationException e){
         final HttpStatus conflict = CONFLICT;
         final ApiException apiException = ApiException.builder()
                 .status(conflict)

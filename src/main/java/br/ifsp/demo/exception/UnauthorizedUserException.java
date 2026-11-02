@@ -2,6 +2,10 @@ package br.ifsp.demo.exception;
 
 public class UnauthorizedUserException extends RuntimeException {
     public UnauthorizedUserException() {
-        super("User unauthorized");
+        this("User unauthorized");
+    }
+
+    public UnauthorizedUserException(String message) {
+        super(message);
     }
 }
