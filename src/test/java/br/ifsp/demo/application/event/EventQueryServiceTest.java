@@ -4,10 +4,7 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -135,4 +132,26 @@ class EventQueryServiceTest {
 
         assertThat(events).containsExactly(event);
     }
+
+    @Nested
+    @Tag("Mutation")
+    @Tag("UnitTest")
+    class MutationTests {
+
+        @Test
+        @DisplayName("should throw UserNotFoundException when user does not exist")
+        void shouldThrowWhenUserDoesNotExist() {
+            UUID userId = UUID.randomUUID();
+
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() ->
+                    sut.listAvailableForRegistration(userId)
+            )
+                    .isInstanceOf(UserNotFoundException.class);
+        }
+    }
+
 }
+

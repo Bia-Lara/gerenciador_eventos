@@ -409,6 +409,7 @@ class EventTest {
 
     @Nested
     @Tag("Mutation")
+    @Tag("UnitTest")
     class MutationTests {
 
         @Test
