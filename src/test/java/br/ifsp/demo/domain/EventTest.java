@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -460,6 +461,23 @@ class EventTest {
             assertThat(event.getCategories().size()).isEqualTo(1);
             assertThat(event.getCategories().getFirst().getId())
                     .isEqualTo(vip.getId());
+        }
+
+
+        @Test
+        @DisplayName("should find only category with matching ID")
+        void shouldFindOnlyMatchingCategory() {
+            Event event = new Event(
+                    "Test Event", startTime, endTime, organizerId
+            );
+
+            event.addCategory("General", 100, 10.0);
+            Category vip = event.addCategory("VIP", 50, 20.0);
+
+            Optional<Category> result = event.findCategory(vip.getId());
+
+            assertThat(result).isPresent();
+            assertThat(result.orElseThrow().getId()).isEqualTo(vip.getId());
         }
     }
 }
