@@ -116,6 +116,17 @@ class RegistrationQueryServiceTest {
         assertThat(result).containsExactly(registration);
     }
 
+    @Test
+    @DisplayName("shouldCountActiveRegistrationsForEvent")
+    void shouldCountActiveRegistrationsForEvent() {
+        UUID eventId = UUID.randomUUID();
+        when(registrationRepository.countActiveByEventId(eventId)).thenReturn(12L);
+
+        long result = sut.countActiveRegistrationsForEvent(eventId);
+
+        assertThat(result).isEqualTo(12L);
+    }
+
     private Registration registration(User user, LocalDateTime eventStart, RegistrationStatus status) {
         Event event = new Event("Evento", eventStart, eventStart.plusDays(1), UUID.randomUUID());
         Category category = event.addCategory("Pista", 100, 50.0);

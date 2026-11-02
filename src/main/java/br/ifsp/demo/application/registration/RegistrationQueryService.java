@@ -34,6 +34,13 @@ public class RegistrationQueryService {
                 .toList();
     }
 
+    public long countActiveRegistrationsForEvent(UUID eventId) {
+        if (eventId == null) {
+            throw new IllegalArgumentException("Event is required");
+        }
+        return registrationRepository.countActiveByEventId(eventId);
+    }
+
     public List<Registration> listRegistrationsByUser(UUID userId, RegistrationFilter filter) {
         validateIllegalArguments(userId, filter);
 

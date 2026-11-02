@@ -80,6 +80,23 @@ public class JdbcRegistrationRepository implements RegistrationRepository {
     }
 
     @Override
+    public long countActiveByEventId(UUID eventId) {
+        Long count = jdbc.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM registration r
+                JOIN category c ON c.id = r.category_id
+                WHERE c.event_id = ? AND r.status = ?
+                """,
+                Long.class,
+                eventId.toString(),
+                RegistrationStatus.ATIVA.name()
+        );
+
+        return count == null ? 0 : count;
+    }
+
+    @Override
     public Registration create(Registration registration) {
         jdbc.update(
                 "INSERT INTO registration (id, user_id, category_id, status) VALUES (?, ?, ?, ?)",

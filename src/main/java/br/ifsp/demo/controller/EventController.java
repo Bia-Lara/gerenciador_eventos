@@ -3,20 +3,18 @@ package br.ifsp.demo.controller;
 import br.ifsp.demo.application.event.CancelEventService;
 import br.ifsp.demo.application.event.EditEventService;
 import br.ifsp.demo.application.event.EventQueryService;
+import br.ifsp.demo.application.event.EventService;
+import br.ifsp.demo.application.registration.RegistrationQueryService;
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.dto.AvailableEventResponse;
+import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.dto.EditEventRequest;
 import br.ifsp.demo.dto.EventResponse;
 import br.ifsp.demo.infrastructure.security.auth.AuthenticationInfoService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import br.ifsp.demo.dto.CreateEventRequest;
-import br.ifsp.demo.application.event.EventService;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,13 +29,15 @@ public class EventController {
     private final EditEventService editEventService;
     private final CancelEventService cancelEventService;
     private final EventService eventService;
+    private final RegistrationQueryService registrationQueryService;
 
-    public EventController(AuthenticationInfoService authService, EventQueryService eventQueryService, EditEventService editEventService, CancelEventService cancelEventService, EventService eventService) {
+    public EventController(AuthenticationInfoService authService, EventQueryService eventQueryService, EditEventService editEventService, CancelEventService cancelEventService, EventService eventService, RegistrationQueryService registrationQueryService) {
         this.authService = authService;
         this.eventQueryService = eventQueryService;
         this.editEventService = editEventService;
         this.cancelEventService = cancelEventService;
         this.eventService = eventService;
+        this.registrationQueryService = registrationQueryService;
     }
 
     @GetMapping("/mine")
@@ -48,10 +48,12 @@ public class EventController {
     }
 
     @GetMapping("/available")
-    public ResponseEntity<List<EventResponse>> listAvailableForRegistration() {
+    public ResponseEntity<List<AvailableEventResponse>> listAvailableForRegistration() {
         UUID userId = authService.getAuthenticatedUserId();
         return ResponseEntity.ok(eventQueryService.listAvailableForRegistration(userId)
-                .stream().map(EventResponse::from).toList());
+                .stream().map(event -> AvailableEventResponse.from(event,
+                        registrationQueryService.countActiveRegistrationsForEvent(event.getId())))
+                .toList());
     }
 
     @PutMapping("/{eventId}")
