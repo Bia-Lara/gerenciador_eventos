@@ -40,3 +40,40 @@ ON CONFLICT(id) DO UPDATE SET
     user_id = excluded.user_id,
     category_id = excluded.category_id,
     status = excluded.status;
+
+WITH RECURSIVE registration_slots(slot) AS (
+    SELECT 1
+    UNION ALL
+    SELECT slot + 1 FROM registration_slots WHERE slot < 39
+),
+active_count(count) AS (
+    SELECT COUNT(*)
+    FROM registration
+    WHERE category_id = '20000000-0000-0000-0000-000000000008'
+      AND status = 'ATIVA'
+),
+missing_slots(slot) AS (
+    SELECT registration_slots.slot
+    FROM registration_slots
+    CROSS JOIN active_count
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM registration
+        WHERE id = printf('30000000-0000-0000-0000-%012d', registration_slots.slot)
+          AND category_id = '20000000-0000-0000-0000-000000000008'
+          AND status = 'ATIVA'
+    )
+    ORDER BY registration_slots.slot
+    LIMIT (SELECT MAX(0, 39 - count) FROM active_count)
+)
+INSERT INTO registration (id, user_id, category_id, status)
+SELECT printf('30000000-0000-0000-0000-%012d', slot),
+       printf('90000000-0000-0000-0000-%012d', slot),
+       '20000000-0000-0000-0000-000000000008',
+       'ATIVA'
+FROM missing_slots
+WHERE true
+ON CONFLICT(id) DO UPDATE SET
+    user_id = excluded.user_id,
+    category_id = excluded.category_id,
+    status = excluded.status;
