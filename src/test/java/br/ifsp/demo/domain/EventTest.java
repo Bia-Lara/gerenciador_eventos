@@ -528,6 +528,30 @@ class EventTest {
             assertThat(restoredEvent.getStatus())
                     .isEqualTo(EventStatus.CANCELLED);
         }
+
+
+        @Test
+        @DisplayName("should restore category with original ID and return restored category")
+        void shouldRestoreCategoryWithOriginalId() {
+            Event event = new Event(
+                    "Test Event", startTime, endTime, organizerId
+            );
+
+            UUID originalId = UUID.randomUUID();
+
+            Category restoredCategory = event.restoreCategory(
+                    originalId,
+                    "VIP",
+                    50,
+                    20.0
+            );
+
+            assertThat(restoredCategory).isNotNull();
+            assertThat(restoredCategory.getId()).isEqualTo(originalId);
+
+            assertThat(event.findCategory(originalId)).isPresent();
+            assertThat(event.getCategories().size()).isEqualTo(1);
+        }
     }
 }
 
