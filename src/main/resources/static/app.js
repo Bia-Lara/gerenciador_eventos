@@ -11,13 +11,17 @@ const feedback = document.querySelector("#auth-feedback");
 const dashboardFeedback = document.querySelector("#dashboard-feedback");
 const eventsList = document.querySelector("#events-list");
 const emptyState = document.querySelector("#empty-state");
+const participationEventsList = document.querySelector("#participation-events-list");
+const participationEmpty = document.querySelector("#participation-empty");
 const eventDialog = document.querySelector("#event-dialog");
 const eventForm = document.querySelector("#event-form");
 const eventFeedback = document.querySelector("#event-feedback");
+const registrationDialog = document.querySelector("#registration-dialog");
+const registrationForm = document.querySelector("#registration-form");
+const registrationFeedback = document.querySelector("#registration-feedback");
 let events = [];
 let participationEvents = [];
 let registrations = [];
-let activeRegistrationCounts = new Map();
 let editingEventId = null;
 
 async function api(path, options = {}) {
@@ -79,6 +83,17 @@ function messageForFailure(status, path, detail) {
     if (message.includes("cannot cancel event with active registrations")) {
         return "Não foi possível cancelar: há participantes inscritos neste evento.";
     }
+    if (message.includes("only the event organizer can cancel this event")) {
+        return "Este evento não pertence à sua conta e não pode ser cancelado por você.";
+    }
+    if (message.includes("only the event organizer can edit or cancel this event")) {
+        return "A conta conectada não é a organizadora deste evento. Entre com a conta que o criou.";
+    }
+    if (message.includes("event has already been cancelled")) {
+        return path.endsWith("/cancel")
+            ? "Este evento já está cancelado."
+            : "Este evento já foi cancelado e não pode ser editado.";
+    }
     if (message.includes("category has registrations")) {
         return CATEGORY_REGISTRATION_ERROR;
     }
@@ -88,7 +103,7 @@ function messageForFailure(status, path, detail) {
             : "Não foi possível alterar ou cancelar porque o evento já começou.";
     }
     if (status >= 500 && /\/events\/[^/]+\/registrations$/.test(path)) {
-        return "Inscrição recusada. Você pode já estar inscrito neste evento ou a categoria pode estar cheia. Confira suas inscrições ou escolha outra categoria.";
+        return "Não foi possível concluir sua inscrição. Tente novamente.";
     }
     return detail || errorForStatus(status, path);
 }
@@ -188,27 +203,94 @@ function renderEvents() {
     }
 }
 
-function renderParticipationOptions(selectedEventId = null, selectedCategoryId = null) {
-    const eventSelect = document.querySelector("#registration-event-id");
-    const categorySelect = document.querySelector("#registration-category-id");
-    const previousEventId = selectedEventId ?? eventSelect.value;
+function renderParticipationEvents() {
+    const date = document.querySelector("#participation-date").value;
     const availableEvents = [...participationEvents]
-        .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
+        .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime))
+        .filter(event => !date || event.startDateTime.slice(0, 10) === date);
 
-    eventSelect.replaceChildren(new Option(
-        availableEvents.length ? "Selecione um evento" : "Nenhum evento futuro disponível",
-        ""
-    ));
-    for (const event of availableEvents) {
-        const option = new Option(`${event.name} · ${formatDate(event.startDateTime)}`, event.id);
-        eventSelect.add(option);
+    participationEventsList.replaceChildren(...availableEvents.map(createParticipationEventCard));
+    participationEmpty.classList.toggle("hidden", availableEvents.length > 0);
+    if (availableEvents.length === 0 && participationEvents.length > 0) {
+        participationEmpty.querySelector("h2").textContent = "Nenhum evento nesta data.";
+        participationEmpty.querySelector("p").textContent = "Altere a data para encontrar outros eventos disponíveis.";
+    } else {
+        participationEmpty.querySelector("h2").textContent = "Nenhum evento disponível.";
+        participationEmpty.querySelector("p").textContent = "Os eventos disponíveis para inscrição aparecerão aqui.";
     }
-    eventSelect.value = availableEvents.some(event => event.id === previousEventId) ? previousEventId : "";
+}
 
-    const selectedEvent = availableEvents.find(event => event.id === eventSelect.value);
-    const categories = selectedEvent?.categories || [];
+async function loadAvailableEvents() {
+    setFeedback(document.querySelector("#participation-feedback"));
+    participationEventsList.setAttribute("aria-busy", "true");
+    try {
+        participationEvents = await api("/events/available");
+        renderParticipationEvents();
+    } catch (error) {
+        participationEvents = [];
+        renderParticipationEvents();
+        setFeedback(document.querySelector("#participation-feedback"), error.message);
+    } finally {
+        participationEventsList.removeAttribute("aria-busy");
+    }
+}
+
+function createParticipationEventCard(event, index) {
+    const card = document.createElement("article");
+    card.className = "event-card";
+    card.style.animationDelay = `${Math.min(index, 6) * 45}ms`;
+    const totalCapacity = Number(event.totalCapacity) || 0;
+    const activeRegistrations = Number(event.activeRegistrations) || 0;
+    const isFull = totalCapacity > 0 && activeRegistrations >= totalCapacity;
+    const eventMain = document.createElement("div");
+    eventMain.className = "event-main";
+    const title = document.createElement("h2");
+    title.className = "event-title";
+    title.textContent = event.name;
+    const time = document.createElement("p");
+    time.className = "event-time";
+    time.textContent = `${formatDate(event.startDateTime)} · ${formatTime(event.startDateTime)} às ${formatTime(event.endDateTime)}`;
+    const capacity = document.createElement("p");
+    capacity.className = `participation-capacity${isFull ? " full" : ""}`;
+    const occupied = document.createElement("strong");
+    occupied.textContent = `${activeRegistrations}/${totalCapacity}`;
+    capacity.append(occupied, document.createTextNode(" vagas preenchidas"));
+    if (isFull) {
+        const fullLabel = document.createElement("span");
+        fullLabel.className = "event-status cancelled";
+        fullLabel.textContent = "LOTADO";
+        capacity.append(fullLabel);
+    }
+    eventMain.append(title, time, capacity);
+
+    const actions = document.createElement("div");
+    actions.className = "participation-event-actions";
+    const button = document.createElement("button");
+    button.className = `button ${isFull ? "button-outline" : "button-primary"}`;
+    button.type = "button";
+    button.textContent = isFull ? "Lotado" : "Inscrever-se";
+    button.disabled = isFull;
+    if (isFull) {
+        button.setAttribute("aria-label", `Inscrições encerradas: evento ${event.name} lotado`);
+    } else {
+        button.addEventListener("click", () => openRegistrationDialog(event));
+    }
+    actions.append(button);
+    card.append(eventMain, actions);
+    return card;
+}
+
+function openRegistrationDialog(event) {
+    const totalCapacity = Number(event.totalCapacity) || 0;
+    const activeRegistrations = Number(event.activeRegistrations) || 0;
+    if (totalCapacity > 0 && activeRegistrations >= totalCapacity) return;
+
+    const categorySelect = registrationForm.elements.categoryId;
+    const categories = event.categories || [];
+    document.querySelector("#registration-event-name").textContent = event.name;
+    registrationForm.elements.eventId.value = event.id;
     categorySelect.replaceChildren(new Option(
-        selectedEvent ? (categories.length ? "Selecione uma categoria" : "Sem categorias disponíveis") : "Selecione primeiro um evento",
+        categories.length ? "Selecione uma categoria" : "Este evento não possui categorias disponíveis",
         ""
     ));
     for (const category of categories) {
@@ -217,25 +299,10 @@ function renderParticipationOptions(selectedEventId = null, selectedCategoryId =
             category.id
         ));
     }
-    categorySelect.disabled = !selectedEvent || categories.length === 0;
-    if (categories.some(category => category.id === selectedCategoryId)) {
-        categorySelect.value = selectedCategoryId;
-    }
-    document.querySelector("#participation-hint").textContent = availableEvents.length
-        ? "A lista inclui eventos futuros de outros organizadores."
-        : "Não há eventos futuros de outros organizadores disponíveis para inscrição.";
-}
-
-async function loadAvailableEvents() {
-    setFeedback(document.querySelector("#participation-feedback"));
-    try {
-        participationEvents = await api("/events/available");
-        renderParticipationOptions();
-    } catch (error) {
-        participationEvents = [];
-        renderParticipationOptions();
-        setFeedback(document.querySelector("#participation-feedback"), error.message);
-    }
+    categorySelect.disabled = categories.length === 0;
+    registrationForm.querySelector("button[type=submit]").disabled = categories.length === 0;
+    setFeedback(registrationFeedback);
+    registrationDialog.showModal();
 }
 
 function localDateTimeAfter(hoursFromNow) {
@@ -311,25 +378,25 @@ async function createSampleData() {
 
 async function submitRegistration(event) {
     event.preventDefault();
-    const form = event.currentTarget;
-    const eventId = form.elements.eventId.value.trim();
-    const categoryId = form.elements.categoryId.value.trim();
-    const submit = form.querySelector("button[type=submit]");
+    const eventId = registrationForm.elements.eventId.value.trim();
+    const categoryId = registrationForm.elements.categoryId.value.trim();
+    const submit = registrationForm.querySelector("button[type=submit]");
     submit.disabled = true;
-    setFeedback(document.querySelector("#participation-feedback"));
+    setFeedback(registrationFeedback);
     try {
         await api(`/events/${eventId}/registrations`, {
             method: "POST",
             body: JSON.stringify({ categoryId })
         });
-        form.reset();
-        await loadRegistrations();
+        registrationDialog.close();
+        registrationForm.reset();
+        await loadAvailableEvents();
         selectWorkspaceView("registrations");
         setFeedback(document.querySelector("#registrations-feedback"), "Inscrição confirmada.", true);
     } catch (error) {
-        setFeedback(document.querySelector("#participation-feedback"), error.message);
+        setFeedback(registrationFeedback, error.message);
     } finally {
-        submit.disabled = false;
+        if (registrationDialog.open) submit.disabled = false;
     }
 }
 
@@ -345,8 +412,7 @@ async function loadRegistrations() {
 }
 
 function renderRegistrations() {
-    const date = document.querySelector("#registration-date").value;
-    const visibleRegistrations = registrations.filter(registration => !date || registration.startDateTime.slice(0, 10) === date)
+    const visibleRegistrations = [...registrations]
         .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
     const list = document.querySelector("#registrations-list");
     const totalCounts = visibleRegistrations.reduce((counts, registration) => {
@@ -394,9 +460,6 @@ function renderRegistrations() {
         return card;
     }));
     document.querySelector("#registrations-empty").classList.toggle("hidden", registrations.length > 0);
-    if (visibleRegistrations.length === 0 && registrations.length > 0) {
-        list.innerHTML = '<p class="event-time">Nenhuma inscrição corresponde à data selecionada.</p>';
-    }
 }
 
 async function cancelRegistration(registration, button) {
@@ -445,7 +508,11 @@ function createEventCard(event, index) {
         cancelButton.className = "text-button";
         cancelButton.type = "button";
         cancelButton.textContent = "Cancelar evento";
-        cancelButton.addEventListener("click", () => cancelEvent(event));
+        cancelButton.addEventListener("click", clickEvent => {
+            clickEvent.preventDefault();
+            clickEvent.stopPropagation();
+            cancelEvent(event, cancelButton);
+        });
         actions.append(editButton, cancelButton);
     }
     card.append(eventMain, actions);
@@ -551,15 +618,21 @@ async function saveEvent(event) {
     }
 }
 
-async function cancelEvent(event) {
+async function cancelEvent(event, button) {
     if (!window.confirm(`Cancelar o evento "${event.name}"?`)) return;
+    button.disabled = true;
+    setFeedback(dashboardFeedback, "Cancelando evento...");
     try {
-        await api(`/events/${event.id}/cancel`, { method: "POST" });
-        await loadEvents();
+        const cancelledEvent = await api(`/events/${event.id}/cancel`, { method: "POST" });
+        events = events.map(current => current.id === event.id
+            ? { ...current, ...cancelledEvent, status: cancelledEvent?.status || "CANCELLED" }
+            : current);
+        renderEvents();
         setFeedback(dashboardFeedback, "Evento cancelado.", true);
     } catch (error) {
         setFeedback(dashboardFeedback, error.message);
         window.alert(error.message);
+        button.disabled = false;
     }
 }
 
@@ -601,14 +674,14 @@ document.querySelector("#new-event-button").addEventListener("click", () => open
 document.querySelector("#empty-create-button").addEventListener("click", () => openEventDialog());
 document.querySelector("#event-search").addEventListener("input", renderEvents);
 document.querySelector("#event-date").addEventListener("input", renderEvents);
-document.querySelector("#registration-event-id").addEventListener("change", () => renderParticipationOptions());
+document.querySelector("#participation-date").addEventListener("input", renderParticipationEvents);
 document.querySelectorAll(".workspace-tab").forEach(tab => tab.addEventListener("click", () => selectWorkspaceView(tab.dataset.workspace)));
 document.querySelectorAll("[data-workspace-link]").forEach(button => button.addEventListener("click", () => selectWorkspaceView(button.dataset.workspaceLink)));
-document.querySelector("#participation-form").addEventListener("submit", submitRegistration);
+registrationForm.addEventListener("submit", submitRegistration);
 document.querySelector("#registration-filter").addEventListener("change", loadRegistrations);
-document.querySelector("#registration-date").addEventListener("input", renderRegistrations);
 eventForm.addEventListener("submit", saveEvent);
 document.querySelectorAll("[data-close-dialog]").forEach(button => button.addEventListener("click", () => eventDialog.close()));
+document.querySelectorAll("[data-close-registration-dialog]").forEach(button => button.addEventListener("click", () => registrationDialog.close()));
 
 loginForm.addEventListener("submit", async event => {
     event.preventDefault();

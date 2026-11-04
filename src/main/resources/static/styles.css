@@ -71,13 +71,15 @@ input:focus { border-color: #6a937b; box-shadow: 0 0 0 3px rgba(36, 92, 70, .1);
 .workspace-heading { align-items: end; margin-bottom: 26px; }
 .workspace-heading h1 { margin: 0; font-family: Manrope, sans-serif; font-size: 36px; line-height: 1.15; }
 .workspace-heading .dashboard-subtitle { margin-top: 9px; }
-.participation-form { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.3fr) auto; gap: 13px; align-items: end; max-width: 1000px; margin: 12px 0; }
-.participation-form .field-group { gap: 8px; color: #48544c; font-size: 11px; font-weight: 600; }
-.participation-form select { min-width: 0; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; }
-.participation-form select:disabled { color: var(--muted); background: #f0f1ec; }
 .event-filters { display: flex; align-items: end; gap: 10px; }
 .date-filter { display: flex; flex-direction: column; gap: 6px; color: #48544c; font-size: 10px; font-weight: 600; }
 .date-filter input { min-height: 37px; padding: 8px 10px; }
+.participation-events-list { margin-top: 12px; }
+.participation-capacity { margin: 9px 0 0; color: var(--green); font-size: 11px; font-weight: 600; }
+.participation-capacity strong { font-family: Manrope, sans-serif; font-size: 15px; }
+.participation-capacity.full { display: flex; align-items: center; gap: 9px; color: #a55739; }
+.participation-event-actions { display: flex; align-items: center; }
+.participation-event-actions .button:disabled { cursor: not-allowed; opacity: .7; }
 .registration-filter { width: 180px; }
 .registration-filter select { min-height: 39px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; }
 .registration-list { display: flex; flex-direction: column; }
@@ -140,6 +142,8 @@ input:focus { border-color: #6a937b; box-shadow: 0 0 0 3px rgba(36, 92, 70, .1);
 .dialog { width: min(520px, calc(100% - 32px)); padding: 0; border: 0; border-radius: 6px; background: var(--surface); color: var(--ink); box-shadow: 0 24px 80px rgba(18, 35, 25, .22); }
 .dialog::backdrop { background: rgba(20, 33, 26, .46); backdrop-filter: blur(2px); }
 .dialog-content { display: flex; flex-direction: column; gap: 10px; padding: 26px; }
+.dialog-content select { min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; }
+.dialog-content select:disabled { color: var(--muted); background: #f0f1ec; }
 .dialog-heading { display: flex; align-items: start; justify-content: space-between; margin-bottom: 10px; }
 .dialog-heading .eyebrow { margin-bottom: 6px; }
 .dialog-heading h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 22px; }
@@ -160,10 +164,9 @@ input:focus { border-color: #6a937b; box-shadow: 0 0 0 3px rgba(36, 92, 70, .1);
     .workspace-tabs { gap: 18px; margin-bottom: 28px; overflow-x: auto; }
     .workspace-tab { font-size: 11px; }
     .workspace-heading h1 { font-size: 30px; }
-    .participation-form { grid-template-columns: 1fr; }
-    .participation-form > .button { width: 100%; }
     .event-filters { width: 100%; align-items: stretch; flex-direction: column; }
     .event-filters .search-box { width: 100%; }
+    .participation-event-actions .button { width: 100%; }
     .registration-card { align-items: start; }
     .registration-main { align-items: start; flex-direction: column; gap: 8px; }
     .registration-filter { width: 100%; max-width: 220px; }
