@@ -36,15 +36,30 @@ O JWT é armazenado no `localStorage` do navegador e enviado no cabeçalho `Auth
 
 ## API utilizada
 
-A interface usa a API na mesma origem (`/api/v1`):
+A interface consome a API na mesma origem (`/api/v1`). Todos os endpoints, exceto os de autenticação, exigem usuário autenticado.
 
-- `POST /register` e `POST /authenticate` para cadastro e autenticação.
-- `GET /events/mine` para listar eventos organizados e `GET /events/available` para listar eventos futuros de outros organizadores disponíveis para inscrição.
-- `POST /events`, `PUT /events/{eventId}` e `POST /events/{eventId}/cancel` para organização.
-- `POST /events/{eventId}/categories` e `DELETE /events/{eventId}/categories/{categoryId}` para categorias.
-- `POST /events/{eventId}/registrations` para se inscrever e `GET /registrations?filter=TODOS|ATIVOS|INATIVOS` para consultar eventos inscritos.
-- `GET /registrations/details?filter=TODOS|ATIVOS|INATIVOS` para consultar cada inscrição com seu ID, evento, categoria e status.
-- `POST /events/registrations/{registrationId}/cancel` para cancelar uma inscrição ainda não iniciada.
+**Autenticação**
+- `POST /register`: cadastra um novo usuário.
+- `POST /authenticate`: autentica o usuário.
+
+**Eventos**
+- `GET /events/mine`: lista os eventos organizados pelo usuário.
+- `GET /events/available`: lista eventos futuros de outros organizadores disponíveis para inscrição, com o total de inscrições ativas.
+- `POST /events`: cria um evento.
+- `PUT /events/{eventId}`: edita nome e datas de início e fim.
+- `POST /events/{eventId}/cancel`: cancela um evento.
+
+**Categorias**
+- `POST /events/{eventId}/categories`: cria uma categoria no evento.
+- `DELETE /events/{eventId}/categories/{categoryId}`: remove uma categoria do evento.
+
+**Inscrições**
+- `POST /events/{eventId}/registrations`: inscreve o usuário em uma categoria do evento (`categoryId` no corpo).
+- `POST /events/registrations/{registrationId}/cancel`: cancela uma inscrição de evento ainda não iniciado.
+- `GET /registrations?filter=`: lista os eventos em que o usuário está inscrito.
+- `GET /registrations/details?filter=`: lista as inscrições do usuário com ID, evento, categoria e status.
+
+O parâmetro `filter` aceita `TODOS` (padrão), `ATIVOS` ou `INATIVOS`.
 
 O banco inclui um evento futuro de demonstração pertencente a outro usuário simulado, disponível para inscrições. O back-end valida a regra de não permitir autoinscrição mesmo que a interface seja contornada.
 
