@@ -65,6 +65,7 @@ public class EventCategoryService {
 
         userRepository.findById(organizerId).orElseThrow(() -> new UserNotFoundException(organizerId));
         event.ensureOrganizerCanCreateCategory(organizerId);
+        event.ensureIsNotCancelled();
 
         Category category = event.addCategory(request.name(), request.capacity(), request.price());
         return categoryRepository.save(category);

@@ -126,7 +126,7 @@ public class Event {
         }
     }
 
-    private void ensureIsNotCancelled(){
+    public void ensureIsNotCancelled(){
         if(this.status.equals(EventStatus.CANCELLED)){
             throw new IllegalStateException();
         }

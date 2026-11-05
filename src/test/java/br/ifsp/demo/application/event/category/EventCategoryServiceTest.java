@@ -5,6 +5,7 @@ import br.ifsp.demo.application.registration.RegistrationRepository;
 import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.domain.Event;
+import br.ifsp.demo.domain.enumerations.EventStatus;
 import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.exception.*;
 import br.ifsp.demo.infrastructure.security.user.User;
@@ -387,5 +388,31 @@ class EventCategoryServiceTest {
         assertThat(category.getPrice()).isEqualTo(10.00);
         assertThat(category.getCapacity()).isEqualTo(100);
         verify(categoryRepository).save(category);
+    }
+
+
+    @Test
+    @DisplayName("shouldThrowIllegalStateExceptionWhenCreatingCategoryForCancelledEvent")
+    void shouldThrowIllegalStateExceptionWhenCreatingCategoryForCancelledEvent() {
+        UUID organizerId = UUID.randomUUID();
+
+        Event event = Event.restoreWithStatus(
+                UUID.randomUUID(),
+                "Show",
+                NOW.plusDays(1),
+                NOW.plusDays(2),
+                organizerId,
+                EventStatus.CANCELLED
+        );
+
+        CreateCategoryRequest request = new CreateCategoryRequest("Pista", 10.00, 100);
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+
+        when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+
+        assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request)).isInstanceOf(IllegalStateException.class);
+
+        verify(categoryRepository, never()).save(any());
     }
 }
