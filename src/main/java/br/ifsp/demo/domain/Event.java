@@ -120,7 +120,7 @@ public class Event {
         }
     }
 
-    private void ensureIsOrganizer(UUID organizerId){
+    public void ensureIsOrganizer(UUID organizerId){
         if(!this.organizerId.equals(organizerId)){
             throw new UnauthorizedUserException();
         }

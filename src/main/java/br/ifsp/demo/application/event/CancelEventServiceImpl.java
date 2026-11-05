@@ -34,6 +34,8 @@ public class CancelEventServiceImpl implements CancelEventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
 
+        event.ensureIsOrganizer(userId);
+
         if (registrationRepository.existsActiveByEventId(eventId)) {
             throw new IllegalStateException("Cannot cancel event with active registrations");
         }

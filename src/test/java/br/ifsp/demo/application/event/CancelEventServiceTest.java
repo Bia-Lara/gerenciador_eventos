@@ -22,8 +22,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("UnitTest")
@@ -123,8 +122,8 @@ public class CancelEventServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw unauthorized user exception when non-organizer cancels event with active registrations")
-    void shouldThrowUnauthorizedUserExceptionWhenNonOrganizerCancelsEventWithActiveRegistrations() {
+    @DisplayName("Should reject cancellation by non-organizer before checking registrations")
+    void shouldRejectCancellationByNonOrganizerBeforeCheckingRegistrations() {
         Event event = new Event(
                 "Test Event",
                 startTime,
@@ -134,12 +133,18 @@ public class CancelEventServiceTest {
 
         UUID eventId = event.getId();
 
-        when(userRepository.findById(otherUserId)).thenReturn(Optional.of(new User()));
+        when(userRepository.findById(otherUserId))
+                .thenReturn(Optional.of(new User()));
 
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.of(event));
 
-        when(registrationRepository.existsActiveByEventId(eventId)).thenReturn(true);
+        assertThrows(
+                UnauthorizedUserException.class,
+                () -> sut.execute(eventId, otherUserId)
+        );
 
-        assertThrows(UnauthorizedUserException.class, () -> sut.execute(eventId, otherUserId));
+        verify(registrationRepository, never())
+                .existsActiveByEventId(eventId);
     }
 }
