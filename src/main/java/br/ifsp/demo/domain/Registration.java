@@ -54,6 +54,10 @@ public class Registration {
             throw new NullValueException("User");
         }
 
+        if (!this.user.getId().equals(userId)) {
+            throw new UnauthorizedUserException();
+        }
+
         if (this.status == RegistrationStatus.CANCELADA) {
             throw new IllegalStateException("Registration already cancelled");
         }
