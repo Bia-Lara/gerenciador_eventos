@@ -5,6 +5,7 @@ import br.ifsp.demo.application.user.UserRepository;
 import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.domain.enumerations.EventStatus;
 import br.ifsp.demo.exception.EventNotFoundException;
+import br.ifsp.demo.exception.UnauthorizedUserException;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,5 +120,26 @@ public class CancelEventServiceTest {
 
         assertThat(event.getStatus()).isEqualTo(EventStatus.CANCELLED);
         verify(eventRepository).save(event);
+    }
+
+    @Test
+    @DisplayName("Should throw unauthorized user exception when non-organizer cancels event with active registrations")
+    void shouldThrowUnauthorizedUserExceptionWhenNonOrganizerCancelsEventWithActiveRegistrations() {
+        Event event = new Event(
+                "Test Event",
+                startTime,
+                endTime,
+                organizerId
+        );
+
+        UUID eventId = event.getId();
+
+        when(userRepository.findById(otherUserId)).thenReturn(Optional.of(new User()));
+
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        when(registrationRepository.existsActiveByEventId(eventId)).thenReturn(true);
+
+        assertThrows(UnauthorizedUserException.class, () -> sut.execute(eventId, otherUserId));
     }
 }
