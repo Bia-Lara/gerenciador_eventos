@@ -12,6 +12,10 @@ public class Category {
     private double price;
 
     public Category(Event event, String name, Integer capacity, Double price) {
+        if (event == null) {
+            throw new IllegalArgumentException("Event is required");
+        }
+
         this.event = event;
         this.id = UUID.randomUUID();
         this.name = validateAndNormalizeName(name);
