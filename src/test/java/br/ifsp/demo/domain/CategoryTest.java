@@ -37,5 +37,18 @@ public class CategoryTest {
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         return new Event("Event", start, start.plusHours(2), UUID.randomUUID());
     }
+
+    @Test
+    @DisplayName("Should throw when event is null")
+    void shouldThrowWhenEventIsNull() {
+        assertThatThrownBy(() -> new Category(
+                null,
+                "VIP",
+                10,
+                50.0
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Event is required");
+    }
 }
 
