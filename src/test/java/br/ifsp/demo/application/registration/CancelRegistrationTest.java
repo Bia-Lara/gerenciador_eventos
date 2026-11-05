@@ -71,6 +71,7 @@ public class CancelRegistrationTest {
         event = new Event("Test Event", startedTime, endTime, UUID.randomUUID());
         category = event.addCategory("Test Category", 10, 50.0);
         User user = new User();
+        user.setId(userId);
         registration = new Registration(category, user);
 
         assertThrows(EventAlreadyStartedException.class, () -> registration.cancel(userId));
@@ -85,5 +86,34 @@ public class CancelRegistrationTest {
                 UnauthorizedUserException.class,
                 () -> registration.cancel(anotherUserId)
         );
+    }
+
+    @Test
+    @DisplayName("Should throw unauthorized user exception when non-owner cancels started event registration")
+    void shouldThrowUnauthorizedUserExceptionWhenNonOwnerCancelsStartedEventRegistration() {
+        UUID anotherUserId = UUID.randomUUID();
+
+        LocalDateTime startedTime = LocalDateTime.now().minusMinutes(30);
+        LocalDateTime endTime = LocalDateTime.now().plusHours(1);
+
+        event = new Event(
+                "Test Event",
+                startedTime,
+                endTime,
+                UUID.randomUUID()
+        );
+
+        category = event.addCategory(
+                "Test Category",
+                10,
+                50.0
+        );
+
+        User owner = new User();
+        owner.setId(userId);
+
+        registration = new Registration(category, owner);
+
+        assertThrows(UnauthorizedUserException.class, () -> registration.cancel(anotherUserId));
     }
 }
