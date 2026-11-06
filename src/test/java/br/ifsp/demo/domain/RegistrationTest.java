@@ -26,6 +26,18 @@ public class RegistrationTest {    private UUID organizerId;
     }
 
     @Test
+    @Tag("Mutation")
+    @DisplayName("Should successfully create registration")
+    void shouldSuccessfullyCreateRegistration(){
+        Registration registration = new Registration(category, mock(User.class));
+
+        assertThat(registration).isNotNull();
+        assertThat(registration.getId()).isNotNull();
+        assertThat(registration.getStatus()).isEqualTo(RegistrationStatus.ATIVA);
+        assertThat(registration.getCategory()).isEqualTo(category);
+    }
+
+    @Test
     @Tag("Structural")
     @DisplayName("Should restore registration")
     void shouldRestoreRegistration(){
