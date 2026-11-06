@@ -1,12 +1,14 @@
 package br.ifsp.demo.domain;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @Tag("Structural")
@@ -49,6 +51,19 @@ public class CategoryTest {
         ))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Event is required");
+    }
+
+    @Test
+    @Tag("Mutation")
+    @DisplayName("should successfully create category with 0 capacity")
+    void shouldSuccessfullyCreateCategoryWith0Capacity() {
+        Event event = validEvent();
+        Category category = new Category(event, "Name", 0, 10.0);
+
+        assertThat(category.getName()).isEqualTo("Name");
+        assertThat(category.getCapacity()).isEqualTo(0);
+        assertThat(category.getPrice()).isEqualTo(10.0);
+        assertThat(category.getEvent()).isEqualTo(event);
     }
 }
 
