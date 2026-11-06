@@ -5,10 +5,8 @@ import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.exception.EntityNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -98,5 +96,27 @@ class EventServiceTest {
         assertThat(event.getStartDateTime()).isEqualTo(startDateTime);
         assertThat(event.getEndDateTime()).isEqualTo(endDateTime);
         assertThat(event.getOrganizerId()).isEqualTo(organizerId);
+    }
+
+    @Nested
+    @Tag("Structural")
+    @Tag("UnitTest")
+    class StructuralTests {
+        @Test
+        @DisplayName("should throw IllegalArgumentException when startTime is null")
+        void shouldThrowWhenUserIsNull() {
+            UUID organizerId = UUID.randomUUID();
+
+            LocalDateTime endDateTime = NOW.plusDays(2);
+            CreateEventRequest request = new CreateEventRequest(
+                    "Novo evento",
+                    null,
+                    endDateTime
+            );
+
+            when(userRepository.findById(organizerId)).thenReturn(Optional.of(mock(User.class)));
+            Assertions.assertThatThrownBy(() -> sut.createEvent(organizerId, request))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
     }
 }
