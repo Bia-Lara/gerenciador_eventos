@@ -153,5 +153,17 @@ class EventQueryServiceTest {
         }
     }
 
+    @Nested
+    @Tag("Structural")
+    @Tag("UnitTest")
+    class StructuralTests {
+        @Test
+        @DisplayName("should throw IllegalArgumentException when user is null")
+        void shouldThrowWhenUserIsNull() {
+            assertThatThrownBy(() -> sut.listAvailableForRegistration(null))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
 }
 
