@@ -9,10 +9,7 @@ import br.ifsp.demo.domain.enumerations.EventStatus;
 import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.exception.*;
 import br.ifsp.demo.infrastructure.security.user.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -414,5 +411,25 @@ class EventCategoryServiceTest {
         assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request)).isInstanceOf(IllegalStateException.class);
 
         verify(categoryRepository, never()).save(any());
+    }
+
+    @Nested
+    @Tag("Mutation")
+    @Tag("UnitTest")
+    class MutationTests {
+        @Test
+        @DisplayName("should not create category when event already started")
+        void shouldNotCreateCategoryWhenEventAlreadyStarted() {
+            UUID organizerId = UUID.randomUUID();
+            Event event = new Event("Show", NOW.minusDays(1), NOW.plusDays(2), organizerId);
+            CreateCategoryRequest request = new CreateCategoryRequest("category", 10.00, 100);
+
+            when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+
+            assertThatThrownBy(() -> sut.createCategory(organizerId, event.getId(), request))
+                    .isInstanceOf(EventAlreadyStartedException.class);
+
+            verify(categoryRepository, never()).save(any());
+        }
     }
 }
