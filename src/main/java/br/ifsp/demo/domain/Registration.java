@@ -66,10 +66,6 @@ public class Registration {
             throw new EventAlreadyStartedException();
         }
 
-        if (!this.user.getId().equals(userId)) {
-            throw new UnauthorizedUserException();
-        }
-
         this.status = RegistrationStatus.CANCELADA;
     }
 }
