@@ -6,12 +6,11 @@ import br.ifsp.demo.domain.Registration;
 import br.ifsp.demo.domain.enumerations.RegistrationFilter;
 import br.ifsp.demo.domain.enumerations.RegistrationStatus;
 import br.ifsp.demo.application.user.UserRepository;
+import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.exception.UserNotFoundException;
 import br.ifsp.demo.infrastructure.security.user.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -196,5 +195,17 @@ class RegistrationQueryServiceTest {
         assertThat(result).containsExactly(
                 started.getCategory().getEvent(),
                 canceled.getCategory().getEvent());
+    }
+
+    @Nested
+    @Tag("Structural")
+    @Tag("UnitTest")
+    class StructuralTests {
+        @Test
+        @DisplayName("should throw IllegalArgumentException when eventId is null")
+        void shouldThrowWhenUserIsNull() {
+            Assertions.assertThatThrownBy(() -> sut.countActiveRegistrationsForEvent(null))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
     }
 }
