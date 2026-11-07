@@ -65,7 +65,7 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
-                "https://gerenciadoreventos-eosin.vercel.app",
+                "https://gerenciadoreventos-zeta.vercel.app",
                 "http://localhost:[*]",
                 "http://127.0.0.1:[*]"
         ));
