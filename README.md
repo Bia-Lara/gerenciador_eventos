@@ -23,6 +23,17 @@ mvnw.cmd spring-boot:run
 
 Abra [http://localhost:8091](http://localhost:8091). O front-end está em `src/main/resources/static` e é servido pelo próprio Spring Boot; não é necessário instalar Node.js, configurar CORS ou iniciar outro servidor.
 
+### Front-end no Vercel com back-end local
+
+O front-end também pode ser acessado no Vercel.
+Quando o front-end for aberto no seu browser, ele tentará acessar o back-end local em `http://localhost:8091`. Para testar essa versão, mantenha o Spring Boot em execução na máquina que está acessando o site:
+
+```text
+https://gerenciadoreventos-zeta.vercel.app
+```
+
+O navegador pode solicitar permissão para o site acessar a rede local. Essa permissão deve ser aceita para que o login e as chamadas da API funcionem. Outra pessoa que acessar o endereço do Vercel precisará executar o back-end localmente na própria máquina.
+
 ## Usar a interface
 
 1. Selecione **Criar conta** e informe nome, sobrenome, e-mail e senha. Após o cadastro, a interface autentica a conta automaticamente.
