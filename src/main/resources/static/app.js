@@ -1,4 +1,9 @@
-const API_BASE = "/api/v1";
+const runningWithSpringBoot =
+    window.location.hostname === "localhost" &&
+    window.location.port === "8091";
+const API_BASE = runningWithSpringBoot
+    ? "/api/v1"
+    : "http://localhost:8091/api/v1";
 const TOKEN_KEY = "encontro.jwt";
 const NAME_KEY = "encontro.name";
 const CATEGORY_REGISTRATION_ERROR = "Não é possível remover esta categoria porque há usuários inscritos.";
