@@ -39,4 +39,26 @@ class AuthenticateApiTest extends BaseApiTest {
                 .body("token", notNullValue());
     }
 
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Autenticação com senha errada deveria ser rejeitada com 401")
+    void autenticacaoComSenhaErradaDeveriaSerRejeitadaCom401() {
+        RegisterUserRequest registerRequest = EntityBuilder.createRandomRegisterRequest("SenhaForte123");
+
+        given().contentType("application/json").body(registerRequest)
+                .when().post(REGISTER_PATH)
+                .then().statusCode(201);
+
+        AuthRequest authRequest = new AuthRequest(registerRequest.email(), "SenhaErrada999");
+
+        given()
+                .contentType("application/json")
+                .body(authRequest)
+                .when()
+                .post(AUTHENTICATE_PATH)
+                .then()
+                .statusCode(401);
+    }
+
 }
