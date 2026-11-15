@@ -125,4 +125,17 @@ class AuthenticateApiTest extends BaseApiTest {
                 .statusCode(401);
     }
 
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Autenticação com corpo de requisição malformado deveria ser rejeitada com 400")
+    void autenticacaoComCorpoMalformadoDeveriaSerRejeitadaCom400() {
+        given()
+                .contentType("application/json")
+                .body("{ corpo invalido")
+                .when()
+                .post(AUTHENTICATE_PATH)
+                .then()
+                .statusCode(400);
+    }
+
 }
