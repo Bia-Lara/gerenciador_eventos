@@ -116,5 +116,35 @@ class RegisterApiTest extends BaseApiTest {
                 .statusCode(400);
     }
 
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Cadastro com e-mail já cadastrado, mas com tudo em maiúsuclo, deveria ser rejeitado com 409")
+    void cadastroComEmailEmOutraCaixaDeveriaSerRejeitado() {
+        String email = EntityBuilder.randomEmail();
+        String lastname = EntityBuilder.randomLastName();
+
+        RegisterUserRequest firstRequest = EntityBuilder.createRegisterRequest(
+                EntityBuilder.randomFirstName(), lastname, email, "SenhaForte123");
+
+        given()
+                .contentType("application/json")
+                .body(firstRequest)
+                .when()
+                .post(REGISTER_PATH)
+                .then()
+                .statusCode(201);
+
+        RegisterUserRequest secondRequest = EntityBuilder.createRegisterRequest(
+                EntityBuilder.randomFirstName(), lastname, email.toUpperCase(), "OutraSenha456");
+
+        given()
+                .contentType("application/json")
+                .body(secondRequest)
+                .when()
+                .post(REGISTER_PATH)
+                .then()
+                .statusCode(409);
+    }
+
 
 }
