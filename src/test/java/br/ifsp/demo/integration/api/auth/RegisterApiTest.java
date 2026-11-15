@@ -30,4 +30,21 @@ class RegisterApiTest extends BaseApiTest {
                 .statusCode(201)
                 .body("id", notNullValue());
     }
+
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Cadastro com e-mail já registrado retorna 409")
+    void cadastroComEmailJaRegistradoRetorna409() {
+        RegisterUserRequest request = EntityBuilder.createRandomRegisterRequest("SenhaForte123");
+
+        given().contentType("application/json").body(request)
+                .when().post(REGISTER_PATH)
+                .then().statusCode(201);
+
+        given().contentType("application/json").body(request)
+                .when().post(REGISTER_PATH)
+                .then().statusCode(409);
+    }
+
 }
