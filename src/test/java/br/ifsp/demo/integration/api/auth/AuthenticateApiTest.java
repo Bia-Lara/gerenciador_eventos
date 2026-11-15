@@ -138,4 +138,26 @@ class AuthenticateApiTest extends BaseApiTest {
                 .statusCode(400);
     }
 
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Autenticação com e-mail,todo maiúsuclo, deveria funcionar normalmente")
+    void autenticacaoComEmailEmOutraCaixaDeveriaFuncionar() {
+        RegisterUserRequest registerRequest = EntityBuilder.createRandomRegisterRequest("SenhaForte123");
+
+        given().contentType("application/json").body(registerRequest)
+                .when().post(REGISTER_PATH)
+                .then().statusCode(201);
+
+        AuthRequest authRequest = new AuthRequest(registerRequest.email().toUpperCase(), "SenhaForte123");
+
+        given()
+                .contentType("application/json")
+                .body(authRequest)
+                .when()
+                .post(AUTHENTICATE_PATH)
+                .then()
+                .statusCode(200)
+                .body("token", notNullValue());
+    }
 }
