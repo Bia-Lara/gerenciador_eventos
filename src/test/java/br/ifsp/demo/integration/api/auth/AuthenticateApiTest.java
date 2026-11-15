@@ -109,5 +109,20 @@ class AuthenticateApiTest extends BaseApiTest {
                 .statusCode(401);
     }
 
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Autenticação com senha em branco deveria ser rejeitada com 401")
+    void autenticacaoComSenhaEmBrancoDeveriaSerRejeitadaCom401() {
+        AuthRequest authRequest = new AuthRequest(EntityBuilder.randomEmail(), "");
+
+        given()
+                .contentType("application/json")
+                .body(authRequest)
+                .when()
+                .post(AUTHENTICATE_PATH)
+                .then()
+                .statusCode(401);
+    }
 
 }
