@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 class RegisterApiTest extends BaseApiTest {
@@ -34,7 +35,7 @@ class RegisterApiTest extends BaseApiTest {
     @Test
     @Tag("ApiTest")
     @Tag("IntegrationTest")
-    @DisplayName("Cadastro com e-mail já registrado retorna 409")
+    @DisplayName("Cadastro com e-mail já registrado retorna 409 com corpo de erro descritivo")
     void cadastroComEmailJaRegistradoRetorna409() {
         RegisterUserRequest request = EntityBuilder.createRandomRegisterRequest("SenhaForte123");
 
@@ -42,9 +43,15 @@ class RegisterApiTest extends BaseApiTest {
                 .when().post(REGISTER_PATH)
                 .then().statusCode(201);
 
-        given().contentType("application/json").body(request)
-                .when().post(REGISTER_PATH)
-                .then().statusCode(409);
+        given()
+                .contentType("application/json")
+                .body(request)
+                .when()
+                .post(REGISTER_PATH)
+                .then()
+                .statusCode(409)
+                .body("status", equalTo("CONFLICT"))
+                .body("message", notNullValue());
     }
 
     @Test
