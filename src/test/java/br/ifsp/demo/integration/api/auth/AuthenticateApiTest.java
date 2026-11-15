@@ -77,4 +77,21 @@ class AuthenticateApiTest extends BaseApiTest {
                 .statusCode(401);
     }
 
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Autenticação com usuário fake deveria ser rejeitada com 401")
+    void autenticacaoComUsuarioFakeDeveriaSerRejeitadaCom401() {
+        AuthRequest authRequest = new AuthRequest("organizador@fake.local", "123456");
+
+        given()
+                .contentType("application/json")
+                .body(authRequest)
+                .when()
+                .post(AUTHENTICATE_PATH)
+                .then()
+                .statusCode(401);
+    }
+
+
 }
