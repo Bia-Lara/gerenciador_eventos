@@ -61,4 +61,20 @@ class AuthenticateApiTest extends BaseApiTest {
                 .statusCode(401);
     }
 
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Autenticação com e-mail inexistente deveria ser rejeitada com 401")
+    void autenticacaoComEmailInexistenteDeveriaSerRejeitadaCom401() {
+        AuthRequest authRequest = new AuthRequest(EntityBuilder.randomEmail(), "QualquerSenha123");
+
+        given()
+                .contentType("application/json")
+                .body(authRequest)
+                .when()
+                .post(AUTHENTICATE_PATH)
+                .then()
+                .statusCode(401);
+    }
+
 }
