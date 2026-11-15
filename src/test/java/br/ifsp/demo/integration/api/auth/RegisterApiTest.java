@@ -146,5 +146,17 @@ class RegisterApiTest extends BaseApiTest {
                 .statusCode(409);
     }
 
-
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Corpo de requisição malformado retorna 400")
+    void corpoMalformadoRetorna400() {
+        given()
+                .contentType("application/json")
+                .body("{ isso não é um json válido")
+                .when()
+                .post(REGISTER_PATH)
+                .then()
+                .statusCode(400);
+    }
 }
