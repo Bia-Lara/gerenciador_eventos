@@ -81,4 +81,21 @@ class RegisterApiTest extends BaseApiTest {
                 .statusCode(400);
     }
 
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Cadastro com senha em branco deveria ser rejeitado com 400")
+    void cadastroComSenhaEmBrancoDeveriaSerRejeitado() {
+        RegisterUserRequest request = EntityBuilder.createRegisterRequest(
+                EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(), EntityBuilder.randomEmail(), "");
+
+        given()
+                .contentType("application/json")
+                .body(request)
+                .when()
+                .post(REGISTER_PATH)
+                .then()
+                .statusCode(400);
+    }
+
 }
