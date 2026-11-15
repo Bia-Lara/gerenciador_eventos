@@ -67,6 +67,26 @@ class RegisterApiTest extends BaseApiTest {
     @Test
     @Tag("ApiTest")
     @Tag("IntegrationTest")
+    @DisplayName("Cadastro com campo 'name' ausente no corpo deveria ser rejeitado com 400")
+    void cadastroComCampoNomeAusenteDeveriaSerRejeitado() {
+        given()
+                .contentType("application/json")
+                .body("""
+                        {
+                          "lastname": "%s",
+                          "email": "%s",
+                          "password": "SenhaForte123"
+                        }
+                        """.formatted(EntityBuilder.randomLastName(), EntityBuilder.randomEmail()))
+                .when()
+                .post(REGISTER_PATH)
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    @Tag("ApiTest")
+    @Tag("IntegrationTest")
     @DisplayName("Cadastro com e-mail em branco deveria ser rejeitado com 400")
     void cadastroComEmailEmBrancoDeveriaSerRejeitado() {
         RegisterUserRequest request = EntityBuilder.createRegisterRequest(
@@ -116,6 +136,7 @@ class RegisterApiTest extends BaseApiTest {
                 .statusCode(400);
     }
 
+    @Test
     @Tag("ApiTest")
     @Tag("IntegrationTest")
     @DisplayName("Cadastro com e-mail já cadastrado, mas com tudo em maiúsuclo, deveria ser rejeitado com 409")
