@@ -125,6 +125,7 @@ class AuthenticateApiTest extends BaseApiTest {
                 .statusCode(401);
     }
 
+    @Test
     @Tag("ApiTest")
     @Tag("IntegrationTest")
     @DisplayName("Autenticação com corpo de requisição malformado deveria ser rejeitada com 400")
