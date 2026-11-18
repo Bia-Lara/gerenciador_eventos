@@ -10,11 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -87,6 +89,27 @@ class JpaUserRepositoryTest {
         Optional<User> found = sut.findByEmail(user.getEmail().toUpperCase());
 
         assertThat(found).isPresent();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Banco deveria impedir dois usuários com o mesmo e-mail, mas aceita")
+    void bancoDeveriaImpedirEmailDuplicadoMasAceitaDoisUsuariosComMesmoEmail() {
+        String email = EntityBuilder.randomEmail();
+        User primeiro = EntityBuilder.createUser(
+                EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
+                email, passwordEncoder.encode("SenhaForte123"));
+        User segundo = EntityBuilder.createUser(
+                EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
+                email, passwordEncoder.encode("OutraSenha456"));
+
+        sut.save(primeiro);
+
+        assertThatThrownBy(() -> {
+            sut.save(segundo);
+            sut.flush();
+        }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
 }
