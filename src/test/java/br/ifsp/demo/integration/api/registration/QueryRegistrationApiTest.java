@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.contains;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.empty;
@@ -114,5 +115,25 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(200)
                 .body("$", hasSize(2));
+    }
+
+    @Test
+    @DisplayName("Deve retornar somente as inscricoes ativas quando o filtro for ATIVOS")
+    void deveRetornarSomenteAtivasComFiltroAtivos() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+        UUID ativa = inscreverEmNovoEvento(organizerToken, participantToken);
+        UUID cancelada = inscreverEmNovoEvento(organizerToken, participantToken);
+        cancelar(participantToken, cancelada);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .queryParam("filter", "ATIVOS")
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("registrationId", contains(ativa.toString()))
+                .body("status", contains("ATIVA"));
     }
 }
