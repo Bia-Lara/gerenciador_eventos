@@ -125,4 +125,16 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(404);
     }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando o id da inscricao nao for um UUID")
+    void deveRetornar400QuandoIdInvalido() {
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/nao-e-um-uuid/cancel")
+                .then()
+                .statusCode(400);
+    }
 }
