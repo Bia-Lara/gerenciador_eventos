@@ -325,4 +325,27 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .body("id", contains(eventoCancelado.toString()));
     }
 
+    @Test
+    @DisplayName("Deve listar o evento uma unica vez mesmo com duas inscricoes do usuario nele")
+    void deveListarEventoUmaUnicaVezComDuasInscricoes() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+
+        UUID primeira = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+        cancelar(participantToken, primeira);
+        RegistrationApiFixture.register(participantToken, eventId, categoryId);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .when()
+                .get(BASE_PATH + "/registrations")
+                .then()
+                .statusCode(200)
+                .body("id", contains(eventId.toString()));
+    }
+
 }
