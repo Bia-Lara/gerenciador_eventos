@@ -3,11 +3,12 @@ package br.ifsp.demo.integration.api.registration;
 import br.ifsp.demo.support.BaseApiTest;
 import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationApiFixture;
+import br.ifsp.demo.dto.RegistrationBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import br.ifsp.demo.dto.RegistrationBody;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.UUID;
 import java.time.Duration;
@@ -44,6 +45,16 @@ class CancelRegistrationApiTest extends BaseApiTest {
     private String novoUsuario() {
         return registerAndAuthenticate(EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
                 EntityBuilder.randomEmail(), PASSWORD);
+    }
+
+    private void cancelar(String token, UUID id, int statusEsperado) {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + id + "/cancel")
+                .then()
+                .statusCode(statusEsperado);
     }
 
     @Test
@@ -252,4 +263,22 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .statusCode(403);
     }
 
+    @Test
+    @DisplayName("Deve cancelar a nova inscricao apos reinscrever e manter a antiga como ja cancelada")
+    void deveTratarCicloDeCancelarReinscreverECancelar() {
+        String organizerToken = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+
+        UUID primeira = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+        cancelar(participantToken, primeira, 204);
+
+        UUID segunda = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+        assertNotEquals(primeira, segunda);
+
+        cancelar(participantToken, segunda, 204);
+        cancelar(participantToken, primeira, 409);
+    }
 }
