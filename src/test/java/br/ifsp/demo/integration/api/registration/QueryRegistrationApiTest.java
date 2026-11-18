@@ -156,4 +156,16 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .body("registrationId", contains(cancelada.toString()))
                 .body("status", contains("CANCELADA"));
     }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando o filtro for invalido")
+    void deveRetornar400QuandoFiltroInvalido() {
+        given()
+                .header("Authorization", "Bearer " + novoUsuario())
+                .queryParam("filter", "xyz")
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(400);
+    }
 }
