@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.notNullValue;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.empty;
@@ -260,4 +261,30 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .statusCode(200)
                 .body("find { it.registrationId == '" + inscricao + "' }.eventStatus", equalTo("CANCELLED"));
     }
+
+    @Test
+    @DisplayName("Deve listar o evento da inscricao do usuario")
+    void deveListarEventoDaInscricaoDoUsuario() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+        String eventName = "Evento " + UUID.randomUUID();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken, eventName, RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        RegistrationApiFixture.register(participantToken, eventId, categoryId);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .when()
+                .get(BASE_PATH + "/registrations")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(1))
+                .body("[0].id", equalTo(eventId.toString()))
+                .body("[0].name", equalTo(eventName))
+                .body("[0].status", equalTo("ACTIVE"))
+                .body("[0].organizerId", notNullValue())
+                .body("[0].categories", notNullValue());
+    }
+
 }
