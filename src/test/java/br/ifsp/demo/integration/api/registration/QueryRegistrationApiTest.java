@@ -7,6 +7,7 @@ import br.ifsp.demo.support.RegistrationApiFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.empty;
@@ -25,6 +26,24 @@ class QueryRegistrationApiTest extends BaseApiTest {
     private String novoUsuario() {
         return registerAndAuthenticate(EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
                 EntityBuilder.randomEmail(), PASSWORD);
+    }
+
+    private UUID inscreverEmNovoEvento(String organizerToken, String participantToken) {
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        return RegistrationApiFixture.register(participantToken, eventId, categoryId);
+    }
+
+    private void cancelar(String token, UUID registrationId) {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(204);
     }
 
     @Test
@@ -55,7 +74,7 @@ class QueryRegistrationApiTest extends BaseApiTest {
         given()
                 .header("Authorization", "Bearer " + participantToken)
                 .when()
-                .get(BASE_PATH + "/registration vcgvc v s/details")
+                .get(BASE_PATH + "/registrations/details")
                 .then()
                 .statusCode(200)
                 .body("$", hasSize(1))
@@ -67,5 +86,33 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .body("[0].price", equalTo(50.0f))
                 .body("[0].status", equalTo("ATIVA"))
                 .body("[0].eventStatus", equalTo("ACTIVE"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar ativas e canceladas quando o filtro for TODOS ou nao for informado")
+    void deveRetornarTodasAsInscricoesComFiltroTodos() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+        UUID ativa = inscreverEmNovoEvento(organizerToken, participantToken);
+        UUID cancelada = inscreverEmNovoEvento(organizerToken, participantToken);
+        cancelar(participantToken, cancelada);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(2))
+                .body("registrationId", containsInAnyOrder(ativa.toString(), cancelada.toString()));
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .queryParam("filter", "TODOS")
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(2));
     }
 }
