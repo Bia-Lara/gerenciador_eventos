@@ -233,4 +233,23 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(403);
     }
+    @Test
+    @DisplayName("Deve retornar 403 quando o organizador tentar cancelar a inscricao de um participante")
+    void deveRetornar403QuandoOrganizadorTentaCancelar() {
+        String organizerToken = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        UUID inscricaoDoParticipante = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+
+        given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + inscricaoDoParticipante + "/cancel")
+                .then()
+                .statusCode(403);
+    }
+
 }
