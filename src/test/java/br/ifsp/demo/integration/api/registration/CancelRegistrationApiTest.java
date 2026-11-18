@@ -219,4 +219,18 @@ class CancelRegistrationApiTest extends BaseApiTest {
 
         RegistrationApiFixture.register(segundoToken, eventId, categoryId);
     }
+
+    @Test
+    @DisplayName("Deve retornar 403 ao cancelar inscricao pre-cadastrada de outro usuario")
+    void deveRetornar403AoCancelarInscricaoDoSeed() {
+        UUID inscricaoDoSeed = UUID.fromString("30000000-0000-0000-0000-000000000002");
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + inscricaoDoSeed + "/cancel")
+                .then()
+                .statusCode(403);
+    }
 }
