@@ -63,4 +63,16 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(401);
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando o token for invalido")
+    void deveRetornar401ComTokenInvalido() {
+        given()
+                .header("Authorization", "Bearer token.invalido.qualquer")
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(401);
+    }
 }
