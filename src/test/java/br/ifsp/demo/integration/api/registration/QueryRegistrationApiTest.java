@@ -230,4 +230,34 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .body("find { it.registrationId == '" + primeira + "' }.status", equalTo("CANCELADA"))
                 .body("find { it.registrationId == '" + segunda + "' }.status", equalTo("ATIVA"));
     }
+
+    @Test
+    @DisplayName("Deve retornar eventStatus CANCELLED quando o organizador cancelar o evento")
+    void deveRetornarEventStatusCancelledQuandoEventoForCancelado() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        UUID inscricao = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+
+        cancelar(participantToken, inscricao);
+
+        given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/cancel")
+                .then()
+                .statusCode(200);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("find { it.registrationId == '" + inscricao + "' }.eventStatus", equalTo("CANCELLED"));
+    }
 }
