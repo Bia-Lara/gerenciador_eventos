@@ -370,4 +370,14 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .body("[0].categories.name", containsInAnyOrder(categoriaDoUsuario, outraCategoria));
     }
 
+    @Test
+    @DisplayName("Deve retornar 401 ao listar eventos das inscricoes sem token")
+    void deveRetornar401AoListarEventosSemToken() {
+        given()
+                .when()
+                .get(BASE_PATH + "/registrations")
+                .then()
+                .statusCode(401);
+    }
+
 }
