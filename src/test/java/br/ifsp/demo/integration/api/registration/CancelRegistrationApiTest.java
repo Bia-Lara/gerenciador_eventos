@@ -281,4 +281,28 @@ class CancelRegistrationApiTest extends BaseApiTest {
         cancelar(participantToken, segunda, 204);
         cancelar(participantToken, primeira, 409);
     }
+
+    @Test
+    @DisplayName("Deve manter ATIVA a inscricao de outro participante da mesma categoria")
+    void cancelarNaoDeveAfetarInscricaoDeOutroParticipante() {
+        String organizerToken = novoUsuario();
+        String outroParticipanteToken = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+
+        UUID inscricaoCancelada = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+        UUID inscricaoDoOutro = RegistrationApiFixture.register(outroParticipanteToken, eventId, categoryId);
+
+        cancelar(participantToken, inscricaoCancelada, 204);
+
+        given()
+                .header("Authorization", "Bearer " + outroParticipanteToken)
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("find { it.registrationId == '" + inscricaoDoOutro + "' }.status", equalTo("ATIVA"));
+    }
 }
