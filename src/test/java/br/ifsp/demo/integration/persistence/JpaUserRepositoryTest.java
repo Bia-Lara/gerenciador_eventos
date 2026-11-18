@@ -74,4 +74,19 @@ class JpaUserRepositoryTest {
 
         assertThat(found).isEmpty();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Busca com e-mail já cadastrado porém em maiúsuclo deveria retornar o e-email cadastrado correspondente")
+    void findByEmailDeveriaIgnorarCaixaDoEmailMasEhCaseSensitive() {
+        User user = EntityBuilder.createRandomUser(passwordEncoder.encode("SenhaForte123"));
+
+        sut.save(user);
+
+        Optional<User> found = sut.findByEmail(user.getEmail().toUpperCase());
+
+        assertThat(found).isPresent();
+    }
+
 }
