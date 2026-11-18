@@ -136,4 +136,24 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .body("registrationId", contains(ativa.toString()))
                 .body("status", contains("ATIVA"));
     }
+
+    @Test
+    @DisplayName("Deve retornar somente as inscricoes canceladas quando o filtro for INATIVOS")
+    void deveRetornarSomenteCanceladasComFiltroInativos() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+        inscreverEmNovoEvento(organizerToken, participantToken);
+        UUID cancelada = inscreverEmNovoEvento(organizerToken, participantToken);
+        cancelar(participantToken, cancelada);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .queryParam("filter", "INATIVOS")
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("registrationId", contains(cancelada.toString()))
+                .body("status", contains("CANCELADA"));
+    }
 }
