@@ -112,4 +112,15 @@ class JpaUserRepositoryTest {
         }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findByEmail com e-mail nulo não deveria lançar exceção, apenas retornar vazio")
+    void findByEmailComEmailNuloNaoDeveriaLancarExcecao() {
+        Optional<User> found = sut.findByEmail(null);
+
+        assertThat(found).isEmpty();
+    }
+
+
 }
