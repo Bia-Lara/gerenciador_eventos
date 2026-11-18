@@ -2,12 +2,28 @@ package br.ifsp.demo.support;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import br.ifsp.demo.dto.CreateEventRequest;
+import java.util.UUID;
+import static io.restassured.RestAssured.given;
 
-public final class RegistrationApiFixture {
+public class RegistrationApiFixture {
 
     private RegistrationApiFixture() {}
 
     public static LocalDateTime futureStart() {
         return LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+    }
+
+    public static UUID createEvent(String organizerToken, String name, LocalDateTime start) {
+        String id = given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .contentType("application/json")
+                .body(new CreateEventRequest(name, start, start.plusHours(3)))
+                .when()
+                .post("/api/v1/events")
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+        return UUID.fromString(id);
     }
 }
