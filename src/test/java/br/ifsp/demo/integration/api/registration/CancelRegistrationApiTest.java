@@ -165,4 +165,24 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(409);
     }
+
+    @Test
+    @DisplayName("Apos cancelar, a consulta deve mostrar a inscricao como CANCELADA")
+    void aposCancelarConsultaDeveMostrarCancelada() {
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(204);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("find { it.registrationId == '" + registrationId + "' }.status", equalTo("CANCELADA"));
+    }
 }
