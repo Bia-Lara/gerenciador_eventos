@@ -65,4 +65,13 @@ class JpaUserRepositoryTest {
         assertThat(passwordEncoder.matches(senhaPura, persisted.getPassword())).isTrue();
     }
 
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Busca com e-mail inexistente deve retornar vazio")
+    void findByEmailComEmailInexistenteDeveRetornarVazio() {
+        Optional<User> found = sut.findByEmail(EntityBuilder.randomEmail());
+
+        assertThat(found).isEmpty();
+    }
 }
