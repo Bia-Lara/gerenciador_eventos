@@ -75,4 +75,18 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(401);
     }
+
+    @Test
+    @DisplayName("Deve retornar 403 quando outro usuario tentar cancelar a inscricao")
+    void deveRetornar403QuandoNaoForDono() {
+        String outroUsuarioToken = novoUsuario();
+
+        given()
+                .header("Authorization", "Bearer " + outroUsuarioToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(403);
+    }
 }
