@@ -345,4 +345,12 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(200);
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando o usuario do token nao existir mais")
+    void deveRetornar401QuandoUsuarioDoTokenFoiRemovido() {
+        userRepository.deleteAll();
+
+        cancelar(participantToken, registrationId, 401);
+    }
 }
