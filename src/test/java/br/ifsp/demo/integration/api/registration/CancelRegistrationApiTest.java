@@ -305,4 +305,15 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .statusCode(200)
                 .body("find { it.registrationId == '" + inscricaoDoOutro + "' }.status", equalTo("ATIVA"));
     }
+
+    @Test
+    @DisplayName("Deve retornar 405 ao usar GET na rota de cancelamento")
+    void deveRetornar405QuandoMetodoForGet() {
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .when()
+                .get(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(405);
+    }
 }
