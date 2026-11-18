@@ -316,4 +316,33 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(405);
     }
+
+    @Test
+    @DisplayName("Deve permitir cancelar o evento somente depois que a inscricao ativa for cancelada")
+    void cancelarInscricaoDeveLiberarCancelamentoDoEvento() {
+        String organizerToken = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        UUID inscricao = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+
+        given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/cancel")
+                .then()
+                .statusCode(409);
+
+        cancelar(participantToken, inscricao, 204);
+
+        given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/cancel")
+                .then()
+                .statusCode(200);
+    }
 }
