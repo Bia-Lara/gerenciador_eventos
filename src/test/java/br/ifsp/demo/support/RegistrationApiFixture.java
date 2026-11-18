@@ -1,8 +1,10 @@
 package br.ifsp.demo.support;
 
+import br.ifsp.demo.dto.CreateEventRequest;
+import br.ifsp.demo.dto.CreateCategoryRequest;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import br.ifsp.demo.dto.CreateEventRequest;
 import java.util.UUID;
 import static io.restassured.RestAssured.given;
 
@@ -21,6 +23,19 @@ public class RegistrationApiFixture {
                 .body(new CreateEventRequest(name, start, start.plusHours(3)))
                 .when()
                 .post("/api/v1/events")
+                .then()
+                .statusCode(201)
+                .extract().path("id");
+        return UUID.fromString(id);
+    }
+
+    public static UUID createCategory(String organizerToken, UUID eventId, String name, double price, int capacity) {
+        String id = given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .contentType("application/json")
+                .body(new CreateCategoryRequest(name, price, capacity))
+                .when()
+                .post("/api/v1/events/" + eventId + "/categories")
                 .then()
                 .statusCode(201)
                 .extract().path("id");
