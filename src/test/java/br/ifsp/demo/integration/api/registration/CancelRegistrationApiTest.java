@@ -52,4 +52,15 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .statusCode(204)
                 .body(emptyOrNullString());
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando nao houver token")
+    void deveRetornar401SemToken() {
+        given()
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(401);
+    }
 }
