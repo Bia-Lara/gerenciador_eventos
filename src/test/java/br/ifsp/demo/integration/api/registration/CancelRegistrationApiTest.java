@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import br.ifsp.demo.dto.RegistrationBody;
 
 import java.util.UUID;
 import java.time.Duration;
@@ -184,5 +185,38 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(200)
                 .body("find { it.registrationId == '" + registrationId + "' }.status", equalTo("CANCELADA"));
+    }
+
+    @Test
+    @DisplayName("Deve liberar a vaga da categoria ao cancelar a inscricao")
+    void deveLiberarVagaAoCancelar() {
+        String organizerToken = novoUsuario();
+        String primeiroToken = novoUsuario();
+        String segundoToken = novoUsuario();
+
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Unica vaga " + UUID.randomUUID(), 50.0, 1);
+        UUID primeiraInscricaoId = RegistrationApiFixture.register(primeiroToken, eventId, categoryId);
+
+        given()
+                .header("Authorization", "Bearer " + segundoToken)
+                .contentType("application/json")
+                .body(new RegistrationBody(categoryId))
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/registrations")
+                .then()
+                .statusCode(409);
+
+        given()
+                .header("Authorization", "Bearer " + primeiroToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + primeiraInscricaoId + "/cancel")
+                .then()
+                .statusCode(204);
+
+        RegistrationApiFixture.register(segundoToken, eventId, categoryId);
     }
 }
