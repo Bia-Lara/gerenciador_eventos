@@ -287,4 +287,42 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .body("[0].categories", notNullValue());
     }
 
+    @Test
+    @DisplayName("Deve filtrar os eventos por ATIVOS e INATIVOS")
+    void deveFiltrarEventosPorAtivosEInativos() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+
+        UUID eventoAtivo = RegistrationApiFixture.createEvent(organizerToken,
+                "Ativo " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoriaAtiva = RegistrationApiFixture.createCategory(organizerToken, eventoAtivo,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        RegistrationApiFixture.register(participantToken, eventoAtivo, categoriaAtiva);
+
+        UUID eventoCancelado = RegistrationApiFixture.createEvent(organizerToken,
+                "Cancelado " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoriaCancelada = RegistrationApiFixture.createCategory(organizerToken, eventoCancelado,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        UUID inscricaoCancelada = RegistrationApiFixture.register(participantToken, eventoCancelado, categoriaCancelada);
+        cancelar(participantToken, inscricaoCancelada);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .queryParam("filter", "ATIVOS")
+                .when()
+                .get(BASE_PATH + "/registrations")
+                .then()
+                .statusCode(200)
+                .body("id", contains(eventoAtivo.toString()));
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .queryParam("filter", "INATIVOS")
+                .when()
+                .get(BASE_PATH + "/registrations")
+                .then()
+                .statusCode(200)
+                .body("id", contains(eventoCancelado.toString()));
+    }
+
 }
