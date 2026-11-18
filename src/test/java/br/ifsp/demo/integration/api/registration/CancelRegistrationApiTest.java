@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.emptyOrNullString;
@@ -136,5 +139,30 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .post(BASE_PATH + "/events/registrations/nao-e-um-uuid/cancel")
                 .then()
                 .statusCode(400);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao cancelar inscricao de evento que ja comecou")
+    void deveRetornar409QuandoEventoJaComecou() throws InterruptedException {
+        String organizerToken = novoUsuario();
+        LocalDateTime start = LocalDateTime.now().plusSeconds(7).truncatedTo(ChronoUnit.SECONDS);
+
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken, "Evento " + UUID.randomUUID(), start);
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        UUID startedRegistrationId = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+
+        long waitMillis = Duration.between(LocalDateTime.now(), start).toMillis() + 500;
+        if (waitMillis > 0) {
+            Thread.sleep(waitMillis);
+        }
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + startedRegistrationId + "/cancel")
+                .then()
+                .statusCode(409);
     }
 }
