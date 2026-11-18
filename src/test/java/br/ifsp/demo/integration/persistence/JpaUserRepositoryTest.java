@@ -49,5 +49,20 @@ class JpaUserRepositoryTest {
         assertThat(found.get().getEmail()).isEqualTo(user.getEmail());
     }
 
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("Senha persistida deve estar criptografada com BCrypt, nunca igual ao texto puro")
+    void senhaPersistidaDeveEstarCriptografadaComBCrypt() {
+        String senhaPura = "SenhaForte123";
+        User user = EntityBuilder.createRandomUser(passwordEncoder.encode(senhaPura));
+
+        sut.save(user);
+
+        User persisted = sut.findById(user.getId()).orElseThrow();
+
+        assertThat(persisted.getPassword()).isNotEqualTo(senhaPura);
+        assertThat(passwordEncoder.matches(senhaPura, persisted.getPassword())).isTrue();
+    }
 
 }
