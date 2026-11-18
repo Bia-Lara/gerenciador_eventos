@@ -113,4 +113,16 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .body("status", equalTo("CONFLICT"))
                 .body("message", not(emptyOrNullString()));
     }
+
+    @Test
+    @DisplayName("Deve retornar 404 quando a inscricao nao existir")
+    void deveRetornar404QuandoInscricaoNaoExiste() {
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + UUID.randomUUID() + "/cancel")
+                .then()
+                .statusCode(404);
+    }
 }
