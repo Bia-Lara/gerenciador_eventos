@@ -204,4 +204,30 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .statusCode(200)
                 .body("registrationId", contains(inscricaoDoSegundo.toString()));
     }
+
+    @Test
+    @DisplayName("Deve listar a inscricao cancelada e a nova inscricao ativa do mesmo evento")
+    void deveListarInscricaoCanceladaEReinscricaoAtiva() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+
+        UUID primeira = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+        cancelar(participantToken, primeira);
+        UUID segunda = RegistrationApiFixture.register(participantToken, eventId, categoryId);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(2))
+                .body("registrationId", containsInAnyOrder(primeira.toString(), segunda.toString()))
+                .body("find { it.registrationId == '" + primeira + "' }.status", equalTo("CANCELADA"))
+                .body("find { it.registrationId == '" + segunda + "' }.status", equalTo("ATIVA"));
+    }
 }
