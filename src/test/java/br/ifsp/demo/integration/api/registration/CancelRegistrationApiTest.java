@@ -12,6 +12,8 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 @Tag("ApiTest")
 @Tag("IntegrationTest")
@@ -88,5 +90,27 @@ class CancelRegistrationApiTest extends BaseApiTest {
                 .post(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
                 .then()
                 .statusCode(403);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao cancelar uma inscricao ja cancelada")
+    void deveRetornar409AoCancelarDuasVezes() {
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(204);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .contentType("application/json")
+                .when()
+                .post(BASE_PATH + "/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(409)
+                .body("status", equalTo("CONFLICT"))
+                .body("message", not(emptyOrNullString()));
     }
 }
