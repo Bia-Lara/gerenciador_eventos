@@ -178,4 +178,30 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(401);
     }
+
+    @Test
+    @DisplayName("Deve retornar somente as inscricoes do proprio usuario")
+    void deveRetornarSomenteInscricoesDoProprioUsuario() {
+        String organizerToken = novoUsuario();
+        String primeiroToken = novoUsuario();
+        String segundoToken = novoUsuario();
+        UUID inscricaoDoPrimeiro = inscreverEmNovoEvento(organizerToken, primeiroToken);
+        UUID inscricaoDoSegundo = inscreverEmNovoEvento(organizerToken, segundoToken);
+
+        given()
+                .header("Authorization", "Bearer " + primeiroToken)
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("registrationId", contains(inscricaoDoPrimeiro.toString()));
+
+        given()
+                .header("Authorization", "Bearer " + segundoToken)
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(200)
+                .body("registrationId", contains(inscricaoDoSegundo.toString()));
+    }
 }
