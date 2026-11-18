@@ -348,4 +348,26 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .body("id", contains(eventId.toString()));
     }
 
+    @Test
+    @DisplayName("Deve retornar todas as categorias do evento e nao apenas a da inscricao")
+    void deveRetornarTodasAsCategoriasDoEvento() {
+        String organizerToken = novoUsuario();
+        String participantToken = novoUsuario();
+        String categoriaDoUsuario = "Geral " + UUID.randomUUID();
+        String outraCategoria = "VIP " + UUID.randomUUID();
+        UUID eventId = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId, categoriaDoUsuario, 50.0, 10);
+        RegistrationApiFixture.createCategory(organizerToken, eventId, outraCategoria, 120.0, 5);
+        RegistrationApiFixture.register(participantToken, eventId, categoryId);
+
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .when()
+                .get(BASE_PATH + "/registrations")
+                .then()
+                .statusCode(200)
+                .body("[0].categories.name", containsInAnyOrder(categoriaDoUsuario, outraCategoria));
+    }
+
 }
