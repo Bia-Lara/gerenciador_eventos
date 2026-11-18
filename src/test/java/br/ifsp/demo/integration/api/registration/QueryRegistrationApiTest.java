@@ -168,4 +168,14 @@ class QueryRegistrationApiTest extends BaseApiTest {
                 .then()
                 .statusCode(400);
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando nao houver token")
+    void deveRetornar401SemToken() {
+        given()
+                .when()
+                .get(BASE_PATH + "/registrations/details")
+                .then()
+                .statusCode(401);
+    }
 }
