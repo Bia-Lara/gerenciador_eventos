@@ -9,7 +9,6 @@ import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationDbFixture;
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.exception.UserNotFoundException;
-import br.ifsp.demo.domain.enumerations.RegistrationStatus;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -199,5 +199,17 @@ class JdbcRegistrationRepositoryTest {
                 "SELECT COUNT(*) FROM registration WHERE id = ?",
                 Integer.class, registrationId.toString());
         assertThat(linhas).isZero();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findByUserId de usuario sem inscricoes deve retornar lista vazia")
+    void findByUserIdSemInscricoesDeveRetornarListaVazia() {
+        User user = salvarUsuario();
+
+        List<Registration> registrations = sut.findByUserId(user.getId());
+
+        assertThat(registrations).isEmpty();
     }
 }
