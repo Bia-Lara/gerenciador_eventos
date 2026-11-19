@@ -26,4 +26,17 @@ public class RegistrationDbFixture {
         );
         return eventId;
     }
+
+    public UUID insertCategory(UUID eventId, String name, int capacity, double price) {
+        UUID categoryId = UUID.randomUUID();
+        jdbc.update(
+                "INSERT INTO category (id, event_id, name, capacity, price) VALUES (?, ?, ?, ?, ?)",
+                categoryId.toString(),
+                eventId.toString(),
+                name,
+                capacity,
+                price
+        );
+        return categoryId;
+    }
 }
