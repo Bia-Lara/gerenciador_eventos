@@ -7,6 +7,8 @@ import br.ifsp.demo.infrastructure.security.user.JpaUserRepository;
 import br.ifsp.demo.infrastructure.security.user.User;
 import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationDbFixture;
+import br.ifsp.demo.domain.Category;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -112,4 +114,24 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(registration.getCategory().getEvent().getStatus().name()).isEqualTo(statusDoEvento);
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findById deve carregar todas as categorias do evento e nao apenas a da inscricao")
+    void findByIdDeveCarregarTodasAsCategoriasDoEvento() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoriaDoUsuario = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertCategory(eventId, "VIP", 10, 200.0);
+        UUID registrationId = fixture.insertRegistration(user.getId(), categoriaDoUsuario, "ATIVA");
+
+        Registration registration = sut.findById(registrationId).orElseThrow();
+
+        assertThat(registration.getCategory().getEvent().getCategories())
+                .extracting(Category::getName)
+                .containsExactlyInAnyOrder("Geral", "VIP");
+    }
+
 }
