@@ -12,12 +12,23 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
 
     private final Faker faker = new Faker();
+
+    private String nomeUnicoDeEvento() {
+        return "Encontro " + faker.lorem().word() + " " + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    private void inscreverEmEvento(String organizador, String participante, String nomeDoEvento, LocalDateTime inicio) {
+        UUID eventId = RegistrationApiFixture.createEvent(organizador, nomeDoEvento, inicio);
+        UUID categoryId = RegistrationApiFixture.createCategory(organizador, eventId, "Geral", 50.0, 40);
+        RegistrationApiFixture.register(participante, eventId, categoryId);
+    }
 
     @Test
     @Tag("UiTest")
@@ -52,5 +63,22 @@ class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
         assertThat(card.categoria()).contains("Geral").contains("75,50");
         assertThat(card.status()).isEqualTo("ATIVA");
         assertThat(card.possuiBotaoCancelar()).isTrue();
+    }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Cards aparecem ordenados pela data de início do evento")
+    void cardsAparecemOrdenadosPelaDataDeInicio() {
+        String organizador = novoUsuario();
+        String participante = novoUsuario();
+        String eventoTarde = nomeUnicoDeEvento();
+        String eventoCedo = nomeUnicoDeEvento();
+        inscreverEmEvento(organizador, participante, eventoTarde, RegistrationApiFixture.futureStart().plusDays(10));
+        inscreverEmEvento(organizador, participante, eventoCedo, RegistrationApiFixture.futureStart().minusDays(5));
+
+        entrarComToken(participante);
+        List<String> nomes = new MyRegistrationsPage(driver, wait).abrir().nomesDosEventosNaOrdemExibida();
+
+        assertThat(nomes).containsExactly(eventoCedo, eventoTarde);
     }
 }
