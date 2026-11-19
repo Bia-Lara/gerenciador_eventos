@@ -75,4 +75,31 @@ class CancelEventApiTest extends BaseApiTest {
                 .statusCode(200)
                 .body("[0].status", equalTo(EventStatus.ACTIVE.name()));
     }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao cancelar evento que possui inscrição ativa")
+    void deveRetornar409QuandoHouverInscricaoAtiva() {
+        String tokenOrganizador = novoUsuario();
+        String tokenParticipante = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(tokenOrganizador, "Evento com inscritos",
+                RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(tokenOrganizador, eventId,
+                "Geral " + UUID.randomUUID(), 50.0, 10);
+        RegistrationApiFixture.register(tokenParticipante, eventId, categoryId);
+
+        given()
+                .header("Authorization", "Bearer " + tokenOrganizador)
+        .when()
+                .post(EVENTS_PATH + "/" + eventId + "/cancel")
+        .then()
+                .statusCode(409);
+
+        given()
+                .header("Authorization", "Bearer " + tokenOrganizador)
+        .when()
+                .get(EVENTS_PATH + "/mine")
+        .then()
+                .statusCode(200)
+                .body("[0].status", equalTo(EventStatus.ACTIVE.name()));
+    }
 }
