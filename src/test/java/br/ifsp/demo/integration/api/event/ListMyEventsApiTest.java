@@ -68,4 +68,14 @@ class ListMyEventsApiTest extends BaseApiTest {
                 .statusCode(200)
                 .body("$", empty());
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando não houver token")
+    void deveRetornar401SemToken() {
+        given()
+        .when()
+                .get(MY_EVENTS_PATH)
+        .then()
+                .statusCode(401);
+    }
 }
