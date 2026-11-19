@@ -9,6 +9,7 @@ import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationDbFixture;
 import br.ifsp.demo.domain.Category;
 import br.ifsp.demo.exception.UserNotFoundException;
+import br.ifsp.demo.domain.enumerations.RegistrationStatus;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,4 +151,30 @@ class JdbcRegistrationRepositoryTest {
                 .isInstanceOf(UserNotFoundException.class);
     }
 
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("save deve persistir o cancelamento sem duplicar nem alterar outras inscricoes")
+    void saveDevePersistirCancelamentoSemAfetarOutrasInscricoes() {
+        User user = salvarUsuario();
+        User outro = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID registrationId = fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+        UUID outraId = fixture.insertRegistration(outro.getId(), categoryId, "ATIVA");
+
+        Registration registration = sut.findById(registrationId).orElseThrow();
+        registration.cancel(user.getId());
+        sut.save(registration);
+
+        assertThat(sut.findById(registrationId).orElseThrow().getStatus())
+                .isEqualTo(RegistrationStatus.CANCELADA);
+        assertThat(sut.findById(outraId).orElseThrow().getStatus())
+                .isEqualTo(RegistrationStatus.ATIVA);
+        Integer linhas = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM registration WHERE category_id = ?",
+                Integer.class, categoryId.toString());
+        assertThat(linhas).isEqualTo(2);
+    }
 }
