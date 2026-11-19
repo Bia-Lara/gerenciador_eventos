@@ -123,4 +123,14 @@ class CancelEventApiTest extends BaseApiTest {
         .then()
                 .statusCode(409);
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando não houver token")
+    void deveRetornar401SemToken() {
+        given()
+        .when()
+                .post(EVENTS_PATH + "/" + UUID.randomUUID() + "/cancel")
+        .then()
+                .statusCode(401);
+    }
 }
