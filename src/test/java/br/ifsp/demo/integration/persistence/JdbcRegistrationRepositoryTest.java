@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -92,5 +94,22 @@ class JdbcRegistrationRepositoryTest {
         Optional<Registration> found = sut.findById(UUID.randomUUID());
 
         assertThat(found).isEmpty();
+    }
+
+    @ParameterizedTest(name = "evento {0}")
+    @ValueSource(strings = {"CANCELLED", "COMPLETED"})
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findById deve refletir o status do evento gravado no banco")
+    void findByIdDeveRefletirStatusDoEvento(String statusDoEvento) {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), statusDoEvento);
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID registrationId = fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+
+        Registration registration = sut.findById(registrationId).orElseThrow();
+
+        assertThat(registration.getCategory().getEvent().getStatus().name()).isEqualTo(statusDoEvento);
     }
 }
