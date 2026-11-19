@@ -3,6 +3,7 @@ package br.ifsp.demo.support;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -31,6 +32,12 @@ public class AuthPageObject {
         } catch (TimeoutException e) {
             return false;
         }
+    }
+
+    public String esperarMensagemDeFeedback() {
+        WebElement feedback = driver.findElement(By.id("auth-feedback"));
+        espera.until(d -> !feedback.getText().isBlank());
+        return feedback.getText();
     }
 
     public boolean telaDeAutenticacaoEstaEscondida() {
