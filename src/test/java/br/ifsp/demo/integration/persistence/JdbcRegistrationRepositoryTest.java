@@ -83,4 +83,14 @@ class JdbcRegistrationRepositoryTest {
         assertThat(registration.getCategory().getEvent().getEndDateTime()).isEqualTo(end);
         assertThat(registration.getCategory().getEvent().getOrganizerId()).isNotNull();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findById com id inexistente deve retornar vazio")
+    void findByIdComIdInexistenteDeveRetornarVazio() {
+        Optional<Registration> found = sut.findById(UUID.randomUUID());
+
+        assertThat(found).isEmpty();
+    }
 }
