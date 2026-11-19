@@ -6,13 +6,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, properties = "server.port=8091")
 public abstract class BaseSeleniumTest {
-
-    @LocalServerPort
-    protected int port;
 
     protected WebDriver driver;
 
@@ -32,6 +28,6 @@ public abstract class BaseSeleniumTest {
     }
 
     protected String urlBase() {
-        return "http://localhost:" + port;
+        return "http://localhost:8091";
     }
 }
