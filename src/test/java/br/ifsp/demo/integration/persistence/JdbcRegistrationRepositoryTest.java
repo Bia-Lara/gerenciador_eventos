@@ -8,6 +8,7 @@ import br.ifsp.demo.infrastructure.security.user.User;
 import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationDbFixture;
 import br.ifsp.demo.domain.Category;
+import br.ifsp.demo.exception.UserNotFoundException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 class JdbcRegistrationRepositoryTest {
@@ -132,6 +134,20 @@ class JdbcRegistrationRepositoryTest {
         assertThat(registration.getCategory().getEvent().getCategories())
                 .extracting(Category::getName)
                 .containsExactlyInAnyOrder("Geral", "VIP");
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findById de inscricao cujo dono nao existe deve lancar UserNotFoundException")
+    void findByIdComDonoInexistenteDeveLancarUserNotFoundException() {
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID registrationId = fixture.insertRegistration(UUID.randomUUID(), categoryId, "ATIVA");
+
+        assertThatThrownBy(() -> sut.findById(registrationId))
+                .isInstanceOf(UserNotFoundException.class);
     }
 
 }
