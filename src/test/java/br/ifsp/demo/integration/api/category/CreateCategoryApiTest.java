@@ -80,7 +80,7 @@ class CreateCategoryApiTest extends BaseApiTest {
         assertThat(categoriasDoEvento(eventId)).containsExactly(criada);
     }
 
-    @ParameterizedTest(name = "nome repetido \"{0}\"")
+    @ParameterizedTest(name = "Categoria com nome repetido: \"{0}\"")
     @ValueSource(strings = {"Inteira", "  Inteira  "})
     @DisplayName("Deve retornar 409 ao repetir o nome de uma categoria do mesmo evento, sem criar outra")
     void deveRetornar409ComNomeDuplicado(String nomeRepetido) {
