@@ -177,4 +177,27 @@ class JdbcRegistrationRepositoryTest {
                 Integer.class, categoryId.toString());
         assertThat(linhas).isEqualTo(2);
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("save de inscricao inexistente nao deve gravar nada nem lancar erro")
+    void saveDeInscricaoInexistenteNaoDeveGravarNada() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID registrationId = fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+        Registration registration = sut.findById(registrationId).orElseThrow();
+        registration.cancel(user.getId());
+        jdbc.update("DELETE FROM registration WHERE id = ?", registrationId.toString());
+
+        sut.save(registration);
+
+        assertThat(sut.findById(registrationId)).isEmpty();
+        Integer linhas = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM registration WHERE id = ?",
+                Integer.class, registrationId.toString());
+        assertThat(linhas).isZero();
+    }
 }
