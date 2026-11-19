@@ -85,4 +85,14 @@ class ListAvailableEventsApiTest extends BaseApiTest {
                 .body("id", hasItem(eventoAtivo.toString()))
                 .body("id", not(hasItem(eventoCancelado.toString())));
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando não houver token")
+    void deveRetornar401SemToken() {
+        given()
+        .when()
+                .get(AVAILABLE_PATH)
+        .then()
+                .statusCode(401);
+    }
 }
