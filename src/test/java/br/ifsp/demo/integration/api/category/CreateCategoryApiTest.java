@@ -178,4 +178,17 @@ class CreateCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 403 quando quem cria não é o organizador do evento, sem criar a categoria")
+    void deveRetornar403QuandoNaoEOrganizador() {
+        String outroUsuarioToken = novoUsuario();
+
+        criarCategoria(outroUsuarioToken, eventId, new CreateCategoryRequest("Inteira", 50.0, 10))
+                .then()
+                .statusCode(403)
+                .body("message", equalTo("Only the event organizer can create categories"));
+
+        assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
 }
