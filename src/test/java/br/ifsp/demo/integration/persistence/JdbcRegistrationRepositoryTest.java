@@ -295,4 +295,23 @@ class JdbcRegistrationRepositoryTest {
         assertThat(total).isEqualTo(3);
     }
 
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("countActiveByEventId deve diminuir depois que uma inscricao e cancelada via save")
+    void countActiveByEventIdDeveDiminuirAposCancelamento() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID registrationId = fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+        fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+        assertThat(sut.countActiveByEventId(eventId)).isEqualTo(2);
+
+        Registration registration = sut.findById(registrationId).orElseThrow();
+        registration.cancel(user.getId());
+        sut.save(registration);
+
+        assertThat(sut.countActiveByEventId(eventId)).isEqualTo(1);
+    }
 }
