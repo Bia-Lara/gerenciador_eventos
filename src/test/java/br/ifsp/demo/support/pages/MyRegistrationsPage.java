@@ -47,6 +47,13 @@ public class MyRegistrationsPage {
         return driver.findElements(CARDS).size();
     }
 
+    public List<String> nomesDosEventosNaOrdemExibida() {
+        wait.until(d -> !d.findElements(CARDS).isEmpty());
+        return driver.findElements(CARDS).stream()
+                .map(card -> card.findElement(By.tagName("h2")).getText())
+                .toList();
+    }
+
     public RegistrationCard cardDoEvento(String nomeDoEvento) {
         wait.until(d -> encontrarCard(nomeDoEvento) != null);
         return new RegistrationCard(encontrarCard(nomeDoEvento));
