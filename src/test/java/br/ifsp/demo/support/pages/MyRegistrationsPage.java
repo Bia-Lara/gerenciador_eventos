@@ -54,6 +54,14 @@ public class MyRegistrationsPage {
                 .toList();
     }
 
+    public List<String> detalhesDosCardsDoEvento(String nomeDoEvento) {
+        wait.until(d -> encontrarCard(nomeDoEvento) != null);
+        return driver.findElements(CARDS).stream()
+                .filter(card -> card.findElement(By.tagName("h2")).getText().equals(nomeDoEvento))
+                .map(card -> card.findElement(By.tagName("p")).getText())
+                .toList();
+    }
+
     public RegistrationCard cardDoEvento(String nomeDoEvento) {
         wait.until(d -> encontrarCard(nomeDoEvento) != null);
         return new RegistrationCard(encontrarCard(nomeDoEvento));
