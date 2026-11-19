@@ -102,4 +102,25 @@ class CancelEventApiTest extends BaseApiTest {
                 .statusCode(200)
                 .body("[0].status", equalTo(EventStatus.ACTIVE.name()));
     }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao cancelar um evento que já está cancelado")
+    void deveRetornar409AoCancelarEventoJaCancelado() {
+        String token = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(token, "Evento cancelado duas vezes",
+                RegistrationApiFixture.futureStart());
+        given()
+                .header("Authorization", "Bearer " + token)
+        .when()
+                .post(EVENTS_PATH + "/" + eventId + "/cancel")
+        .then()
+                .statusCode(200);
+
+        given()
+                .header("Authorization", "Bearer " + token)
+        .when()
+                .post(EVENTS_PATH + "/" + eventId + "/cancel")
+        .then()
+                .statusCode(409);
+    }
 }
