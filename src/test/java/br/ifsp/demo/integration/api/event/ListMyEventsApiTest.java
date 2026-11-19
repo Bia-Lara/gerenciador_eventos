@@ -54,4 +54,18 @@ class ListMyEventsApiTest extends BaseApiTest {
                 .body("[0].status", equalTo(EventStatus.ACTIVE.name()))
                 .body("[0].categories", empty());
     }
+
+    @Test
+    @DisplayName("Deve retornar lista vazia quando o organizador não criou eventos")
+    void deveRetornarListaVaziaSemEventos() {
+        String token = novoUsuario(EntityBuilder.randomEmail());
+
+        given()
+                .header("Authorization", "Bearer " + token)
+        .when()
+                .get(MY_EVENTS_PATH)
+        .then()
+                .statusCode(200)
+                .body("$", empty());
+    }
 }
