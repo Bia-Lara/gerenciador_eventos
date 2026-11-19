@@ -39,4 +39,16 @@ public class RegistrationDbFixture {
         );
         return categoryId;
     }
+
+    public UUID insertRegistration(UUID userId, UUID categoryId, String status) {
+        UUID registrationId = UUID.randomUUID();
+        jdbc.update(
+                "INSERT INTO registration (id, user_id, category_id, status) VALUES (?, ?, ?, ?)",
+                registrationId.toString(),
+                userId.toString(),
+                categoryId.toString(),
+                status
+        );
+        return registrationId;
+    }
 }
