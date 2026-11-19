@@ -118,4 +118,31 @@ class JdbcEventRepositoryTest {
 
         assertThat(events).isEmpty();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findAvailableForRegistration deve retornar só eventos ativos, futuros e de outros organizadores")
+    void findAvailableForRegistrationDeveAplicarOsFiltros() {
+        UUID consultante = UUID.randomUUID();
+        UUID outroOrganizador = UUID.randomUUID();
+        LocalDateTime start = futureStart();
+        Event disponivel = new Event("Disponível", start, start.plusHours(2), outroOrganizador);
+        Event proprio = new Event("Próprio", start, start.plusHours(2), consultante);
+        Event cancelado = new Event("Cancelado", start, start.plusHours(2), outroOrganizador);
+        Event passado = Event.restore(UUID.randomUUID(), "Passado",
+                LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(2).plusHours(2), outroOrganizador);
+        sut.create(disponivel);
+        sut.create(proprio);
+        sut.create(cancelado);
+        sut.create(passado);
+        cancelado.cancel(outroOrganizador);
+        sut.save(cancelado);
+
+        List<Event> events = sut.findAvailableForRegistration(consultante, LocalDateTime.now());
+
+        assertThat(events).extracting(Event::getId)
+                .contains(disponivel.getId())
+                .doesNotContain(proprio.getId(), cancelado.getId(), passado.getId());
+    }
 }
