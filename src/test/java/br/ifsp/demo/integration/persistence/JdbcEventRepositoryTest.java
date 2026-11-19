@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,8 +16,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 class JdbcEventRepositoryTest {
@@ -174,7 +177,7 @@ class JdbcEventRepositoryTest {
     @DisplayName("findByDate deve incluir eventos do dia (de 00:00 a 23:59:59) e excluir os dias vizinhos")
     void findByDateDeveRespeitarOsLimitesDoDia() {
         UUID organizador = UUID.randomUUID();
-        LocalDate dia = LocalDate.now().plusDays(500);
+        LocalDate dia = LocalDate.now().plusDays(ThreadLocalRandom.current().nextInt(1_000, 100_000));
         Event inicioDoDia = new Event("Início do dia", dia.atStartOfDay(), dia.atTime(2, 0), organizador);
         Event fimDoDia = new Event("Fim do dia", dia.atTime(23, 59, 59), dia.plusDays(1).atTime(2, 0), organizador);
         Event diaSeguinte = new Event("Dia seguinte", dia.plusDays(1).atStartOfDay(), dia.plusDays(1).atTime(2, 0), organizador);
@@ -188,5 +191,23 @@ class JdbcEventRepositoryTest {
 
         assertThat(events).extracting(Event::getId)
                 .containsExactlyInAnyOrder(inicioDoDia.getId(), fimDoDia.getId());
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("create deve rejeitar evento com id já existente e preservar o original")
+    void createDeveRejeitarIdDuplicado() {
+        UUID id = UUID.randomUUID();
+        UUID organizador = UUID.randomUUID();
+        LocalDateTime start = futureStart();
+        sut.create(Event.restore(id, "Original", start, start.plusHours(2), organizador));
+        Event duplicado = Event.restore(id, "Duplicado", start, start.plusHours(2), organizador);
+
+        assertThatThrownBy(() -> sut.create(duplicado))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("UNIQUE constraint failed: event.id");
+
+        assertThat(sut.findById(id).orElseThrow().getName()).isEqualTo("Original");
     }
 }
