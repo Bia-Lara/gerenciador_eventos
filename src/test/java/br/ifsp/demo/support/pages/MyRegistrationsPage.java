@@ -1,13 +1,16 @@
 package br.ifsp.demo.support.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MyRegistrationsPage {
 
@@ -15,6 +18,7 @@ public class MyRegistrationsPage {
     private static final By PANEL = By.id("registrations-panel");
     private static final By EMPTY_STATE = By.id("registrations-empty");
     private static final By CARDS = By.cssSelector("#registrations-list .registration-card");
+    private static final By FILTER = By.id("registration-filter");
 
     private final WebDriver driver;
     private final WebDriverWait wait;
@@ -62,9 +66,36 @@ public class MyRegistrationsPage {
                 .toList();
     }
 
+    public MyRegistrationsPage filtrarPor(String opcao) {
+        new Select(driver.findElement(FILTER)).selectByVisibleText(opcao);
+        return this;
+    }
+
+    public List<String> aguardarNomesNaTela(String... esperados) {
+        List<String> esperadosOrdenados = Stream.of(esperados).sorted().toList();
+        try {
+            wait.until(d -> {
+                try {
+                    return nomesAtuais().stream().sorted().toList().equals(esperadosOrdenados);
+                } catch (StaleElementReferenceException e) {
+                    return false;
+                }
+            });
+        } catch (TimeoutException e) {
+            // o teste mostra o que realmente apareceu na tela
+        }
+        return nomesAtuais();
+    }
+
     public RegistrationCard cardDoEvento(String nomeDoEvento) {
         wait.until(d -> encontrarCard(nomeDoEvento) != null);
         return new RegistrationCard(encontrarCard(nomeDoEvento));
+    }
+
+    private List<String> nomesAtuais() {
+        return driver.findElements(CARDS).stream()
+                .map(card -> card.findElement(By.tagName("h2")).getText())
+                .toList();
     }
 
     private WebElement encontrarCard(String nomeDoEvento) {
