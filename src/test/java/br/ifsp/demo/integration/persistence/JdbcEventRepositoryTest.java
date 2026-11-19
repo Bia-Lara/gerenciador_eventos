@@ -59,4 +59,28 @@ class JdbcEventRepositoryTest {
 
         assertThat(found).isEmpty();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("save deve atualizar nome, datas e status do evento sem criar um novo registro")
+    void saveDeveAtualizarEventoExistente() {
+        UUID organizerId = UUID.randomUUID();
+        LocalDateTime start = futureStart();
+        Event event = new Event("Nome original", start, start.plusHours(2), organizerId);
+        sut.create(event);
+        LocalDateTime novoInicio = start.plusDays(5);
+        LocalDateTime novoFim = novoInicio.plusHours(4);
+        event.edit(organizerId, "Nome atualizado", novoInicio, novoFim);
+        event.cancel(organizerId);
+
+        sut.save(event);
+        Event saved = sut.findById(event.getId()).orElseThrow();
+
+        assertThat(saved.getName()).isEqualTo("Nome atualizado");
+        assertThat(saved.getStartDateTime()).isEqualTo(novoInicio);
+        assertThat(saved.getEndDateTime()).isEqualTo(novoFim);
+        assertThat(saved.getStatus()).isEqualTo(EventStatus.CANCELLED);
+        assertThat(sut.findByOrganizerId(organizerId)).hasSize(1);
+    }
 }
