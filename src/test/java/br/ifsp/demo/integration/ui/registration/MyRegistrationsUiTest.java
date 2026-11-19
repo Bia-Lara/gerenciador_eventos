@@ -102,4 +102,22 @@ class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
         assertThat(detalhes.get(0)).contains("Inscrição 1 de 2");
         assertThat(detalhes.get(1)).contains("Inscrição 2 de 2");
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Minhas inscrições não exibe inscrições de outro usuário")
+    void minhasInscricoesNaoExibeInscricoesDeOutroUsuario() {
+        String organizador = novoUsuario();
+        String participanteA = novoUsuario();
+        String participanteB = novoUsuario();
+        String eventoDeA = nomeUnicoDeEvento();
+        String eventoDeB = nomeUnicoDeEvento();
+        inscreverEmEvento(organizador, participanteA, eventoDeA, RegistrationApiFixture.futureStart());
+        inscreverEmEvento(organizador, participanteB, eventoDeB, RegistrationApiFixture.futureStart());
+
+        entrarComToken(participanteA);
+        List<String> nomes = new MyRegistrationsPage(driver, wait).abrir().nomesDosEventosNaOrdemExibida();
+
+        assertThat(nomes).containsExactly(eventoDeA);
+    }
 }
