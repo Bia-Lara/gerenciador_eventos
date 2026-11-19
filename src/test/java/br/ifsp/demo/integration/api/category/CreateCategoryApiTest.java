@@ -164,4 +164,18 @@ class CreateCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).containsExactly(criada);
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 sem token, sem criar a categoria")
+    void deveRetornar401SemToken() {
+        given()
+                .contentType("application/json")
+                .body(new CreateCategoryRequest("Inteira", 50.0, 10))
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/categories")
+                .then()
+                .statusCode(401);
+
+        assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
 }
