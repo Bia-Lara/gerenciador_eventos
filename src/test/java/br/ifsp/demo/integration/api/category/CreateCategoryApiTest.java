@@ -152,4 +152,16 @@ class CreateCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve aceitar categoria gratuita, com preço zero")
+    void deveAceitarCategoriaComPrecoZero() {
+        CategoryResponse criada = criarCategoria(organizerToken, eventId, new CreateCategoryRequest("Gratuita", 0.0, 10))
+                .then()
+                .statusCode(201)
+                .body("price", equalTo(0.0f))
+                .extract().as(CategoryResponse.class);
+
+        assertThat(categoriasDoEvento(eventId)).containsExactly(criada);
+    }
 }
