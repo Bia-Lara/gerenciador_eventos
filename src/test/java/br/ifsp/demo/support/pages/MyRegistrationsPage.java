@@ -8,6 +8,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.Alert;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -19,6 +20,7 @@ public class MyRegistrationsPage {
     private static final By EMPTY_STATE = By.id("registrations-empty");
     private static final By CARDS = By.cssSelector("#registrations-list .registration-card");
     private static final By FILTER = By.id("registration-filter");
+    private static final By FEEDBACK = By.id("registrations-feedback");
 
     private final WebDriver driver;
     private final WebDriverWait wait;
@@ -70,6 +72,24 @@ public class MyRegistrationsPage {
         new Select(driver.findElement(FILTER)).selectByVisibleText(opcao);
         return this;
     }
+
+    public MyRegistrationsPage cancelarInscricaoDoEvento(String nomeDoEvento, boolean confirmar) {
+        wait.until(d -> encontrarCard(nomeDoEvento) != null);
+        encontrarCard(nomeDoEvento).findElement(By.cssSelector("button.text-button")).click();
+        Alert janelaDeConfirmacao = wait.until(ExpectedConditions.alertIsPresent());
+        if (confirmar) {
+            janelaDeConfirmacao.accept();
+        } else {
+            janelaDeConfirmacao.dismiss();
+        }
+        return this;
+    }
+
+    public String aguardarMensagemDeFeedback() {
+        wait.until(d -> !d.findElement(FEEDBACK).getText().isBlank());
+        return driver.findElement(FEEDBACK).getText();
+    }
+
 
     public List<String> aguardarNomesNaTela(String... esperados) {
         List<String> esperadosOrdenados = Stream.of(esperados).sorted().toList();
