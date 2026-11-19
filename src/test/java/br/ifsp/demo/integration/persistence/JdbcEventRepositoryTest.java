@@ -108,4 +108,14 @@ class JdbcEventRepositoryTest {
         assertThat(events).extracting(Event::getStatus)
                 .containsExactlyInAnyOrder(EventStatus.ACTIVE, EventStatus.CANCELLED);
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findByOrganizerId deve retornar lista vazia quando o organizador não tem eventos")
+    void findByOrganizerIdSemEventosDeveRetornarListaVazia() {
+        List<Event> events = sut.findByOrganizerId(UUID.randomUUID());
+
+        assertThat(events).isEmpty();
+    }
 }
