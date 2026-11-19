@@ -10,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 import java.util.UUID;
@@ -75,5 +77,22 @@ class CreateCategoryApiTest extends BaseApiTest {
                 .extract().as(CategoryResponse.class);
 
         assertThat(categoriasDoEvento(eventId)).containsExactly(criada);
+    }
+
+    @ParameterizedTest(name = "nome repetido \"{0}\"")
+    @ValueSource(strings = {"Inteira", "  Inteira  "})
+    @DisplayName("Deve retornar 409 ao repetir o nome de uma categoria do mesmo evento, sem criar outra")
+    void deveRetornar409ComNomeDuplicado(String nomeRepetido) {
+        CategoryResponse original = criarCategoria(organizerToken, eventId, new CreateCategoryRequest("Inteira", 75.5, 40))
+                .then()
+                .statusCode(201)
+                .extract().as(CategoryResponse.class);
+
+        criarCategoria(organizerToken, eventId, new CreateCategoryRequest(nomeRepetido, 10.0, 5))
+                .then()
+                .statusCode(409)
+                .body("message", equalTo("Category name already exists"));
+
+        assertThat(categoriasDoEvento(eventId)).containsExactly(original);
     }
 }
