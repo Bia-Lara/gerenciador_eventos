@@ -101,4 +101,23 @@ class EditEventApiTest extends BaseApiTest {
                         new EditEventRequest("Evento", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusHours(1)))
         );
     }
+
+    @Test
+    @DisplayName("Deve retornar 403 quando quem edita não é o organizador do evento")
+    void deveRetornar403QuandoNaoForOrganizador() {
+        String tokenOrganizador = novoUsuario(EntityBuilder.randomEmail());
+        String tokenOutroUsuario = novoUsuario(EntityBuilder.randomEmail());
+        UUID eventId = RegistrationApiFixture.createEvent(tokenOrganizador, "Evento original",
+                RegistrationApiFixture.futureStart());
+        LocalDateTime novoInicio = RegistrationApiFixture.futureStart().plusDays(5);
+
+        given()
+                .header("Authorization", "Bearer " + tokenOutroUsuario)
+                .contentType("application/json")
+                .body(new EditEventRequest("Tentativa de edição", novoInicio, novoInicio.plusHours(2)))
+                .when()
+                .put(EVENTS_PATH + "/" + eventId)
+                .then()
+                .statusCode(403);
+    }
 }
