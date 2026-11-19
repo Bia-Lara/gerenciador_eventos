@@ -1,0 +1,45 @@
+package br.ifsp.demo.integration.ui;
+
+import br.ifsp.demo.infrastructure.security.user.JpaUserRepository;
+import br.ifsp.demo.infrastructure.security.user.User;
+import br.ifsp.demo.support.AuthPageObject;
+import br.ifsp.demo.support.BaseSeleniumTest;
+import br.ifsp.demo.support.EntityBuilder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class AuthUiTest extends BaseSeleniumTest {
+
+    @Autowired
+    private JpaUserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @AfterEach
+    void limparBanco() {
+        userRepository.deleteAll();
+    }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Login com credenciais válidas deve levar ao dashboard")
+    void loginComCredenciaisValidasDeveLevarAoDashboard() {
+        String senha = "SenhaForte123";
+        User user = EntityBuilder.createRandomUser(passwordEncoder.encode(senha));
+        userRepository.save(user);
+
+        AuthPageObject authPage = new AuthPageObject(driver);
+        authPage.logar(user.getEmail(), senha);
+
+        assertThat(authPage.esperarDashboardFicarVisivel()).isTrue();
+        assertThat(authPage.telaDeAutenticacaoEstaEscondida()).isTrue();
+        assertThat(authPage.botaoDeLogoutEstaVisivel()).isTrue();
+    }
+}
