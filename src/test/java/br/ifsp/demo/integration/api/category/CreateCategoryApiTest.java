@@ -191,4 +191,15 @@ class CreateCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao criar categoria em evento inexistente")
+    void deveRetornar404ComEventoInexistente() {
+        UUID eventoInexistente = UUID.randomUUID();
+
+        criarCategoria(organizerToken, eventoInexistente, new CreateCategoryRequest("Inteira", 50.0, 10))
+                .then()
+                .statusCode(404)
+                .body("message", equalTo("Event not found: " + eventoInexistente));
+    }
 }
