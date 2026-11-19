@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -82,5 +83,29 @@ class JdbcEventRepositoryTest {
         assertThat(saved.getEndDateTime()).isEqualTo(novoFim);
         assertThat(saved.getStatus()).isEqualTo(EventStatus.CANCELLED);
         assertThat(sut.findByOrganizerId(organizerId)).hasSize(1);
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findByOrganizerId deve retornar somente os eventos do organizador, inclusive os cancelados")
+    void findByOrganizerIdDeveRetornarSomenteEventosDoOrganizador() {
+        UUID organizerId = UUID.randomUUID();
+        LocalDateTime start = futureStart();
+        Event ativo = new Event("Ativo", start, start.plusHours(2), organizerId);
+        Event cancelado = new Event("Cancelado", start.plusDays(1), start.plusDays(1).plusHours(2), organizerId);
+        Event deOutro = new Event("De outro", start, start.plusHours(2), UUID.randomUUID());
+        sut.create(ativo);
+        sut.create(cancelado);
+        sut.create(deOutro);
+        cancelado.cancel(organizerId);
+        sut.save(cancelado);
+
+        List<Event> events = sut.findByOrganizerId(organizerId);
+
+        assertThat(events).extracting(Event::getId)
+                .containsExactlyInAnyOrder(ativo.getId(), cancelado.getId());
+        assertThat(events).extracting(Event::getStatus)
+                .containsExactlyInAnyOrder(EventStatus.ACTIVE, EventStatus.CANCELLED);
     }
 }
