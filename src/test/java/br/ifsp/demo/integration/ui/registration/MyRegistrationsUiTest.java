@@ -81,4 +81,25 @@ class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
 
         assertThat(nomes).containsExactly(eventoCedo, eventoTarde);
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Duas inscrições no mesmo evento mostram Inscrição 1 de 2 e Inscrição 2 de 2")
+    void duasInscricoesNoMesmoEventoMostramPosicaoDeCadaUma() {
+        String organizador = novoUsuario();
+        String participante = novoUsuario();
+        String nomeDoEvento = nomeUnicoDeEvento();
+        UUID eventId = RegistrationApiFixture.createEvent(organizador, nomeDoEvento, RegistrationApiFixture.futureStart());
+        UUID categoryId = RegistrationApiFixture.createCategory(organizador, eventId, "Geral", 50.0, 40);
+        UUID primeira = RegistrationApiFixture.register(participante, eventId, categoryId);
+        RegistrationApiFixture.cancel(participante, primeira);
+        RegistrationApiFixture.register(participante, eventId, categoryId);
+
+        entrarComToken(participante);
+        List<String> detalhes = new MyRegistrationsPage(driver, wait).abrir().detalhesDosCardsDoEvento(nomeDoEvento);
+
+        assertThat(detalhes).hasSize(2);
+        assertThat(detalhes.get(0)).contains("Inscrição 1 de 2");
+        assertThat(detalhes.get(1)).contains("Inscrição 2 de 2");
+    }
 }
