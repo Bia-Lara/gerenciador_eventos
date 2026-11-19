@@ -1,7 +1,11 @@
 package br.ifsp.demo.support;
 
 import br.ifsp.demo.infrastructure.security.auth.RegisterUserRequest;
+import br.ifsp.demo.infrastructure.security.user.Role;
+import br.ifsp.demo.infrastructure.security.user.User;
 import com.github.javafaker.Faker;
+
+import java.util.UUID;
 
 public class EntityBuilder {
 
@@ -30,5 +34,21 @@ public class EntityBuilder {
 
     public static String randomEmail() {
         return faker.internet().emailAddress();
+    }
+
+
+    public static User createRandomUser(String encryptedPassword) {
+        return createUser(randomFirstName(), randomLastName(), randomEmail(), encryptedPassword);
+    }
+
+    public static User createUser(String name, String lastname, String email, String encryptedPassword) {
+        return User.builder()
+                .id(UUID.randomUUID())
+                .name(name)
+                .lastname(lastname)
+                .email(email)
+                .password(encryptedPassword)
+                .role(Role.USER)
+                .build();
     }
 }
