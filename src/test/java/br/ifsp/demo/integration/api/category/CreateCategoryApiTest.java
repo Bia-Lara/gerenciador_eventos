@@ -5,6 +5,7 @@ import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.support.BaseApiTest;
 import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationApiFixture;
+import br.ifsp.demo.support.RegistrationDbFixture;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,12 +34,19 @@ class CreateCategoryApiTest extends BaseApiTest {
 
     private static final String PASSWORD = "SenhaForte123";
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     private String organizerToken;
+    private UUID organizerId;
     private UUID eventId;
 
     @BeforeEach
     void prepararEventoDoOrganizador() {
-        organizerToken = novoUsuario();
+        String organizerEmail = EntityBuilder.randomEmail();
+        organizerToken = registerAndAuthenticate(EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
+                organizerEmail, PASSWORD);
+        organizerId = userRepository.findByEmail(organizerEmail).orElseThrow().getId();
         eventId = RegistrationApiFixture.createEvent(organizerToken,
                 "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
     }
@@ -218,5 +230,20 @@ class CreateCategoryApiTest extends BaseApiTest {
                 .statusCode(409);
 
         assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao criar categoria em evento que já começou, sem criá-la")
+    void deveRetornar409ComEventoJaIniciado() {
+        LocalDateTime inicio = LocalDateTime.now().minusHours(1).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventoIniciado = new RegistrationDbFixture(jdbc)
+                .insertEvent(inicio, inicio.plusHours(3), "ACTIVE", organizerId);
+
+        criarCategoria(organizerToken, eventoIniciado, new CreateCategoryRequest("Inteira", 50.0, 10))
+                .then()
+                .statusCode(409)
+                .body("message", equalTo("Event has already started"));
+
+        assertThat(categoriasDoEvento(eventoIniciado)).isEmpty();
     }
 }
