@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
@@ -117,6 +118,22 @@ class CreateCategoryApiTest extends BaseApiTest {
                 .then()
                 .statusCode(400)
                 .body("message", equalTo("Category name must not exceed 150 characters"));
+
+        assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
+
+    @ParameterizedTest(name = "Categoria com capacidade inválida: {0}")
+    @CsvSource({
+            "0, Category capacity must be greater than zero",
+            "-1, Category capacity must not be negative",
+            ", Category capacity is required"
+    })
+    @DisplayName("Deve retornar 400 com capacidade inválida, sem criar a categoria")
+    void deveRetornar400ComCapacidadeInvalida(Integer capacidade, String mensagemEsperada) {
+        criarCategoria(organizerToken, eventId, new CreateCategoryRequest("Inteira", 50.0, capacidade))
+                .then()
+                .statusCode(400)
+                .body("message", equalTo(mensagemEsperada));
 
         assertThat(categoriasDoEvento(eventId)).isEmpty();
     }
