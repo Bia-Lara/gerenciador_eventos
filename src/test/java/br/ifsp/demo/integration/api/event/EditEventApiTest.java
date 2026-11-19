@@ -8,9 +8,13 @@ import br.ifsp.demo.support.RegistrationApiFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -62,5 +66,39 @@ class EditEventApiTest extends BaseApiTest {
                 .statusCode(200)
                 .body("[0].name", equalTo("Evento atualizado"))
                 .body("[0].startDateTime", equalTo(novoInicio.toString()));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("requestsEdicaoInvalidos")
+    @DisplayName("Deve retornar 400 para dados de edição inválidos")
+    void deveRetornar400ParaDadosInvalidos(String caso, EditEventRequest request) {
+        String token = novoUsuario(EntityBuilder.randomEmail());
+        UUID eventId = RegistrationApiFixture.createEvent(token, "Evento original",
+                RegistrationApiFixture.futureStart());
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body(request)
+        .when()
+                .put(EVENTS_PATH + "/" + eventId)
+        .then()
+                .statusCode(400);
+    }
+
+    private static Stream<Arguments> requestsEdicaoInvalidos() {
+        LocalDateTime start = RegistrationApiFixture.futureStart().plusDays(5);
+        return Stream.of(
+                Arguments.of("nome nulo", new EditEventRequest(null, start, start.plusHours(2))),
+                Arguments.of("nome vazio", new EditEventRequest("", start, start.plusHours(2))),
+                Arguments.of("nome só com espaços", new EditEventRequest("   ", start, start.plusHours(2))),
+                Arguments.of("nome com 151 caracteres", new EditEventRequest("a".repeat(151), start, start.plusHours(2))),
+                Arguments.of("início ausente", new EditEventRequest("Evento", null, start.plusHours(2))),
+                Arguments.of("término ausente", new EditEventRequest("Evento", start, null)),
+                Arguments.of("término igual ao início", new EditEventRequest("Evento", start, start)),
+                Arguments.of("término antes do início", new EditEventRequest("Evento", start, start.minusHours(1))),
+                Arguments.of("início no passado",
+                        new EditEventRequest("Evento", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusHours(1)))
+        );
     }
 }
