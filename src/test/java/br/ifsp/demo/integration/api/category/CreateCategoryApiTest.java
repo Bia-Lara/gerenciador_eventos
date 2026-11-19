@@ -202,4 +202,21 @@ class CreateCategoryApiTest extends BaseApiTest {
                 .statusCode(404)
                 .body("message", equalTo("Event not found: " + eventoInexistente));
     }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao criar categoria em evento cancelado, sem criá-la")
+    void deveRetornar409ComEventoCancelado() {
+        given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/cancel")
+                .then()
+                .statusCode(200);
+
+        criarCategoria(organizerToken, eventId, new CreateCategoryRequest("Inteira", 50.0, 10))
+                .then()
+                .statusCode(409);
+
+        assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
 }
