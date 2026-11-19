@@ -112,4 +112,18 @@ class CreateEventApiTest extends BaseApiTest {
                         new CreateEventRequest("Evento", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusHours(1)))
         );
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando não houver token")
+    void deveRetornar401SemToken() {
+        LocalDateTime start = futureStart();
+
+        given()
+                .contentType("application/json")
+                .body(new CreateEventRequest("Evento", start, start.plusHours(1)))
+        .when()
+                .post(EVENTS_PATH)
+        .then()
+                .statusCode(401);
+    }
 }
