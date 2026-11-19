@@ -270,4 +270,29 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(total).isZero();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("countActiveByEventId deve contar so as ativas, somando categorias e ignorando outros eventos")
+    void countActiveByEventIdDeveContarSomenteAtivasDoEvento() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID geral = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID vip = fixture.insertCategory(eventId, "VIP", 10, 200.0);
+        UUID outroEventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoriaDeOutroEvento = fixture.insertCategory(outroEventId, "Geral", 40, 75.5);
+
+        fixture.insertRegistration(user.getId(), geral, "ATIVA");
+        fixture.insertRegistration(user.getId(), geral, "ATIVA");
+        fixture.insertRegistration(user.getId(), vip, "ATIVA");
+        fixture.insertRegistration(user.getId(), geral, "CANCELADA");
+        fixture.insertRegistration(user.getId(), categoriaDeOutroEvento, "ATIVA");
+
+        long total = sut.countActiveByEventId(eventId);
+
+        assertThat(total).isEqualTo(3);
+    }
+
 }
