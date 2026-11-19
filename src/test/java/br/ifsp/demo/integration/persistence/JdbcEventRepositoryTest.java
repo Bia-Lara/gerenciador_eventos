@@ -49,4 +49,14 @@ class JdbcEventRepositoryTest {
         assertThat(saved.getStatus()).isEqualTo(EventStatus.ACTIVE);
         assertThat(saved.getCategories()).isEmpty();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findById com id inexistente deve retornar vazio")
+    void findByIdComIdInexistenteDeveRetornarVazio() {
+        Optional<Event> found = sut.findById(UUID.randomUUID());
+
+        assertThat(found).isEmpty();
+    }
 }
