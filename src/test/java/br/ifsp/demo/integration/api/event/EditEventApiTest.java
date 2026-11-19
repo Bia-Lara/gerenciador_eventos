@@ -120,4 +120,28 @@ class EditEventApiTest extends BaseApiTest {
                 .then()
                 .statusCode(403);
     }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao editar um evento cancelado")
+    void deveRetornar409AoEditarEventoCancelado() {
+        String token = novoUsuario(EntityBuilder.randomEmail());
+        UUID eventId = RegistrationApiFixture.createEvent(token, "Evento a cancelar",
+                RegistrationApiFixture.futureStart());
+        given()
+                .header("Authorization", "Bearer " + token)
+                .when()
+                .post(EVENTS_PATH + "/" + eventId + "/cancel")
+                .then()
+                .statusCode(200);
+        LocalDateTime novoInicio = RegistrationApiFixture.futureStart().plusDays(5);
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body(new EditEventRequest("Edição após cancelamento", novoInicio, novoInicio.plusHours(2)))
+                .when()
+                .put(EVENTS_PATH + "/" + eventId)
+                .then()
+                .statusCode(409);
+    }
 }
