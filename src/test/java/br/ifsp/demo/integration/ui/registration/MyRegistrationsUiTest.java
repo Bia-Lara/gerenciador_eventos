@@ -24,10 +24,10 @@ class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
         return "Encontro " + faker.lorem().word() + " " + UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private void inscreverEmEvento(String organizador, String participante, String nomeDoEvento, LocalDateTime inicio) {
+    private UUID inscreverEmEvento(String organizador, String participante, String nomeDoEvento, LocalDateTime inicio) {
         UUID eventId = RegistrationApiFixture.createEvent(organizador, nomeDoEvento, inicio);
         UUID categoryId = RegistrationApiFixture.createCategory(organizador, eventId, "Geral", 50.0, 40);
-        RegistrationApiFixture.register(participante, eventId, categoryId);
+        return RegistrationApiFixture.register(participante, eventId, categoryId);
     }
 
     @Test
@@ -119,5 +119,30 @@ class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
         List<String> nomes = new MyRegistrationsPage(driver, wait).abrir().nomesDosEventosNaOrdemExibida();
 
         assertThat(nomes).containsExactly(eventoDeA);
+    }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Filtros Todas, Ativas e Encerradas mostram as inscrições correspondentes")
+    void filtrosMostramAsInscricoesCorrespondentes() {
+        String organizador = novoUsuario();
+        String participante = novoUsuario();
+        String eventoAtivo = nomeUnicoDeEvento();
+        String eventoCancelado = nomeUnicoDeEvento();
+        inscreverEmEvento(organizador, participante, eventoAtivo, RegistrationApiFixture.futureStart());
+        UUID inscricaoCancelada = inscreverEmEvento(organizador, participante, eventoCancelado, RegistrationApiFixture.futureStart());
+        RegistrationApiFixture.cancel(participante, inscricaoCancelada);
+
+        entrarComToken(participante);
+        MyRegistrationsPage page = new MyRegistrationsPage(driver, wait).abrir();
+
+        assertThat(page.aguardarNomesNaTela(eventoAtivo, eventoCancelado))
+                .containsExactlyInAnyOrder(eventoAtivo, eventoCancelado);
+        assertThat(page.filtrarPor("Ativas").aguardarNomesNaTela(eventoAtivo))
+                .containsExactly(eventoAtivo);
+        assertThat(page.filtrarPor("Encerradas").aguardarNomesNaTela(eventoCancelado))
+                .containsExactly(eventoCancelado);
+        assertThat(page.filtrarPor("Todas").aguardarNomesNaTela(eventoAtivo, eventoCancelado))
+                .containsExactlyInAnyOrder(eventoAtivo, eventoCancelado);
     }
 }
