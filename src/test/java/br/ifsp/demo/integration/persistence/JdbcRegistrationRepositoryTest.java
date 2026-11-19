@@ -212,4 +212,28 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(registrations).isEmpty();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findByUserId deve retornar ativas e canceladas do usuario e nenhuma de outros")
+    void findByUserIdDeveRetornarSomenteInscricoesDoUsuario() {
+        User user = salvarUsuario();
+        User outro = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID ativa = fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+        UUID cancelada = fixture.insertRegistration(user.getId(), categoryId, "CANCELADA");
+        fixture.insertRegistration(outro.getId(), categoryId, "ATIVA");
+
+        List<Registration> registrations = sut.findByUserId(user.getId());
+
+        assertThat(registrations)
+                .extracting(Registration::getId)
+                .containsExactlyInAnyOrder(ativa, cancelada);
+        assertThat(registrations)
+                .extracting(r -> r.getUser().getId())
+                .containsOnly(user.getId());
+    }
 }
