@@ -236,4 +236,24 @@ class JdbcRegistrationRepositoryTest {
                 .extracting(r -> r.getUser().getId())
                 .containsOnly(user.getId());
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findByUserId deve incluir inscricao de evento que ja terminou")
+    void findByUserIdDeveIncluirInscricaoDeEventoJaEncerrado() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().minusDays(5).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID registrationId = fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+
+        List<Registration> registrations = sut.findByUserId(user.getId());
+
+        assertThat(registrations)
+                .extracting(Registration::getId)
+                .containsExactly(registrationId);
+        assertThat(registrations.get(0).getCategory().getEvent().getStartDateTime())
+                .isEqualTo(start);
+    }
 }
