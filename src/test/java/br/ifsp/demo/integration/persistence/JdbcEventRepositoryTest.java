@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -165,5 +166,27 @@ class JdbcEventRepositoryTest {
         assertThat(events).extracting(Event::getId)
                 .filteredOn(id -> List.of(tarde.getId(), cedo.getId(), meio.getId()).contains(id))
                 .containsExactly(cedo.getId(), meio.getId(), tarde.getId());
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findByDate deve incluir eventos do dia (de 00:00 a 23:59:59) e excluir os dias vizinhos")
+    void findByDateDeveRespeitarOsLimitesDoDia() {
+        UUID organizador = UUID.randomUUID();
+        LocalDate dia = LocalDate.now().plusDays(500);
+        Event inicioDoDia = new Event("Início do dia", dia.atStartOfDay(), dia.atTime(2, 0), organizador);
+        Event fimDoDia = new Event("Fim do dia", dia.atTime(23, 59, 59), dia.plusDays(1).atTime(2, 0), organizador);
+        Event diaSeguinte = new Event("Dia seguinte", dia.plusDays(1).atStartOfDay(), dia.plusDays(1).atTime(2, 0), organizador);
+        Event diaAnterior = new Event("Dia anterior", dia.minusDays(1).atTime(23, 59, 59), dia.atTime(1, 0), organizador);
+        sut.create(inicioDoDia);
+        sut.create(fimDoDia);
+        sut.create(diaSeguinte);
+        sut.create(diaAnterior);
+
+        List<Event> events = sut.findByDate(dia);
+
+        assertThat(events).extracting(Event::getId)
+                .containsExactlyInAnyOrder(inicioDoDia.getId(), fimDoDia.getId());
     }
 }
