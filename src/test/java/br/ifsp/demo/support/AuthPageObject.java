@@ -33,6 +33,10 @@ public class AuthPageObject {
         }
     }
 
+    public boolean telaDeAutenticacaoEstaEscondida() {
+        return driver.findElement(By.id("auth-view")).getAttribute("class").contains("hidden");
+    }
+
     public boolean botaoDeLogoutEstaVisivel() {
         return driver.findElement(By.id("logout-button")).isDisplayed();
     }
