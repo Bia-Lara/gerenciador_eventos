@@ -58,4 +58,31 @@ class ListAvailableEventsApiTest extends BaseApiTest {
                 .body(eventoDoOutro + ".totalCapacity", equalTo(10))
                 .body(eventoDoOutro + ".activeRegistrations", equalTo(1));
     }
+
+    @Test
+    @DisplayName("Não deve listar evento cancelado")
+    void naoDeveListarEventoCancelado() {
+        String tokenConsultante = novoUsuario();
+        String tokenOrganizador = novoUsuario();
+
+        UUID eventoAtivo = RegistrationApiFixture.createEvent(tokenOrganizador,
+                "Ativo " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID eventoCancelado = RegistrationApiFixture.createEvent(tokenOrganizador,
+                "Cancelado " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        given()
+                .header("Authorization", "Bearer " + tokenOrganizador)
+        .when()
+                .post(BASE_PATH + "/events/" + eventoCancelado + "/cancel")
+        .then()
+                .statusCode(200);
+
+        given()
+                .header("Authorization", "Bearer " + tokenConsultante)
+        .when()
+                .get(AVAILABLE_PATH)
+        .then()
+                .statusCode(200)
+                .body("id", hasItem(eventoAtivo.toString()))
+                .body("id", not(hasItem(eventoCancelado.toString())));
+    }
 }
