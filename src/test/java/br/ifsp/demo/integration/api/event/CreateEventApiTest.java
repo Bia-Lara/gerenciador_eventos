@@ -58,4 +58,22 @@ class CreateEventApiTest extends BaseApiTest {
                 .body("startDateTime", equalTo(start.toString()))
                 .body("endDateTime", equalTo(end.toString()));
     }
+
+    @Test
+    @DisplayName("Deve aceitar nome com exatamente 150 caracteres (limite)")
+    void deveAceitarNomeNoLimiteDe150Caracteres() {
+        String token = novoOrganizador(EntityBuilder.randomEmail());
+        LocalDateTime start = futureStart();
+        String nomeNoLimite = "a".repeat(150);
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body(new CreateEventRequest(nomeNoLimite, start, start.plusHours(1)))
+        .when()
+                .post(EVENTS_PATH)
+        .then()
+                .statusCode(201)
+                .body("name", equalTo(nomeNoLimite));
+    }
 }
