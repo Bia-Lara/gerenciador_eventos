@@ -145,4 +145,25 @@ class JdbcEventRepositoryTest {
                 .contains(disponivel.getId())
                 .doesNotContain(proprio.getId(), cancelado.getId(), passado.getId());
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("findAvailableForRegistration deve ordenar os eventos pela data de início")
+    void findAvailableForRegistrationDeveOrdenarPelaDataDeInicio() {
+        UUID organizador = UUID.randomUUID();
+        LocalDateTime base = futureStart();
+        Event tarde = new Event("Tarde", base.plusDays(3), base.plusDays(3).plusHours(2), organizador);
+        Event cedo = new Event("Cedo", base.plusDays(1), base.plusDays(1).plusHours(2), organizador);
+        Event meio = new Event("Meio", base.plusDays(2), base.plusDays(2).plusHours(2), organizador);
+        sut.create(tarde);
+        sut.create(cedo);
+        sut.create(meio);
+
+        List<Event> events = sut.findAvailableForRegistration(UUID.randomUUID(), LocalDateTime.now());
+
+        assertThat(events).extracting(Event::getId)
+                .filteredOn(id -> List.of(tarde.getId(), cedo.getId(), meio.getId()).contains(id))
+                .containsExactly(cedo.getId(), meio.getId(), tarde.getId());
+    }
 }
