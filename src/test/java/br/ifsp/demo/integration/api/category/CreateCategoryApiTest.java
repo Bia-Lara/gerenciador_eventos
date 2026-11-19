@@ -137,4 +137,19 @@ class CreateCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).isEmpty();
     }
+
+    @ParameterizedTest(name = "Categoria com preço inválido: {0}")
+    @CsvSource({
+            "-0.01, Category price must not be negative",
+            ", Category price is required"
+    })
+    @DisplayName("Deve retornar 400 com preço inválido, sem criar a categoria")
+    void deveRetornar400ComPrecoInvalido(Double preco, String mensagemEsperada) {
+        criarCategoria(organizerToken, eventId, new CreateCategoryRequest("Inteira", preco, 10))
+                .then()
+                .statusCode(400)
+                .body("message", equalTo(mensagemEsperada));
+
+        assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
 }
