@@ -51,4 +51,28 @@ class CancelEventApiTest extends BaseApiTest {
                 .statusCode(200)
                 .body("[0].status", equalTo(EventStatus.CANCELLED.name()));
     }
+
+    @Test
+    @DisplayName("Deve retornar 403 quando quem cancela não é o organizador do evento")
+    void deveRetornar403QuandoNaoForOrganizador() {
+        String tokenOrganizador = novoUsuario();
+        String tokenOutroUsuario = novoUsuario();
+        UUID eventId = RegistrationApiFixture.createEvent(tokenOrganizador, "Evento protegido",
+                RegistrationApiFixture.futureStart());
+
+        given()
+                .header("Authorization", "Bearer " + tokenOutroUsuario)
+        .when()
+                .post(EVENTS_PATH + "/" + eventId + "/cancel")
+        .then()
+                .statusCode(403);
+
+        given()
+                .header("Authorization", "Bearer " + tokenOrganizador)
+        .when()
+                .get(EVENTS_PATH + "/mine")
+        .then()
+                .statusCode(200)
+                .body("[0].status", equalTo(EventStatus.ACTIVE.name()));
+    }
 }
