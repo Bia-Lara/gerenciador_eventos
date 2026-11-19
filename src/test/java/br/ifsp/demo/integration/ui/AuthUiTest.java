@@ -42,4 +42,17 @@ class AuthUiTest extends BaseSeleniumTest {
         assertThat(authPage.telaDeAutenticacaoEstaEscondida()).isTrue();
         assertThat(authPage.botaoDeLogoutEstaVisivel()).isTrue();
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Login com senha errada deve mostrar mensagem de credenciais inválidas")
+    void loginComSenhaErradaDeveMostrarMensagemDeCredenciaisInvalidas() {
+        User user = EntityBuilder.createRandomUser(passwordEncoder.encode("SenhaForte123"));
+        userRepository.save(user);
+
+        AuthPageObject authPage = new AuthPageObject(driver);
+        authPage.logar(user.getEmail(), "SenhaErrada999");
+
+        assertThat(authPage.esperarMensagemDeFeedback()).isEqualTo("E-mail ou senha inválidos.");
+    }
 }
