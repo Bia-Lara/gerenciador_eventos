@@ -144,4 +144,18 @@ class EditEventApiTest extends BaseApiTest {
                 .then()
                 .statusCode(409);
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 quando não houver token")
+    void deveRetornar401SemToken() {
+        LocalDateTime novoInicio = RegistrationApiFixture.futureStart().plusDays(5);
+
+        given()
+                .contentType("application/json")
+                .body(new EditEventRequest("Evento", novoInicio, novoInicio.plusHours(2)))
+                .when()
+                .put(EVENTS_PATH + "/" + UUID.randomUUID())
+                .then()
+                .statusCode(401);
+    }
 }
