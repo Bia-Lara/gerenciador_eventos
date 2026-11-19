@@ -7,10 +7,14 @@ import br.ifsp.demo.support.EntityBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.empty;
@@ -75,5 +79,37 @@ class CreateEventApiTest extends BaseApiTest {
         .then()
                 .statusCode(201)
                 .body("name", equalTo(nomeNoLimite));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("requestsEventosInvalidos")
+    @DisplayName("Deve retornar 400 para dados de evento inválidos")
+    void deveRetornar400ParaDadosInvalidos(String caso, CreateEventRequest request) {
+        String token = novoOrganizador(EntityBuilder.randomEmail());
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body(request)
+        .when()
+                .post(EVENTS_PATH)
+        .then()
+                .statusCode(400);
+    }
+
+    private static Stream<Arguments> requestsEventosInvalidos() {
+        LocalDateTime start = futureStart();
+        return Stream.of(
+                Arguments.of("nome nulo", new CreateEventRequest(null, start, start.plusHours(2))),
+                Arguments.of("nome vazio", new CreateEventRequest("", start, start.plusHours(2))),
+                Arguments.of("nome só com espaços", new CreateEventRequest("   ", start, start.plusHours(2))),
+                Arguments.of("nome com 151 caracteres", new CreateEventRequest("a".repeat(151), start, start.plusHours(2))),
+                Arguments.of("início ausente", new CreateEventRequest("Evento", null, start.plusHours(2))),
+                Arguments.of("término ausente", new CreateEventRequest("Evento", start, null)),
+                Arguments.of("término igual ao início", new CreateEventRequest("Evento", start, start)),
+                Arguments.of("término antes do início", new CreateEventRequest("Evento", start, start.minusHours(1))),
+                Arguments.of("início no passado",
+                        new CreateEventRequest("Evento", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusHours(1)))
+        );
     }
 }
