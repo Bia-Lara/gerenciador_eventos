@@ -95,4 +95,18 @@ class CreateCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).containsExactly(original);
     }
+
+    @Test
+    @DisplayName("Deve aceitar nome de categoria com exatamente 150 caracteres")
+    void deveAceitarNomeNoLimiteDe150Caracteres() {
+        String nomeNoLimite = "a".repeat(150);
+
+        CategoryResponse criada = criarCategoria(organizerToken, eventId, new CreateCategoryRequest(nomeNoLimite, 50.0, 10))
+                .then()
+                .statusCode(201)
+                .body("name", equalTo(nomeNoLimite))
+                .extract().as(CategoryResponse.class);
+
+        assertThat(categoriasDoEvento(eventId)).containsExactly(criada);
+    }
 }
