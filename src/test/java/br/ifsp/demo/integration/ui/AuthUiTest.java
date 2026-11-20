@@ -9,6 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Dimension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -144,5 +145,17 @@ class AuthUiTest extends BaseSeleniumTest {
         authPage.logar(user.getEmail().toUpperCase(), senha);
 
         assertThat(authPage.esperarDashboardFicarVisivel()).isTrue();
+    }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Formulário de login deve continuar visível e clicável em tela de tamanho mobile")
+    void formularioDeLoginDeveContinuarVisivelEClicavelEmTelaMobile() {
+        driver.manage().window().setSize(new Dimension(375, 667));
+
+        AuthPageObject authPage = new AuthPageObject(driver);
+
+        assertThat(authPage.formularioDeLoginEstaVisivel()).isTrue();
+        assertThat(authPage.botaoDeEntrarEstaClicavel()).isTrue();
     }
 }
