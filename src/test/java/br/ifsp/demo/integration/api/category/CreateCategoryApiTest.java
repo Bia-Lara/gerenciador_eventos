@@ -246,4 +246,14 @@ class CreateCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventoIniciado)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 400 com JSON malformado, sem criar a categoria")
+    void deveRetornar400ComJsonMalformado() {
+        criarCategoria(organizerToken, eventId, "{\"name\": \"Inteira\", \"price\": ")
+                .then()
+                .statusCode(400);
+
+        assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
 }
