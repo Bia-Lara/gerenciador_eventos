@@ -86,4 +86,16 @@ class AuthUiTest extends BaseSeleniumTest {
 
         assertThat(authPage.esperarMensagemDeFeedback()).isEqualTo("Já existe uma conta com este e-mail.");
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Alternar para a aba de cadastro deve esconder o login e mostrar o formulário de cadastro")
+    void alternarParaAbaDeCadastroDeveEsconderLoginEMostrarCadastro() {
+        AuthPageObject authPage = new AuthPageObject(driver);
+
+        authPage.alternarParaAbaDeCadastro();
+
+        assertThat(authPage.formularioDeCadastroEstaVisivel()).isTrue();
+        assertThat(authPage.formularioDeLoginEstaVisivel()).isFalse();
+    }
 }
