@@ -78,4 +78,9 @@ public class AuthPageObject {
         Boolean valido = (Boolean) ((JavascriptExecutor) driver).executeScript("return arguments[0].checkValidity();", senha);
         return !valido;
     }
+
+    public boolean botaoDeEntrarEstaClicavel() {
+        WebElement botao = driver.findElement(By.cssSelector("#login-form button[type=submit]"));
+        return botao.isDisplayed() && botao.isEnabled();
+    }
 }
