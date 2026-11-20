@@ -34,6 +34,18 @@ public class AuthPageObject {
         }
     }
 
+    public void alternarParaAbaDeCadastro() {
+        driver.findElement(By.id("register-tab")).click();
+    }
+
+    public void cadastrar(String nome, String sobrenome, String email, String senha) {
+        driver.findElement(By.id("register-name")).sendKeys(nome);
+        driver.findElement(By.id("register-lastname")).sendKeys(sobrenome);
+        driver.findElement(By.id("register-email")).sendKeys(email);
+        driver.findElement(By.id("register-password")).sendKeys(senha);
+        driver.findElement(By.cssSelector("#register-form button[type=submit]")).click();
+    }
+
     public String esperarMensagemDeFeedback() {
         WebElement feedback = driver.findElement(By.id("auth-feedback"));
         espera.until(d -> !feedback.getText().isBlank());
