@@ -1,6 +1,7 @@
 package br.ifsp.demo.support;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -70,5 +71,11 @@ public class AuthPageObject {
 
     public void sair() {
         driver.findElement(By.id("logout-button")).click();
+    }
+
+    public boolean campoSenhaDeCadastroEstaInvalido() {
+        WebElement senha = driver.findElement(By.id("register-password"));
+        Boolean valido = (Boolean) ((JavascriptExecutor) driver).executeScript("return arguments[0].checkValidity();", senha);
+        return !valido;
     }
 }
