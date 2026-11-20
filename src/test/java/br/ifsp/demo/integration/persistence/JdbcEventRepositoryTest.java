@@ -232,4 +232,20 @@ class JdbcEventRepositoryTest {
 
         assertThat(sut.findById(id)).isEmpty();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve gravar o status ACTIVE quando o evento é inserido sem status")
+    void bancoDeveAplicarStatusAtivoPorPadrao() {
+        UUID id = UUID.randomUUID();
+        LocalDateTime start = futureStart();
+        jdbc.update("INSERT INTO event (id, name, start_date_time, end_date_time, organizer_id) VALUES (?, ?, ?, ?, ?)",
+                id.toString(), "Sem status", start.toString(), start.plusHours(2).toString(),
+                UUID.randomUUID().toString());
+
+        Event found = sut.findById(id).orElseThrow();
+
+        assertThat(found.getStatus()).isEqualTo(EventStatus.ACTIVE);
+    }
 }
