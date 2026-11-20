@@ -50,4 +50,19 @@ class JdbcRegistrationExistsActiveTest {
 
         assertThat(exists).isTrue();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByEventId deve retornar falso quando todas as inscrições do evento estão canceladas")
+    void existsActiveByEventIdDeveRetornarFalsoComSomenteInscricoesCanceladas() {
+        UUID eventId = novoEventoComCategoria();
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 50.0);
+        fixture.insertRegistration(UUID.randomUUID(), categoryId, "CANCELADA");
+        fixture.insertRegistration(UUID.randomUUID(), categoryId, "CANCELADA");
+
+        boolean exists = sut.existsActiveByEventId(eventId);
+
+        assertThat(exists).isFalse();
+    }
 }
