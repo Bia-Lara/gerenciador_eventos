@@ -98,4 +98,23 @@ class AuthUiTest extends BaseSeleniumTest {
         assertThat(authPage.formularioDeCadastroEstaVisivel()).isTrue();
         assertThat(authPage.formularioDeLoginEstaVisivel()).isFalse();
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Logout deve voltar para a tela de login e esconder o botão de logout")
+    void logoutDeveVoltarParaTelaDeLoginEEsconderBotaoDeLogout() {
+        String senha = "SenhaForte123";
+        User user = EntityBuilder.createRandomUser(passwordEncoder.encode(senha));
+        userRepository.save(user);
+
+        AuthPageObject authPage = new AuthPageObject(driver);
+        authPage.logar(user.getEmail(), senha);
+        assertThat(authPage.esperarDashboardFicarVisivel()).isTrue();
+
+        authPage.sair();
+
+        assertThat(authPage.telaDeAutenticacaoEstaEscondida()).isFalse();
+        assertThat(authPage.formularioDeLoginEstaVisivel()).isTrue();
+        assertThat(authPage.botaoDeLogoutEstaVisivel()).isFalse();
+    }
 }
