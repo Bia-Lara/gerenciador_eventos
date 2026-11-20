@@ -117,4 +117,18 @@ class AuthUiTest extends BaseSeleniumTest {
         assertThat(authPage.formularioDeLoginEstaVisivel()).isTrue();
         assertThat(authPage.botaoDeLogoutEstaVisivel()).isFalse();
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Cadastro com senha menor que 8 caracteres deve ser bloqueado pela validação do formulário")
+    void cadastroComSenhaCurtaDeveSerBloqueadoPelaValidacaoDoFormulario() {
+        AuthPageObject authPage = new AuthPageObject(driver);
+        authPage.alternarParaAbaDeCadastro();
+        authPage.cadastrar(
+                EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
+                EntityBuilder.randomEmail(), "curta1");
+
+        assertThat(authPage.campoSenhaDeCadastroEstaInvalido()).isTrue();
+        assertThat(authPage.formularioDeCadastroEstaVisivel()).isTrue();
+    }
 }
