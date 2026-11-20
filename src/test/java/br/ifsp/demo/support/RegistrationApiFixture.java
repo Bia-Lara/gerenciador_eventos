@@ -55,4 +55,14 @@ public class RegistrationApiFixture {
                 .extract().path("id");
         return UUID.fromString(id);
     }
+
+    public static void cancel(String participantToken, UUID registrationId) {
+        given()
+                .header("Authorization", "Bearer " + participantToken)
+                .contentType("application/json")
+                .when()
+                .post("/api/v1/events/registrations/" + registrationId + "/cancel")
+                .then()
+                .statusCode(204);
+    }
 }
