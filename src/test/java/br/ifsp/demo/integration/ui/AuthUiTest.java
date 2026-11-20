@@ -70,4 +70,20 @@ class AuthUiTest extends BaseSeleniumTest {
         assertThat(authPage.telaDeAutenticacaoEstaEscondida()).isTrue();
         assertThat(authPage.botaoDeLogoutEstaVisivel()).isTrue();
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Cadastro com e-mail já usado deve mostrar mensagem de conta já existente")
+    void cadastroComEmailJaUsadoDeveMostrarMensagemDeContaJaExistente() {
+        User user = EntityBuilder.createRandomUser(passwordEncoder.encode("SenhaForte123"));
+        userRepository.save(user);
+
+        AuthPageObject authPage = new AuthPageObject(driver);
+        authPage.alternarParaAbaDeCadastro();
+        authPage.cadastrar(
+                EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
+                user.getEmail(), "OutraSenha456");
+
+        assertThat(authPage.esperarMensagemDeFeedback()).isEqualTo("Já existe uma conta com este e-mail.");
+    }
 }
