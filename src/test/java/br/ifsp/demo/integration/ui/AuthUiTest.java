@@ -131,4 +131,18 @@ class AuthUiTest extends BaseSeleniumTest {
         assertThat(authPage.campoSenhaDeCadastroEstaInvalido()).isTrue();
         assertThat(authPage.formularioDeCadastroEstaVisivel()).isTrue();
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Login com e-mail cadastrado porém em maiúsculo deveria funcionar normalmente")
+    void loginComEmailEmMaiusculoDeveriaFuncionarNormalmente() {
+        String senha = "SenhaForte123";
+        User user = EntityBuilder.createRandomUser(passwordEncoder.encode(senha));
+        userRepository.save(user);
+
+        AuthPageObject authPage = new AuthPageObject(driver);
+        authPage.logar(user.getEmail().toUpperCase(), senha);
+
+        assertThat(authPage.esperarDashboardFicarVisivel()).isTrue();
+    }
 }
