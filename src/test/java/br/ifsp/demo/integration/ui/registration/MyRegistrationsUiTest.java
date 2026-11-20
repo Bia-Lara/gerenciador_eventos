@@ -8,7 +8,7 @@ import com.github.javafaker.Faker;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
+import static io.restassured.RestAssured.given;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -163,5 +163,31 @@ class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
         RegistrationCard card = page.cardDoEvento(nomeDoEvento);
         assertThat(card.status()).isEqualTo("CANCELADA");
         assertThat(card.possuiBotaoCancelar()).isFalse();
+    }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Recusar a confirmação não cancela a inscrição")
+    void recusarConfirmacaoNaoCancelaInscricao() {
+        String organizador = novoUsuario();
+        String participante = novoUsuario();
+        String nomeDoEvento = nomeUnicoDeEvento();
+        inscreverEmEvento(organizador, participante, nomeDoEvento, RegistrationApiFixture.futureStart());
+
+        entrarComToken(participante);
+        MyRegistrationsPage page = new MyRegistrationsPage(driver, wait).abrir();
+        page.cancelarInscricaoDoEvento(nomeDoEvento, false);
+
+        RegistrationCard card = page.cardDoEvento(nomeDoEvento);
+        assertThat(card.status()).isEqualTo("ATIVA");
+        assertThat(card.possuiBotaoCancelar()).isTrue();
+        List<String> statusNoSistema = given()
+                .header("Authorization", "Bearer " + participante)
+                .when()
+                .get("/api/v1/registrations/details")
+                .then()
+                .statusCode(200)
+                .extract().jsonPath().getList("status", String.class);
+        assertThat(statusNoSistema).containsExactly("ATIVA");
     }
 }
