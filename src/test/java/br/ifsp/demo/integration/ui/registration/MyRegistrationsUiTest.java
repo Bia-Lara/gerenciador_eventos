@@ -190,4 +190,22 @@ class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
                 .extract().jsonPath().getList("status", String.class);
         assertThat(statusNoSistema).containsExactly("ATIVA");
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Cancelar inscrição já cancelada em outra sessão exibe mensagem clara em português")
+    void cancelarInscricaoJaCanceladaExibeMensagemClara() {
+        String organizador = novoUsuario();
+        String participante = novoUsuario();
+        String nomeDoEvento = nomeUnicoDeEvento();
+        UUID inscricao = inscreverEmEvento(organizador, participante, nomeDoEvento, RegistrationApiFixture.futureStart());
+
+        entrarComToken(participante);
+        MyRegistrationsPage page = new MyRegistrationsPage(driver, wait).abrir();
+        page.cardDoEvento(nomeDoEvento);
+        RegistrationApiFixture.cancel(participante, inscricao);
+        page.cancelarInscricaoDoEvento(nomeDoEvento, true);
+
+        assertThat(page.aguardarMensagemDeFeedback()).containsIgnoringCase("cancelada");
+    }
 }
