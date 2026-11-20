@@ -55,4 +55,19 @@ class AuthUiTest extends BaseSeleniumTest {
 
         assertThat(authPage.esperarMensagemDeFeedback()).isEqualTo("E-mail ou senha inválidos.");
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Cadastro com dados válidos deve logar automaticamente e mostrar o dashboard")
+    void cadastroComDadosValidosDeveLogarAutomaticamenteEMostrarODashboard() {
+        AuthPageObject authPage = new AuthPageObject(driver);
+        authPage.alternarParaAbaDeCadastro();
+        authPage.cadastrar(
+                EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
+                EntityBuilder.randomEmail(), "SenhaForte123");
+
+        assertThat(authPage.esperarDashboardFicarVisivel()).isTrue();
+        assertThat(authPage.telaDeAutenticacaoEstaEscondida()).isTrue();
+        assertThat(authPage.botaoDeLogoutEstaVisivel()).isTrue();
+    }
 }
