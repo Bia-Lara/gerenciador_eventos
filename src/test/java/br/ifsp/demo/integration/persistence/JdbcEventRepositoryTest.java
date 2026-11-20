@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.UncategorizedSQLException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +27,9 @@ class JdbcEventRepositoryTest {
 
     @Autowired
     private JdbcEventRepository sut;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private static LocalDateTime futureStart() {
         return LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
@@ -209,5 +213,23 @@ class JdbcEventRepositoryTest {
                 .hasMessageContaining("UNIQUE constraint failed: event.id");
 
         assertThat(sut.findById(id).orElseThrow().getName()).isEqualTo("Original");
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve rejeitar evento sem nome (restrição NOT NULL)")
+    void bancoDeveRejeitarEventoSemNome() {
+        UUID id = UUID.randomUUID();
+        LocalDateTime start = futureStart();
+
+        assertThatThrownBy(() -> jdbc.update(
+                "INSERT INTO event (id, name, start_date_time, end_date_time, organizer_id, status) VALUES (?, ?, ?, ?, ?, ?)",
+                id.toString(), null, start.toString(), start.plusHours(2).toString(),
+                UUID.randomUUID().toString(), "ACTIVE"))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("NOT NULL constraint failed: event.name");
+
+        assertThat(sut.findById(id)).isEmpty();
     }
 }
