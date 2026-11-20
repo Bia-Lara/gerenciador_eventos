@@ -65,4 +65,18 @@ class JdbcRegistrationExistsActiveTest {
 
         assertThat(exists).isFalse();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByEventId deve retornar falso quando a inscrição ativa pertence a outro evento")
+    void existsActiveByEventIdDeveIgnorarInscricoesDeOutroEvento() {
+        UUID eventoSemInscricoes = novoEventoComCategoria();
+        UUID outroEvento = novoEventoComCategoria();
+        UUID categoriaDoOutro = fixture.insertCategory(outroEvento, "Geral", 40, 50.0);
+        fixture.insertRegistration(UUID.randomUUID(), categoriaDoOutro, "ATIVA");
+
+        assertThat(sut.existsActiveByEventId(eventoSemInscricoes)).isFalse();
+        assertThat(sut.existsActiveByEventId(outroEvento)).isTrue();
+    }
 }
