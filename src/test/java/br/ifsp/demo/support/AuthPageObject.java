@@ -67,4 +67,8 @@ public class AuthPageObject {
     public boolean formularioDeCadastroEstaVisivel() {
         return !driver.findElement(By.id("register-form")).getAttribute("class").contains("hidden");
     }
+
+    public void sair() {
+        driver.findElement(By.id("logout-button")).click();
+    }
 }
