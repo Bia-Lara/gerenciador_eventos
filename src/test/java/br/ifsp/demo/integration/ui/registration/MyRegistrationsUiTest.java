@@ -145,4 +145,23 @@ class MyRegistrationsUiTest extends BaseRegistrationsUiTest {
         assertThat(page.filtrarPor("Todas").aguardarNomesNaTela(eventoAtivo, eventoCancelado))
                 .containsExactlyInAnyOrder(eventoAtivo, eventoCancelado);
     }
+
+    @Test
+    @Tag("UiTest")
+    @DisplayName("Cancelar a inscrição confirmando exibe mensagem, marca como cancelada e remove o botão")
+    void cancelarInscricaoConfirmandoMarcaComoCancelada() {
+        String organizador = novoUsuario();
+        String participante = novoUsuario();
+        String nomeDoEvento = nomeUnicoDeEvento();
+        inscreverEmEvento(organizador, participante, nomeDoEvento, RegistrationApiFixture.futureStart());
+
+        entrarComToken(participante);
+        MyRegistrationsPage page = new MyRegistrationsPage(driver, wait).abrir();
+        page.cancelarInscricaoDoEvento(nomeDoEvento, true);
+
+        assertThat(page.aguardarMensagemDeFeedback()).isEqualTo("Inscrição cancelada.");
+        RegistrationCard card = page.cardDoEvento(nomeDoEvento);
+        assertThat(card.status()).isEqualTo("CANCELADA");
+        assertThat(card.possuiBotaoCancelar()).isFalse();
+    }
 }
