@@ -59,4 +59,12 @@ public class AuthPageObject {
     public boolean botaoDeLogoutEstaVisivel() {
         return driver.findElement(By.id("logout-button")).isDisplayed();
     }
+
+    public boolean formularioDeLoginEstaVisivel() {
+        return !driver.findElement(By.id("login-form")).getAttribute("class").contains("hidden");
+    }
+
+    public boolean formularioDeCadastroEstaVisivel() {
+        return !driver.findElement(By.id("register-form")).getAttribute("class").contains("hidden");
+    }
 }
