@@ -157,4 +157,16 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 ao se inscrever sem token")
+    void deveRetornar401SemToken() {
+        given()
+                .contentType("application/json")
+                .body(new RegistrationBody(categoryId))
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/registrations")
+                .then()
+                .statusCode(401);
+    }
 }
