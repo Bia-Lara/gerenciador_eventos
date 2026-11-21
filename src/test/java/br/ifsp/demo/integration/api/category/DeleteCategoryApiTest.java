@@ -115,4 +115,14 @@ class DeleteCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
     }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando o id da categoria não é um UUID")
+    void deveRetornar400ComIdDeCategoriaInvalido() {
+        removerCategoria(organizerToken, eventId, "nao-e-um-uuid")
+                .then()
+                .statusCode(400);
+
+        assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
+    }
 }
