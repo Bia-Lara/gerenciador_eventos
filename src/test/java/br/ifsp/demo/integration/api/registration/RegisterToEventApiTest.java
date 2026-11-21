@@ -5,12 +5,17 @@ import br.ifsp.demo.dto.RegistrationResponse;
 import br.ifsp.demo.support.BaseApiTest;
 import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationApiFixture;
+import br.ifsp.demo.support.RegistrationDbFixture;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +30,9 @@ import static org.hamcrest.Matchers.notNullValue;
 class RegisterToEventApiTest extends BaseApiTest {
 
     private static final String PASSWORD = "SenhaForte123";
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private String organizerToken;
     private String participanteToken;
@@ -224,6 +232,22 @@ class RegisterToEventApiTest extends BaseApiTest {
         inscrever(participanteToken, eventId, new RegistrationBody(categoryId))
                 .then()
                 .statusCode(409);
+
+        assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao se inscrever em evento que já começou, sem criar a inscrição")
+    void deveRetornar409ComEventoJaIniciado() {
+        LocalDateTime inicio = LocalDateTime.now().minusHours(1).truncatedTo(ChronoUnit.SECONDS);
+        RegistrationDbFixture fixture = new RegistrationDbFixture(jdbc);
+        UUID eventoIniciado = fixture.insertEvent(inicio, inicio.plusHours(3), "ACTIVE");
+        UUID categoriaDoEventoIniciado = fixture.insertCategory(eventoIniciado, "Inteira", 10, 50.0);
+
+        inscrever(participanteToken, eventoIniciado, new RegistrationBody(categoriaDoEventoIniciado))
+                .then()
+                .statusCode(409)
+                .body("message", equalTo("Event has already started"));
 
         assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
     }
