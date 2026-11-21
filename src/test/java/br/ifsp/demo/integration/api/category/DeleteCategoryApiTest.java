@@ -152,4 +152,17 @@ class DeleteCategoryApiTest extends BaseApiTest {
         assertThat(categoriasDoEvento(outroEvento))
                 .containsExactly(new CategoryResponse(categoriaDoOutroEvento, "VIP", 5, 200.0));
     }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao remover uma categoria que já foi removida")
+    void deveRetornar404AoRemoverCategoriaJaRemovida() {
+        removerCategoria(organizerToken, eventId, categoria.id())
+                .then()
+                .statusCode(204);
+
+        removerCategoria(organizerToken, eventId, categoria.id())
+                .then()
+                .statusCode(404)
+                .body("message", equalTo("Category not found: " + categoria.id()));
+    }
 }
