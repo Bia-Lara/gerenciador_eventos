@@ -136,4 +136,15 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(organizerToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando a categoria não é informada")
+    void deveRetornar400SemCategoria() {
+        inscrever(participanteToken, eventId, new RegistrationBody(null))
+                .then()
+                .statusCode(400)
+                .body("message", equalTo("Category is required"));
+
+        assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
+    }
 }
