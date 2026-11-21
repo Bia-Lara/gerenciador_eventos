@@ -123,4 +123,18 @@ class JdbcCategoryRepositoryTest {
 
         assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactlyInAnyOrder("Inteira", nomeMalicioso);
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("delete deve remover somente a categoria informada")
+    void deleteDeveRemoverSomenteACategoriaInformada() {
+        Category inteira = eventoGravado(eventId).addCategory("Inteira", 40, 75.5);
+        sut.save(inteira);
+        sut.save(eventoGravado(eventId).addCategory("Meia", 40, 37.75));
+
+        sut.delete(inteira);
+
+        assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Meia");
+    }
 }
