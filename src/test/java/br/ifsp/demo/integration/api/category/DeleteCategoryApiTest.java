@@ -125,4 +125,15 @@ class DeleteCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
     }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao remover categoria de evento inexistente")
+    void deveRetornar404ComEventoInexistente() {
+        UUID eventoInexistente = UUID.randomUUID();
+
+        removerCategoria(organizerToken, eventoInexistente, categoria.id())
+                .then()
+                .statusCode(404)
+                .body("message", equalTo("Event not found: " + eventoInexistente));
+    }
 }
