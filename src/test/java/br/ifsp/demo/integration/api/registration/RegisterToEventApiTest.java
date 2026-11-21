@@ -169,4 +169,17 @@ class RegisterToEventApiTest extends BaseApiTest {
                 .then()
                 .statusCode(401);
     }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao se inscrever em categoria inexistente")
+    void deveRetornar404ComCategoriaInexistente() {
+        UUID categoriaInexistente = UUID.randomUUID();
+
+        inscrever(participanteToken, eventId, new RegistrationBody(categoriaInexistente))
+                .then()
+                .statusCode(404)
+                .body("message", equalTo("Category not found: " + categoriaInexistente));
+
+        assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
+    }
 }
