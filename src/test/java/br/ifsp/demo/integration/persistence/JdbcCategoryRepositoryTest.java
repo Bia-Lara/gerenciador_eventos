@@ -10,14 +10,17 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 class JdbcCategoryRepositoryTest {
@@ -43,6 +46,10 @@ class JdbcCategoryRepositoryTest {
         return Event.restore(id, "Evento " + id, inicio, inicio.plusHours(3), UUID.randomUUID());
     }
 
+    private List<String> nomesDasCategoriasDoEvento(UUID evento) {
+        return jdbc.queryForList("SELECT name FROM category WHERE event_id = ?", String.class, evento.toString());
+    }
+
     @Test
     @Tag("PersistenceTest")
     @Tag("IntegrationTest")
@@ -58,5 +65,20 @@ class JdbcCategoryRepositoryTest {
         assertThat(linha.get("name")).isEqualTo("Inteira");
         assertThat(linha.get("capacity")).isEqualTo(40);
         assertThat(linha.get("price")).isEqualTo(75.5);
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve recusar duas categorias com o mesmo nome no mesmo evento (índice único)")
+    void bancoDeveRecusarNomeRepetidoNoMesmoEvento() {
+        sut.save(eventoGravado(eventId).addCategory("Inteira", 40, 75.5));
+        Category repetida = eventoGravado(eventId).addCategory("Inteira", 10, 20.0);
+
+        assertThatThrownBy(() -> sut.save(repetida))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("UNIQUE constraint failed: category.event_id, category.name");
+
+        assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Inteira");
     }
 }
