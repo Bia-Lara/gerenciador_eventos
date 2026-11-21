@@ -193,4 +193,21 @@ class DeleteCategoryApiTest extends BaseApiTest {
         assertThat(categoriasDoEvento(eventoIniciado))
                 .containsExactly(new CategoryResponse(categoriaDoEventoIniciado, "Inteira", 10, 50.0));
     }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao remover categoria de evento cancelado, mantendo-a")
+    void deveRetornar409ComEventoCancelado() {
+        given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/cancel")
+                .then()
+                .statusCode(200);
+
+        removerCategoria(organizerToken, eventId, categoria.id())
+                .then()
+                .statusCode(409);
+
+        assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
+    }
 }
