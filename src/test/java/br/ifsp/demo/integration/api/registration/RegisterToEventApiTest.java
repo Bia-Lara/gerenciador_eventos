@@ -125,4 +125,15 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(outroParticipanteToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 403 quando o organizador tenta se inscrever no próprio evento")
+    void deveRetornar403QuandoOrganizadorSeInscreve() {
+        inscrever(organizerToken, eventId, new RegistrationBody(categoryId))
+                .then()
+                .statusCode(403)
+                .body("message", equalTo("Event organizer cannot register to their own event"));
+
+        assertThat(inscricoesAtivasDe(organizerToken)).isEmpty();
+    }
 }
