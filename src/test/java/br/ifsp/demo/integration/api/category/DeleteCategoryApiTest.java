@@ -92,4 +92,15 @@ class DeleteCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 403 quando quem remove não é o organizador do evento, mantendo a categoria")
+    void deveRetornar403QuandoNaoEOrganizador() {
+        removerCategoria(novoUsuario(), eventId, categoria.id())
+                .then()
+                .statusCode(403)
+                .body("message", equalTo("Only the event organizer can delete categories"));
+
+        assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
+    }
 }
