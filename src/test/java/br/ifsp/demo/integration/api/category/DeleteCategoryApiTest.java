@@ -78,4 +78,18 @@ class DeleteCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
     }
+
+    @Test
+    @DisplayName("Deve remover categoria cujas inscrições foram todas canceladas e retornar 204")
+    void deveRemoverCategoriaComInscricoesSomenteCanceladas() {
+        String participanteToken = novoUsuario();
+        UUID inscricao = RegistrationApiFixture.register(participanteToken, eventId, categoria.id());
+        RegistrationApiFixture.cancel(participanteToken, inscricao);
+
+        removerCategoria(organizerToken, eventId, categoria.id())
+                .then()
+                .statusCode(204);
+
+        assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
 }
