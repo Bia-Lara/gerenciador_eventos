@@ -95,4 +95,19 @@ class JdbcCategoryRepositoryTest {
         assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Inteira");
         assertThat(nomesDasCategoriasDoEvento(outroEvento)).containsExactly("Inteira");
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve recusar nomes de categoria que só diferem em maiúsculas no mesmo evento")
+    void bancoDeveRecusarNomeQueSoDifereEmMaiusculas() {
+        sut.save(eventoGravado(eventId).addCategory("Inteira", 40, 75.5));
+        Category emMaiusculas = eventoGravado(eventId).addCategory("INTEIRA", 10, 20.0);
+
+        assertThatThrownBy(() -> sut.save(emMaiusculas))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("UNIQUE constraint failed");
+
+        assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Inteira");
+    }
 }
