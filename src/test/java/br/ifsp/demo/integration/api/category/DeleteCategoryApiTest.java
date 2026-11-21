@@ -136,4 +136,20 @@ class DeleteCategoryApiTest extends BaseApiTest {
                 .statusCode(404)
                 .body("message", equalTo("Event not found: " + eventoInexistente));
     }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao remover pelo evento errado uma categoria que pertence a outro evento")
+    void deveRetornar404ComCategoriaDeOutroEvento() {
+        UUID outroEvento = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoriaDoOutroEvento = RegistrationApiFixture.createCategory(organizerToken, outroEvento, "VIP", 200.0, 5);
+
+        removerCategoria(organizerToken, eventId, categoriaDoOutroEvento)
+                .then()
+                .statusCode(404)
+                .body("message", equalTo("Category not found: " + categoriaDoOutroEvento));
+
+        assertThat(categoriasDoEvento(outroEvento))
+                .containsExactly(new CategoryResponse(categoriaDoOutroEvento, "VIP", 5, 200.0));
+    }
 }
