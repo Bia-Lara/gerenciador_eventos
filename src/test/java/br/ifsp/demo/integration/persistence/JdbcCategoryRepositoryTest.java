@@ -137,4 +137,20 @@ class JdbcCategoryRepositoryTest {
 
         assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Meia");
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve recusar remover categoria que tem inscrições (chave estrangeira)")
+    void bancoDeveRecusarRemoverCategoriaComInscricoes() {
+        Category inteira = eventoGravado(eventId).addCategory("Inteira", 40, 75.5);
+        sut.save(inteira);
+        fixture.insertRegistration(UUID.randomUUID(), inteira.getId(), "ATIVA");
+
+        assertThatThrownBy(() -> sut.delete(inteira))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("FOREIGN KEY constraint failed");
+
+        assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Inteira");
+    }
 }
