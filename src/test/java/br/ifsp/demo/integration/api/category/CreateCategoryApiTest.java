@@ -66,15 +66,7 @@ class CreateCategoryApiTest extends BaseApiTest {
     }
 
     private List<CategoryResponse> categoriasDoEvento(UUID evento) {
-        return given()
-                .header("Authorization", "Bearer " + organizerToken)
-                .when()
-                .get(BASE_PATH + "/events/mine")
-                .then()
-                .statusCode(200)
-                .extract().jsonPath()
-                .param("eventId", evento.toString())
-                .getList("find { it.id == eventId }.categories", CategoryResponse.class);
+        return RegistrationApiFixture.listCategories(organizerToken, evento);
     }
 
     @Test
