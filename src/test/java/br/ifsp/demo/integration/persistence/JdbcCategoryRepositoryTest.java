@@ -110,4 +110,17 @@ class JdbcCategoryRepositoryTest {
 
         assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Inteira");
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("save deve gravar literalmente um nome com SQL injection, sem afetar outras categorias")
+    void saveDeveGravarNomeComSqlInjectionLiteralmente() {
+        String nomeMalicioso = "x'); DELETE FROM category; --";
+        sut.save(eventoGravado(eventId).addCategory("Inteira", 40, 75.5));
+
+        sut.save(eventoGravado(eventId).addCategory(nomeMalicioso, 10, 20.0));
+
+        assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactlyInAnyOrder("Inteira", nomeMalicioso);
+    }
 }
