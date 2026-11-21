@@ -81,4 +81,18 @@ class JdbcCategoryRepositoryTest {
 
         assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Inteira");
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve aceitar o mesmo nome de categoria em eventos diferentes")
+    void bancoDeveAceitarMesmoNomeEmEventosDiferentes() {
+        UUID outroEvento = fixture.insertEvent(inicio, inicio.plusHours(3), "ACTIVE");
+
+        sut.save(eventoGravado(eventId).addCategory("Inteira", 40, 75.5));
+        sut.save(eventoGravado(outroEvento).addCategory("Inteira", 10, 20.0));
+
+        assertThat(nomesDasCategoriasDoEvento(eventId)).containsExactly("Inteira");
+        assertThat(nomesDasCategoriasDoEvento(outroEvento)).containsExactly("Inteira");
+    }
 }
