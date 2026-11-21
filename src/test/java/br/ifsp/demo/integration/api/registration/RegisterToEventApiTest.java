@@ -210,4 +210,21 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao se inscrever em evento cancelado, sem criar a inscrição")
+    void deveRetornar409ComEventoCancelado() {
+        given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .when()
+                .post(BASE_PATH + "/events/" + eventId + "/cancel")
+                .then()
+                .statusCode(200);
+
+        inscrever(participanteToken, eventId, new RegistrationBody(categoryId))
+                .then()
+                .statusCode(409);
+
+        assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
+    }
 }
