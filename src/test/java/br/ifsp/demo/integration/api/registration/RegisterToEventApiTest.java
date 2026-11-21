@@ -197,4 +197,17 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao se inscrever em evento inexistente")
+    void deveRetornar404ComEventoInexistente() {
+        UUID eventoInexistente = UUID.randomUUID();
+
+        inscrever(participanteToken, eventoInexistente, new RegistrationBody(categoryId))
+                .then()
+                .statusCode(404)
+                .body("message", equalTo("Event not found: " + eventoInexistente));
+
+        assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
+    }
 }
