@@ -103,4 +103,16 @@ class DeleteCategoryApiTest extends BaseApiTest {
 
         assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
     }
+
+    @Test
+    @DisplayName("Deve retornar 401 sem token, mantendo a categoria")
+    void deveRetornar401SemToken() {
+        given()
+                .when()
+                .delete(BASE_PATH + "/events/" + eventId + "/categories/" + categoria.id())
+                .then()
+                .statusCode(401);
+
+        assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
+    }
 }
