@@ -108,4 +108,21 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(participanteToken)).containsExactly(primeira);
     }
+
+    @Test
+    @DisplayName("Deve aceitar a última vaga da categoria e retornar 409 para a inscrição seguinte")
+    void deveRetornar409QuandoCategoriaLotada() {
+        UUID categoriaDeUmaVaga = RegistrationApiFixture.createCategory(organizerToken, eventId, "Vaga única", 30.0, 1);
+        String outroParticipanteToken = novoUsuario();
+        inscrever(participanteToken, eventId, new RegistrationBody(categoriaDeUmaVaga))
+                .then()
+                .statusCode(201);
+
+        inscrever(outroParticipanteToken, eventId, new RegistrationBody(categoriaDeUmaVaga))
+                .then()
+                .statusCode(409)
+                .body("message", equalTo("No vacancies left for this category"));
+
+        assertThat(inscricoesAtivasDe(outroParticipanteToken)).isEmpty();
+    }
 }
