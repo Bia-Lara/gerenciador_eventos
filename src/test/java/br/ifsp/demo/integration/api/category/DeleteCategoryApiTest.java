@@ -16,6 +16,7 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.equalTo;
 
 @Tag("ApiTest")
 @Tag("IntegrationTest")
@@ -38,6 +39,11 @@ class DeleteCategoryApiTest extends BaseApiTest {
         categoria = new CategoryResponse(categoryId, "Inteira", 10, 50.0);
     }
 
+    private String novoUsuario() {
+        return registerAndAuthenticate(EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
+                EntityBuilder.randomEmail(), PASSWORD);
+    }
+
     private Response removerCategoria(String token, UUID evento, Object categoryId) {
         return given()
                 .header("Authorization", "Bearer " + token)
@@ -58,5 +64,18 @@ class DeleteCategoryApiTest extends BaseApiTest {
                 .body(emptyOrNullString());
 
         assertThat(categoriasDoEvento(eventId)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve retornar 403 ao remover categoria com inscrição ativa, mantendo-a no evento")
+    void deveRetornar403ComInscricaoAtiva() {
+        RegistrationApiFixture.register(novoUsuario(), eventId, categoria.id());
+
+        removerCategoria(organizerToken, eventId, categoria.id())
+                .then()
+                .statusCode(403)
+                .body("message", equalTo("Category has registrations"));
+
+        assertThat(categoriasDoEvento(eventId)).containsExactly(categoria);
     }
 }
