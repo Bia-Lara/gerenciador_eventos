@@ -147,4 +147,14 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando o id da categoria não é um UUID")
+    void deveRetornar400ComIdDeCategoriaInvalido() {
+        inscrever(participanteToken, eventId, "{\"categoryId\": \"nao-e-um-uuid\"}")
+                .then()
+                .statusCode(400);
+
+        assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
+    }
 }
