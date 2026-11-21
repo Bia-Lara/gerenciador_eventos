@@ -80,4 +80,19 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(participanteToken)).containsExactly(inscricao.id());
     }
+
+    @Test
+    @DisplayName("Deve permitir nova inscrição no mesmo evento depois de cancelar a anterior")
+    void devePermitirReinscricaoAposCancelamento() {
+        UUID primeira = RegistrationApiFixture.register(participanteToken, eventId, categoryId);
+        RegistrationApiFixture.cancel(participanteToken, primeira);
+
+        UUID nova = inscrever(participanteToken, eventId, new RegistrationBody(categoryId))
+                .then()
+                .statusCode(201)
+                .extract().as(RegistrationResponse.class).id();
+
+        assertThat(nova).isNotEqualTo(primeira);
+        assertThat(inscricoesAtivasDe(participanteToken)).containsExactly(nova);
+    }
 }
