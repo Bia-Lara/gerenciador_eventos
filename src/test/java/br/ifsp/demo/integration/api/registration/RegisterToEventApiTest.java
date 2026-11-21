@@ -95,4 +95,17 @@ class RegisterToEventApiTest extends BaseApiTest {
         assertThat(nova).isNotEqualTo(primeira);
         assertThat(inscricoesAtivasDe(participanteToken)).containsExactly(nova);
     }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao inscrever novamente quem já tem inscrição ativa no evento")
+    void deveRetornar409ComInscricaoDuplicada() {
+        UUID primeira = RegistrationApiFixture.register(participanteToken, eventId, categoryId);
+
+        inscrever(participanteToken, eventId, new RegistrationBody(categoryId))
+                .then()
+                .statusCode(409)
+                .body("message", equalTo("User already registered in this event"));
+
+        assertThat(inscricoesAtivasDe(participanteToken)).containsExactly(primeira);
+    }
 }
