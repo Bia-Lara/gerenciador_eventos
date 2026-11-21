@@ -182,4 +182,19 @@ class RegisterToEventApiTest extends BaseApiTest {
 
         assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Deve retornar 404 ao se inscrever com uma categoria que pertence a outro evento")
+    void deveRetornar404ComCategoriaDeOutroEvento() {
+        UUID outroEvento = RegistrationApiFixture.createEvent(organizerToken,
+                "Evento " + UUID.randomUUID(), RegistrationApiFixture.futureStart());
+        UUID categoriaDoOutroEvento = RegistrationApiFixture.createCategory(organizerToken, outroEvento, "VIP", 200.0, 5);
+
+        inscrever(participanteToken, eventId, new RegistrationBody(categoriaDoOutroEvento))
+                .then()
+                .statusCode(404)
+                .body("message", equalTo("Category not found: " + categoriaDoOutroEvento));
+
+        assertThat(inscricoesAtivasDe(participanteToken)).isEmpty();
+    }
 }
