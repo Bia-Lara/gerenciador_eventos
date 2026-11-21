@@ -1,11 +1,13 @@
 package br.ifsp.demo.support;
 
+import br.ifsp.demo.dto.CategoryResponse;
 import br.ifsp.demo.dto.CreateEventRequest;
 import br.ifsp.demo.dto.CreateCategoryRequest;
 import br.ifsp.demo.dto.RegistrationBody;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 import static io.restassured.RestAssured.given;
 
@@ -41,6 +43,18 @@ public class RegistrationApiFixture {
                 .statusCode(201)
                 .extract().path("id");
         return UUID.fromString(id);
+    }
+
+    public static List<CategoryResponse> listCategories(String organizerToken, UUID eventId) {
+        return given()
+                .header("Authorization", "Bearer " + organizerToken)
+                .when()
+                .get("/api/v1/events/mine")
+                .then()
+                .statusCode(200)
+                .extract().jsonPath()
+                .param("eventId", eventId.toString())
+                .getList("find { it.id == eventId }.categories", CategoryResponse.class);
     }
 
     public static UUID register(String participantToken, UUID eventId, UUID categoryId) {
