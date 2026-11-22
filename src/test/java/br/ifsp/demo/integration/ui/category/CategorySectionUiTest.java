@@ -114,4 +114,18 @@ class CategorySectionUiTest extends BaseRegistrationsUiTest {
                 .isEqualTo("Não é possível remover esta categoria porque há usuários inscritos.");
         assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).hasSize(1);
     }
+
+    @Test
+    @DisplayName("Nome de categoria com HTML malicioso aparece como texto e não executa script")
+    void nomeComHtmlMaliciosoNaoExecutaScript() {
+        String nomeMalicioso = "<img src=x onerror=\"window.__xss=true\">";
+
+        secao.adicionar(nomeMalicioso, "10", "10");
+
+        assertThat(secao.aguardarMensagemDeFeedback()).isEqualTo("Categoria adicionada.");
+        List<String> categorias = secao.categoriasListadas();
+        assertThat(categorias).hasSize(1);
+        assertThat(categorias.get(0)).startsWith(nomeMalicioso);
+        assertThat(scriptInjetadoFoiExecutado()).isFalse();
+    }
 }
