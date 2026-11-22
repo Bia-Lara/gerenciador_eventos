@@ -434,4 +434,20 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(existe).isFalse();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByUserIdAndEventId deve retornar false quando a inscrição do usuário no evento está cancelada")
+    void existsActiveByUserIdAndEventIdComInscricaoCancelada() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoryId, "CANCELADA");
+
+        boolean existe = sut.existsActiveByUserIdAndEventId(user.getId(), eventId);
+
+        assertThat(existe).isFalse();
+    }
 }
