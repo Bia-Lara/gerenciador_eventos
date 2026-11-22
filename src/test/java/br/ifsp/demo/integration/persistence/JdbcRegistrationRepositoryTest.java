@@ -550,4 +550,21 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(existe).isTrue();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsByCategoryId deve retornar false quando a inscrição é de outra categoria do evento")
+    void existsByCategoryIdComInscricaoEmOutraCategoria() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID geral = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID vip = fixture.insertCategory(eventId, "VIP", 10, 200.0);
+        fixture.insertRegistration(user.getId(), vip, "ATIVA");
+
+        boolean existe = sut.existsByCategoryId(geral);
+
+        assertThat(existe).isFalse();
+    }
 }
