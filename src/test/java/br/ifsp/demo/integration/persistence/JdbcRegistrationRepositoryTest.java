@@ -416,4 +416,22 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(existe).isFalse();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByUserIdAndEventId deve retornar false quando a inscrição ativa é em outro evento")
+    void existsActiveByUserIdAndEventIdComInscricaoEmOutroEvento() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID outroEventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoriaDoOutroEvento = fixture.insertCategory(outroEventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoriaDoOutroEvento, "ATIVA");
+
+        boolean existe = sut.existsActiveByUserIdAndEventId(user.getId(), eventId);
+
+        assertThat(existe).isFalse();
+    }
 }
