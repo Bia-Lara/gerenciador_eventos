@@ -92,4 +92,20 @@ class ParticipationUiTest extends BaseRegistrationsUiTest {
         assertThat(modal.aguardarConfirmacaoEmMinhasInscricoes()).isEqualTo("Inscrição confirmada.");
         assertThat(RegistrationApiFixture.listActiveRegistrationIds(participantToken)).hasSize(1);
     }
+
+    @Test
+    @DisplayName("Escolher uma categoria cheia em evento com vagas mostra aviso no modal")
+    void categoriaCheiaEmEventoComVagasMostraAviso() {
+        UUID vagaUnica = RegistrationApiFixture.createCategory(organizerToken, eventId, "Vaga única", 30.0, 1);
+        RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+        RegistrationApiFixture.register(novoUsuario(), eventId, vagaUnica);
+
+        RegistrationDialog modal = abrirPainelComoParticipante().inscreverNoEvento(nomeDoEvento);
+        modal.selecionarCategoria("Vaga única").confirmar();
+
+        assertThat(modal.aguardarMensagemDeErro())
+                .isEqualTo("Esta categoria está cheia. Escolha outra categoria para se inscrever.");
+        assertThat(modal.estaAberto()).isTrue();
+        assertThat(RegistrationApiFixture.listActiveRegistrationIds(participantToken)).isEmpty();
+    }
 }
