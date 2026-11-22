@@ -8,6 +8,7 @@ import br.ifsp.demo.infrastructure.security.user.User;
 import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationDbFixture;
 import br.ifsp.demo.domain.Category;
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.exception.UserNotFoundException;
 
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
@@ -313,5 +315,31 @@ class JdbcRegistrationRepositoryTest {
         sut.save(registration);
 
         assertThat(sut.countActiveByEventId(eventId)).isEqualTo(1);
+    }
+
+    private Registration novaInscricao(User user, UUID eventId, UUID categoryId, LocalDateTime start) {
+        Event event = Event.restore(eventId, "Evento " + eventId, start, start.plusHours(3), UUID.randomUUID());
+        Category category = event.restoreCategory(categoryId, "Geral", 40, 75.5);
+        return new Registration(category, user);
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("create deve gravar todos os campos da inscrição com status ATIVA")
+    void createDeveGravarTodosOsCampos() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        Registration registration = novaInscricao(user, eventId, categoryId, start);
+
+        sut.create(registration);
+
+        Map<String, Object> linha = jdbc.queryForMap(
+                "SELECT user_id, category_id, status FROM registration WHERE id = ?", registration.getId().toString());
+        assertThat(linha.get("user_id")).isEqualTo(user.getId().toString());
+        assertThat(linha.get("category_id")).isEqualTo(categoryId.toString());
+        assertThat(linha.get("status")).isEqualTo("ATIVA");
     }
 }
