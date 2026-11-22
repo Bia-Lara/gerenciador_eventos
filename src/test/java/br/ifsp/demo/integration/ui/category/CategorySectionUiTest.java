@@ -86,4 +86,18 @@ class CategorySectionUiTest extends BaseRegistrationsUiTest {
         assertThat(secao.contador()).isEqualTo("(0)");
         assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Recusar a confirmação de remoção mantém a categoria")
+    void recusarConfirmacaoDeRemocaoMantemCategoria() {
+        RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+        driver.navigate().refresh();
+
+        secao.remover("Inteira", false);
+
+        List<String> categorias = secao.categoriasListadas();
+        assertThat(categorias).hasSize(1);
+        assertThat(categorias.get(0)).startsWith("Inteira");
+        assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).hasSize(1);
+    }
 }
