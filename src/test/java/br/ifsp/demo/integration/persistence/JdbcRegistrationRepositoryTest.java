@@ -364,4 +364,23 @@ class JdbcRegistrationRepositoryTest {
                 "SELECT COUNT(*) FROM registration WHERE id = ?", Integer.class, registration.getId().toString());
         assertThat(linhas).isEqualTo(1);
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve recusar inscrição em categoria inexistente (chave estrangeira)")
+    void bancoDeveRecusarInscricaoEmCategoriaInexistente() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        Registration registration = novaInscricao(user, eventId, UUID.randomUUID(), start);
+
+        assertThatThrownBy(() -> sut.create(registration))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("FOREIGN KEY constraint failed");
+
+        Integer linhas = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM registration WHERE id = ?", Integer.class, registration.getId().toString());
+        assertThat(linhas).isZero();
+    }
 }
