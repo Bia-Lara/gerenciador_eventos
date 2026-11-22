@@ -52,4 +52,18 @@ class ParticipationUiTest extends BaseRegistrationsUiTest {
         assertThat(painel.botaoDoEvento(nomeDoEvento).getText()).isEqualTo("Inscrever-se");
         assertThat(painel.botaoDoEvento(nomeDoEvento).isEnabled()).isTrue();
     }
+
+    @Test
+    @DisplayName("Evento lotado aparece como LOTADO e com o botão de inscrição desabilitado")
+    void eventoLotadoApareceComBotaoDesabilitado() {
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId, "Vaga única", 30.0, 1);
+        RegistrationApiFixture.register(novoUsuario(), eventId, categoryId);
+
+        ParticipationPage painel = abrirPainelComoParticipante();
+
+        assertThat(painel.vagasPreenchidasDoEvento(nomeDoEvento)).isEqualTo("1/1");
+        assertThat(painel.eventoEstaLotado(nomeDoEvento)).isTrue();
+        assertThat(painel.botaoDoEvento(nomeDoEvento).getText()).isEqualTo("Lotado");
+        assertThat(painel.botaoDoEvento(nomeDoEvento).isEnabled()).isFalse();
+    }
 }
