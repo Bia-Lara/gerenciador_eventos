@@ -7,8 +7,11 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 public class CategorySection {
@@ -18,12 +21,17 @@ public class CategorySection {
 
     private final WebDriver driver;
     private final WebDriverWait wait;
+    private final Wait<WebDriver> fluentWait;
     private final String nomeDoEvento;
 
     public CategorySection(WebDriver driver, WebDriverWait wait, String nomeDoEvento) {
         this.driver = driver;
         this.wait = wait;
         this.nomeDoEvento = nomeDoEvento;
+        this.fluentWait = new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(10))
+                .pollingEvery(Duration.ofMillis(300))
+                .ignoring(StaleElementReferenceException.class);
     }
 
     public CategorySection adicionar(String nome, String capacidade, String preco) {
@@ -75,29 +83,20 @@ public class CategorySection {
     }
 
     public List<String> categoriasListadas() {
-        return wait.until(d -> {
-            try {
-                return secaoAberta().findElements(By.cssSelector(".category-item span")).stream()
-                        .map(WebElement::getText)
-                        .toList();
-            } catch (StaleElementReferenceException e) {
-                return null;
-            }
-        });
+        return fluentWait.until(d -> secaoAberta().findElements(By.cssSelector(".category-item span")).stream()
+                .map(WebElement::getText)
+                .toList());
     }
 
     public String contador() {
-        return wait.until(d -> {
-            try {
-                return cardDoEvento().findElement(By.cssSelector(".category-count")).getText();
-            } catch (StaleElementReferenceException | NullPointerException e) {
-                return null;
-            }
+        return fluentWait.until(d -> {
+            WebElement card = cardDoEvento();
+            return card == null ? null : card.findElement(By.cssSelector(".category-count")).getText();
         });
     }
 
     private WebElement secaoAberta() {
-        WebElement secao = wait.until(d -> {
+        WebElement secao = fluentWait.until(d -> {
             WebElement card = cardDoEvento();
             return card == null ? null : card.findElement(By.cssSelector(".category-manager"));
         });
@@ -108,13 +107,9 @@ public class CategorySection {
     }
 
     private WebElement cardDoEvento() {
-        try {
-            return driver.findElements(EVENT_CARDS).stream()
-                    .filter(card -> card.findElement(By.cssSelector(".event-title")).getText().equals(nomeDoEvento))
-                    .findFirst()
-                    .orElse(null);
-        } catch (StaleElementReferenceException e) {
-            return null;
-        }
+        return driver.findElements(EVENT_CARDS).stream()
+                .filter(card -> card.findElement(By.cssSelector(".event-title")).getText().equals(nomeDoEvento))
+                .findFirst()
+                .orElse(null);
     }
 }
