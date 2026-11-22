@@ -72,4 +72,18 @@ class CategorySectionUiTest extends BaseRegistrationsUiTest {
         assertThat(secao.aguardarMensagemDeFeedback()).containsIgnoringCase("já existe");
         assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).hasSize(1);
     }
+
+    @Test
+    @DisplayName("Remover categoria sem inscrições, confirmando, a tira da lista e do evento")
+    void removerCategoriaSemInscricoesConfirmando() {
+        RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+        driver.navigate().refresh();
+
+        secao.remover("Inteira", true);
+
+        assertThat(secao.aguardarMensagemDeFeedback()).isEqualTo("Categoria removida.");
+        assertThat(secao.categoriasListadas()).isEmpty();
+        assertThat(secao.contador()).isEqualTo("(0)");
+        assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).isEmpty();
+    }
 }
