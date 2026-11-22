@@ -108,4 +108,14 @@ class ParticipationUiTest extends BaseRegistrationsUiTest {
         assertThat(modal.estaAberto()).isTrue();
         assertThat(RegistrationApiFixture.listActiveRegistrationIds(participantToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Evento sem categorias abre o modal com a categoria e a confirmação desabilitadas")
+    void eventoSemCategoriasDesabilitaOFormulario() {
+        RegistrationDialog modal = abrirPainelComoParticipante().inscreverNoEvento(nomeDoEvento);
+
+        assertThat(modal.opcoesDeCategoria()).containsExactly("Este evento não possui categorias disponíveis");
+        assertThat(modal.categoriaHabilitada()).isFalse();
+        assertThat(modal.botaoConfirmar().isEnabled()).isFalse();
+    }
 }
