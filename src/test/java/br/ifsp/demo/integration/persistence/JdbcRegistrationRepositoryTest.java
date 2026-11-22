@@ -20,6 +20,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -341,5 +342,26 @@ class JdbcRegistrationRepositoryTest {
         assertThat(linha.get("user_id")).isEqualTo(user.getId().toString());
         assertThat(linha.get("category_id")).isEqualTo(categoryId.toString());
         assertThat(linha.get("status")).isEqualTo("ATIVA");
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve recusar duas inscrições com o mesmo id (chave primária)")
+    void bancoDeveRecusarInscricaoComIdRepetido() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        Registration registration = novaInscricao(user, eventId, categoryId, start);
+        sut.create(registration);
+
+        assertThatThrownBy(() -> sut.create(registration))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("UNIQUE constraint failed: registration.id");
+
+        Integer linhas = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM registration WHERE id = ?", Integer.class, registration.getId().toString());
+        assertThat(linhas).isEqualTo(1);
     }
 }
