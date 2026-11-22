@@ -8,6 +8,7 @@ import br.ifsp.demo.infrastructure.security.user.User;
 import br.ifsp.demo.support.EntityBuilder;
 import br.ifsp.demo.support.RegistrationDbFixture;
 import br.ifsp.demo.domain.Category;
+import br.ifsp.demo.domain.Event;
 import br.ifsp.demo.exception.UserNotFoundException;
 
 import org.junit.jupiter.api.AfterEach;
@@ -19,11 +20,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
@@ -313,5 +316,255 @@ class JdbcRegistrationRepositoryTest {
         sut.save(registration);
 
         assertThat(sut.countActiveByEventId(eventId)).isEqualTo(1);
+    }
+
+    private Registration novaInscricao(User user, UUID eventId, UUID categoryId, LocalDateTime start) {
+        Event event = Event.restore(eventId, "Evento " + eventId, start, start.plusHours(3), UUID.randomUUID());
+        Category category = event.restoreCategory(categoryId, "Geral", 40, 75.5);
+        return new Registration(category, user);
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("create deve gravar todos os campos da inscrição com status ATIVA")
+    void createDeveGravarTodosOsCampos() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        Registration registration = novaInscricao(user, eventId, categoryId, start);
+
+        sut.create(registration);
+
+        Map<String, Object> linha = jdbc.queryForMap(
+                "SELECT user_id, category_id, status FROM registration WHERE id = ?", registration.getId().toString());
+        assertThat(linha.get("user_id")).isEqualTo(user.getId().toString());
+        assertThat(linha.get("category_id")).isEqualTo(categoryId.toString());
+        assertThat(linha.get("status")).isEqualTo("ATIVA");
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve recusar duas inscrições com o mesmo id (chave primária)")
+    void bancoDeveRecusarInscricaoComIdRepetido() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        Registration registration = novaInscricao(user, eventId, categoryId, start);
+        sut.create(registration);
+
+        assertThatThrownBy(() -> sut.create(registration))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("UNIQUE constraint failed: registration.id");
+
+        Integer linhas = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM registration WHERE id = ?", Integer.class, registration.getId().toString());
+        assertThat(linhas).isEqualTo(1);
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("o banco deve recusar inscrição em categoria inexistente (chave estrangeira)")
+    void bancoDeveRecusarInscricaoEmCategoriaInexistente() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        Registration registration = novaInscricao(user, eventId, UUID.randomUUID(), start);
+
+        assertThatThrownBy(() -> sut.create(registration))
+                .isInstanceOf(UncategorizedSQLException.class)
+                .hasMessageContaining("FOREIGN KEY constraint failed");
+
+        Integer linhas = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM registration WHERE id = ?", Integer.class, registration.getId().toString());
+        assertThat(linhas).isZero();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByUserIdAndEventId deve retornar true quando o usuário tem inscrição ativa no evento")
+    void existsActiveByUserIdAndEventIdComInscricaoAtivaDoUsuarioNoEvento() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+
+        boolean existe = sut.existsActiveByUserIdAndEventId(user.getId(), eventId);
+
+        assertThat(existe).isTrue();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByUserIdAndEventId deve retornar false quando a inscrição ativa é de outro usuário")
+    void existsActiveByUserIdAndEventIdComInscricaoDeOutroUsuario() {
+        User user = salvarUsuario();
+        User outro = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(outro.getId(), categoryId, "ATIVA");
+
+        boolean existe = sut.existsActiveByUserIdAndEventId(user.getId(), eventId);
+
+        assertThat(existe).isFalse();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByUserIdAndEventId deve retornar false quando a inscrição ativa é em outro evento")
+    void existsActiveByUserIdAndEventIdComInscricaoEmOutroEvento() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID outroEventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoriaDoOutroEvento = fixture.insertCategory(outroEventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoriaDoOutroEvento, "ATIVA");
+
+        boolean existe = sut.existsActiveByUserIdAndEventId(user.getId(), eventId);
+
+        assertThat(existe).isFalse();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByUserIdAndEventId deve retornar false quando a inscrição do usuário no evento está cancelada")
+    void existsActiveByUserIdAndEventIdComInscricaoCancelada() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoryId, "CANCELADA");
+
+        boolean existe = sut.existsActiveByUserIdAndEventId(user.getId(), eventId);
+
+        assertThat(existe).isFalse();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("countActiveByCategoryId de categoria sem inscrições deve retornar zero")
+    void countActiveByCategoryIdSemInscricoesDeveRetornarZero() {
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+
+        long total = sut.countActiveByCategoryId(categoryId);
+
+        assertThat(total).isZero();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("countActiveByCategoryId deve contar só as ativas da categoria, ignorando canceladas e outras categorias")
+    void countActiveByCategoryIdDeveContarSomenteAtivasDaCategoria() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID geral = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID vip = fixture.insertCategory(eventId, "VIP", 10, 200.0);
+        fixture.insertRegistration(user.getId(), geral, "ATIVA");
+        fixture.insertRegistration(user.getId(), geral, "ATIVA");
+        fixture.insertRegistration(user.getId(), geral, "CANCELADA");
+        fixture.insertRegistration(user.getId(), vip, "ATIVA");
+
+        long total = sut.countActiveByCategoryId(geral);
+
+        assertThat(total).isEqualTo(2);
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("countActiveByCategoryId deve diminuir depois que uma inscrição é cancelada via save")
+    void countActiveByCategoryIdDeveDiminuirAposCancelamento() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID registrationId = fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+        fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+        assertThat(sut.countActiveByCategoryId(categoryId)).isEqualTo(2);
+
+        Registration registration = sut.findById(registrationId).orElseThrow();
+        registration.cancel(user.getId());
+        sut.save(registration);
+
+        assertThat(sut.countActiveByCategoryId(categoryId)).isEqualTo(1);
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsByCategoryId de categoria sem inscrições deve retornar false")
+    void existsByCategoryIdSemInscricoesDeveRetornarFalse() {
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+
+        boolean existe = sut.existsByCategoryId(categoryId);
+
+        assertThat(existe).isFalse();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsByCategoryId deve retornar true quando a categoria tem inscrição ativa")
+    void existsByCategoryIdComInscricaoAtivaDeveRetornarTrue() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+
+        boolean existe = sut.existsByCategoryId(categoryId);
+
+        assertThat(existe).isTrue();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsByCategoryId deve considerar também inscrições canceladas")
+    void existsByCategoryIdDeveConsiderarInscricoesCanceladas() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoryId, "CANCELADA");
+
+        boolean existe = sut.existsByCategoryId(categoryId);
+
+        assertThat(existe).isTrue();
+    }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsByCategoryId deve retornar false quando a inscrição é de outra categoria do evento")
+    void existsByCategoryIdComInscricaoEmOutraCategoria() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID geral = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        UUID vip = fixture.insertCategory(eventId, "VIP", 10, 200.0);
+        fixture.insertRegistration(user.getId(), vip, "ATIVA");
+
+        boolean existe = sut.existsByCategoryId(geral);
+
+        assertThat(existe).isFalse();
     }
 }
