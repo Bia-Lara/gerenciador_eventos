@@ -383,4 +383,20 @@ class JdbcRegistrationRepositoryTest {
                 "SELECT COUNT(*) FROM registration WHERE id = ?", Integer.class, registration.getId().toString());
         assertThat(linhas).isZero();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsActiveByUserIdAndEventId deve retornar true quando o usuário tem inscrição ativa no evento")
+    void existsActiveByUserIdAndEventIdComInscricaoAtivaDoUsuarioNoEvento() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+
+        boolean existe = sut.existsActiveByUserIdAndEventId(user.getId(), eventId);
+
+        assertThat(existe).isTrue();
+    }
 }
