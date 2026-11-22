@@ -137,4 +137,15 @@ class CategorySectionUiTest extends BaseRegistrationsUiTest {
         assertThat(secao.aguardarMensagemDeFeedback()).isNotEqualTo("Categoria adicionada.");
         assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Nome acima de 80 caracteres enviado contornando o formulário deve ser recusado")
+    void nomeAcimaDoLimiteDoFormularioDeveSerRecusado() {
+        String nomeLongo = "a".repeat(81);
+
+        secao.removerLimitesDoFormulario().adicionar(nomeLongo, "10", "10");
+
+        assertThat(secao.aguardarMensagemDeFeedback()).isNotEqualTo("Categoria adicionada.");
+        assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).isEmpty();
+    }
 }
