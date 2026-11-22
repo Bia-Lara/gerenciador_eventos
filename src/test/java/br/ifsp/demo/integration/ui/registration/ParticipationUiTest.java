@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Dimension;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -141,5 +142,18 @@ class ParticipationUiTest extends BaseRegistrationsUiTest {
 
         assertThat(modal.opcoesDeCategoria().get(1)).startsWith(nomeMalicioso + " · ");
         assertThat(scriptInjetadoFoiExecutado()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Em tela de celular o modal de inscrição continua visível e o botão de confirmar clicável")
+    void modalContinuaUsavelEmTelaDeCelular() {
+        RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+        driver.manage().window().setSize(new Dimension(375, 667));
+
+        RegistrationDialog modal = abrirPainelComoParticipante().inscreverNoEvento(nomeDoEvento);
+        modal.selecionarCategoria("Inteira");
+
+        assertThat(modal.estaAberto()).isTrue();
+        assertThat(modal.botaoConfirmarEstaClicavel()).isTrue();
     }
 }
