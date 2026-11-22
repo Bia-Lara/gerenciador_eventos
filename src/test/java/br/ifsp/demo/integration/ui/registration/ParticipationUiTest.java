@@ -66,4 +66,17 @@ class ParticipationUiTest extends BaseRegistrationsUiTest {
         assertThat(painel.botaoDoEvento(nomeDoEvento).getText()).isEqualTo("Lotado");
         assertThat(painel.botaoDoEvento(nomeDoEvento).isEnabled()).isFalse();
     }
+
+    @Test
+    @DisplayName("Filtrar por uma data sem eventos mostra o aviso de que não há eventos nessa data")
+    void filtrarPorDataSemEventosMostraAviso() {
+        RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+        ParticipationPage painel = abrirPainelComoParticipante();
+        assertThat(painel.vagasPreenchidasDoEvento(nomeDoEvento)).isEqualTo("0/10");
+
+        painel.filtrarPorData(inicio.toLocalDate().plusYears(5));
+
+        assertThat(painel.aguardarTituloDoEstadoVazio()).isEqualTo("Nenhum evento nesta data.");
+        assertThat(painel.eventoEstaListado(nomeDoEvento)).isFalse();
+    }
 }
