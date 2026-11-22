@@ -63,15 +63,7 @@ class RegisterToEventApiTest extends BaseApiTest {
     }
 
     private List<UUID> inscricoesAtivasDe(String token) {
-        return given()
-                .header("Authorization", "Bearer " + token)
-                .queryParam("filter", "ATIVOS")
-                .when()
-                .get(BASE_PATH + "/registrations/details")
-                .then()
-                .statusCode(200)
-                .extract().jsonPath()
-                .getList("registrationId", UUID.class);
+        return RegistrationApiFixture.listActiveRegistrationIds(token);
     }
 
     @Test

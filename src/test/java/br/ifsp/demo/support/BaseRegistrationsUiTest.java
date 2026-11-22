@@ -48,4 +48,8 @@ public abstract class BaseRegistrationsUiTest extends BaseApiTest {
         driver.navigate().refresh();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("registrations-tab")));
     }
+
+    protected boolean scriptInjetadoFoiExecutado() {
+        return (Boolean) ((JavascriptExecutor) driver).executeScript("return window.__xss === true;");
+    }
 }
