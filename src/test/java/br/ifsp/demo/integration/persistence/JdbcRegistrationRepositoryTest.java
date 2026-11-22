@@ -450,4 +450,18 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(existe).isFalse();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("countActiveByCategoryId de categoria sem inscrições deve retornar zero")
+    void countActiveByCategoryIdSemInscricoesDeveRetornarZero() {
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+
+        long total = sut.countActiveByCategoryId(categoryId);
+
+        assertThat(total).isZero();
+    }
 }
