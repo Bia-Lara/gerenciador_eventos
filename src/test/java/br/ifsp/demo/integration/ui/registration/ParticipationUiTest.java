@@ -130,4 +130,16 @@ class ParticipationUiTest extends BaseRegistrationsUiTest {
         assertThat(modal.estaAberto()).isFalse();
         assertThat(RegistrationApiFixture.listActiveRegistrationIds(participantToken)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Nome de categoria com HTML malicioso aparece como texto nas opções e não executa script")
+    void nomeDeCategoriaComHtmlMaliciosoNaoExecutaScript() {
+        String nomeMalicioso = "<img src=x onerror=\"window.__xss=true\">";
+        RegistrationApiFixture.createCategory(organizerToken, eventId, nomeMalicioso, 10.0, 5);
+
+        RegistrationDialog modal = abrirPainelComoParticipante().inscreverNoEvento(nomeDoEvento);
+
+        assertThat(modal.opcoesDeCategoria().get(1)).startsWith(nomeMalicioso + " · ");
+        assertThat(scriptInjetadoFoiExecutado()).isFalse();
+    }
 }
