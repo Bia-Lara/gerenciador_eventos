@@ -118,4 +118,16 @@ class ParticipationUiTest extends BaseRegistrationsUiTest {
         assertThat(modal.categoriaHabilitada()).isFalse();
         assertThat(modal.botaoConfirmar().isEnabled()).isFalse();
     }
+
+    @Test
+    @DisplayName("Voltar fecha o modal sem criar inscrição")
+    void voltarFechaOModalSemInscrever() {
+        RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+
+        RegistrationDialog modal = abrirPainelComoParticipante().inscreverNoEvento(nomeDoEvento);
+        modal.selecionarCategoria("Inteira").voltar();
+
+        assertThat(modal.estaAberto()).isFalse();
+        assertThat(RegistrationApiFixture.listActiveRegistrationIds(participantToken)).isEmpty();
+    }
 }
