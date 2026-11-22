@@ -100,4 +100,18 @@ class CategorySectionUiTest extends BaseRegistrationsUiTest {
         assertThat(categorias.get(0)).startsWith("Inteira");
         assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).hasSize(1);
     }
+
+    @Test
+    @DisplayName("Remover categoria com inscrições mostra alerta e mantém a categoria")
+    void removerCategoriaComInscricoesMostraAlerta() {
+        UUID categoryId = RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+        RegistrationApiFixture.register(novoUsuario(), eventId, categoryId);
+        driver.navigate().refresh();
+
+        secao.remover("Inteira", true);
+
+        assertThat(secao.aceitarAlerta())
+                .isEqualTo("Não é possível remover esta categoria porque há usuários inscritos.");
+        assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).hasSize(1);
+    }
 }
