@@ -57,6 +57,18 @@ public class RegistrationApiFixture {
                 .getList("find { it.id == eventId }.categories", CategoryResponse.class);
     }
 
+    public static List<UUID> listActiveRegistrationIds(String participantToken) {
+        return given()
+                .header("Authorization", "Bearer " + participantToken)
+                .queryParam("filter", "ATIVOS")
+                .when()
+                .get("/api/v1/registrations/details")
+                .then()
+                .statusCode(200)
+                .extract().jsonPath()
+                .getList("registrationId", UUID.class);
+    }
+
     public static UUID register(String participantToken, UUID eventId, UUID categoryId) {
         String id = given()
                 .header("Authorization", "Bearer " + participantToken)
