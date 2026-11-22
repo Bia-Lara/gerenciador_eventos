@@ -3,6 +3,7 @@ package br.ifsp.demo.integration.ui.registration;
 import br.ifsp.demo.support.BaseRegistrationsUiTest;
 import br.ifsp.demo.support.RegistrationApiFixture;
 import br.ifsp.demo.support.pages.ParticipationPage;
+import br.ifsp.demo.support.pages.RegistrationDialog;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -78,5 +79,17 @@ class ParticipationUiTest extends BaseRegistrationsUiTest {
 
         assertThat(painel.aguardarTituloDoEstadoVazio()).isEqualTo("Nenhum evento nesta data.");
         assertThat(painel.eventoEstaListado(nomeDoEvento)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Confirmar a inscrição leva a Minhas inscrições com a mensagem de sucesso e cria a inscrição")
+    void confirmarInscricaoLevaAMinhasInscricoes() {
+        RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+
+        RegistrationDialog modal = abrirPainelComoParticipante().inscreverNoEvento(nomeDoEvento);
+        modal.selecionarCategoria("Inteira").confirmar();
+
+        assertThat(modal.aguardarConfirmacaoEmMinhasInscricoes()).isEqualTo("Inscrição confirmada.");
+        assertThat(RegistrationApiFixture.listActiveRegistrationIds(participantToken)).hasSize(1);
     }
 }
