@@ -128,4 +128,13 @@ class CategorySectionUiTest extends BaseRegistrationsUiTest {
         assertThat(categorias.get(0)).startsWith(nomeMalicioso);
         assertThat(scriptInjetadoFoiExecutado()).isFalse();
     }
+
+    @Test
+    @DisplayName("Capacidade zero enviada contornando a validação do formulário é recusada pelo back-end")
+    void capacidadeZeroContornandoFormularioERecusada() {
+        secao.removerLimitesDoFormulario().adicionar("Inteira", "0", "10");
+
+        assertThat(secao.aguardarMensagemDeFeedback()).isNotEqualTo("Categoria adicionada.");
+        assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).isEmpty();
+    }
 }
