@@ -60,4 +60,16 @@ class CategorySectionUiTest extends BaseRegistrationsUiTest {
         assertThat(secao.capacidadeAceitaPeloNavegador()).isFalse();
         assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Nome de categoria repetido no evento mostra mensagem de erro em português")
+    void nomeRepetidoMostraMensagemDeErro() {
+        RegistrationApiFixture.createCategory(organizerToken, eventId, "Inteira", 50.0, 10);
+        driver.navigate().refresh();
+
+        secao.adicionar("Inteira", "5", "10");
+
+        assertThat(secao.aguardarMensagemDeFeedback()).containsIgnoringCase("já existe");
+        assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).hasSize(1);
+    }
 }
