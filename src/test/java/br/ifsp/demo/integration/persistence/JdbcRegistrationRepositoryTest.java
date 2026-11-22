@@ -518,4 +518,20 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(existe).isFalse();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsByCategoryId deve retornar true quando a categoria tem inscrição ativa")
+    void existsByCategoryIdComInscricaoAtivaDeveRetornarTrue() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoryId, "ATIVA");
+
+        boolean existe = sut.existsByCategoryId(categoryId);
+
+        assertThat(existe).isTrue();
+    }
 }
