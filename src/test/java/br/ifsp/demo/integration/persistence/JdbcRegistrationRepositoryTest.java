@@ -534,4 +534,20 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(existe).isTrue();
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsByCategoryId deve considerar também inscrições canceladas")
+    void existsByCategoryIdDeveConsiderarInscricoesCanceladas() {
+        User user = salvarUsuario();
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+        fixture.insertRegistration(user.getId(), categoryId, "CANCELADA");
+
+        boolean existe = sut.existsByCategoryId(categoryId);
+
+        assertThat(existe).isTrue();
+    }
 }
