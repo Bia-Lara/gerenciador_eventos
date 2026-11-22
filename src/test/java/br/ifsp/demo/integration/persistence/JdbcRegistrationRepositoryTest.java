@@ -504,4 +504,18 @@ class JdbcRegistrationRepositoryTest {
 
         assertThat(sut.countActiveByCategoryId(categoryId)).isEqualTo(1);
     }
+
+    @Test
+    @Tag("PersistenceTest")
+    @Tag("IntegrationTest")
+    @DisplayName("existsByCategoryId de categoria sem inscrições deve retornar false")
+    void existsByCategoryIdSemInscricoesDeveRetornarFalse() {
+        LocalDateTime start = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
+        UUID eventId = fixture.insertEvent(start, start.plusHours(3), "ACTIVE");
+        UUID categoryId = fixture.insertCategory(eventId, "Geral", 40, 75.5);
+
+        boolean existe = sut.existsByCategoryId(categoryId);
+
+        assertThat(existe).isFalse();
+    }
 }
