@@ -51,4 +51,13 @@ class CategorySectionUiTest extends BaseRegistrationsUiTest {
                 .extracting(CategoryResponse::name)
                 .containsExactly(nome);
     }
+
+    @Test
+    @DisplayName("Capacidade zero é barrada pelo próprio formulário, sem enviar a categoria")
+    void capacidadeZeroEBarradaPeloFormulario() {
+        secao.adicionar("Inteira", "0", "10");
+
+        assertThat(secao.capacidadeAceitaPeloNavegador()).isFalse();
+        assertThat(RegistrationApiFixture.listCategories(organizerToken, eventId)).isEmpty();
+    }
 }
