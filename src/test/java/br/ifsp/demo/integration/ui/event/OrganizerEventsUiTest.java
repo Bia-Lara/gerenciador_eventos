@@ -70,4 +70,20 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
                 .when().get(BASE_PATH + "/events/mine")
                 .then().statusCode(200).body("$", empty());
     }
+
+    @Test
+    @DisplayName("Término antes do início mostra o erro no diálogo e não cria o evento")
+    void terminoAntesDoInicioMostraErroNoDialogo() {
+        String nome = nomeUnico();
+        LocalDateTime inicio = RegistrationApiFixture.futureStart();
+
+        EventDialog dialogo = painel.abrirNovoEvento();
+        dialogo.preencher(nome, inicio, inicio.minusHours(1)).salvar();
+
+        assertThat(dialogo.aguardarMensagemDeErro()).isNotBlank();
+        assertThat(dialogo.estaAberto()).isTrue();
+        given().header("Authorization", "Bearer " + token)
+                .when().get(BASE_PATH + "/events/mine")
+                .then().statusCode(200).body("$", empty());
+    }
 }
