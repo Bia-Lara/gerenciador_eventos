@@ -147,4 +147,20 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
                 .then().statusCode(200)
                 .body("find { it.id == '" + eventId + "' }.status", equalTo("ACTIVE"));
     }
+
+    @Test
+    @DisplayName("Buscar pelo nome, sem diferenciar maiúsculas, mostra só os eventos correspondentes")
+    void buscarPeloNomeFiltraAListaSemDiferenciarMaiusculas() {
+        String sufixo = UUID.randomUUID().toString().substring(0, 8);
+        String procurado = "Workshop " + sufixo;
+        String outro = "Palestra " + sufixo;
+        RegistrationApiFixture.createEvent(token, procurado, RegistrationApiFixture.futureStart());
+        RegistrationApiFixture.createEvent(token, outro, RegistrationApiFixture.futureStart());
+        driver.navigate().refresh();
+        painel.aguardarEventosNaLista(procurado, outro);
+
+        painel.buscar("WORKSHOP");
+
+        assertThat(painel.nomesDosEventos()).containsExactly(procurado);
+    }
 }
