@@ -11,11 +11,13 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 public class OrganizerPage {
 
     private static final By PANEL = By.id("organizer-panel");
     private static final By NEW_EVENT = By.id("new-event-button");
+    private static final By EVENT_CARDS = By.cssSelector("#events-list .event-card");
     private static final By EVENT_TITLES = By.cssSelector("#events-list .event-card .event-title");
     private static final By FEEDBACK = By.id("dashboard-feedback");
     private static final By TOTAL = By.id("total-count");
@@ -37,6 +39,20 @@ public class OrganizerPage {
     public EventDialog abrirNovoEvento() {
         driver.findElement(NEW_EVENT).click();
         return new EventDialog(driver, wait);
+    }
+
+    public EventDialog abrirEdicao(String nomeDoEvento) {
+        WebElement botao = fluentWait.until(d -> cardDoEvento(nomeDoEvento)
+                .map(card -> card.findElement(By.xpath(".//button[normalize-space()='Editar']")))
+                .orElse(null));
+        botao.click();
+        return new EventDialog(driver, wait);
+    }
+
+    private Optional<WebElement> cardDoEvento(String nomeDoEvento) {
+        return driver.findElements(EVENT_CARDS).stream()
+                .filter(card -> card.findElement(By.cssSelector(".event-title")).getText().equals(nomeDoEvento))
+                .findFirst();
     }
 
     public List<String> nomesDosEventos() {
