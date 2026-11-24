@@ -163,4 +163,14 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
 
         assertThat(painel.nomesDosEventos()).containsExactly(procurado);
     }
+
+    @Test
+    @DisplayName("Organizador sem eventos vê o estado vazio e os contadores zerados")
+    void organizadorSemEventosVeEstadoVazio() {
+        assertThat(painel.estadoVazioVisivel()).isTrue();
+        assertThat(painel.tituloDoEstadoVazio()).isEqualTo("Nenhum evento por aqui, ainda.");
+        assertThat(painel.nomesDosEventos()).isEmpty();
+        assertThat(painel.totalDeEventos()).isEqualTo("0");
+        assertThat(painel.totalDeCancelados()).isEqualTo("0");
+    }
 }
