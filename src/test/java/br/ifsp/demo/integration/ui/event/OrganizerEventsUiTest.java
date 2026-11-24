@@ -17,6 +17,7 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 @Tag("UiTest")
 @DisplayName("UI - Painel Organizar: eventos")
@@ -85,5 +86,28 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
         given().header("Authorization", "Bearer " + token)
                 .when().get(BASE_PATH + "/events/mine")
                 .then().statusCode(200).body("$", empty());
+    }
+
+    @Test
+    @DisplayName("Editar evento abre o diálogo preenchido e a alteração aparece na lista e no servidor")
+    void editarEventoAtualizaListaEServidor() {
+        String nomeOriginal = nomeUnico();
+        String nomeNovo = nomeUnico();
+        LocalDateTime inicio = RegistrationApiFixture.futureStart();
+        RegistrationApiFixture.createEvent(token, nomeOriginal, inicio);
+        driver.navigate().refresh();
+
+        EventDialog dialogo = painel.abrirEdicao(nomeOriginal);
+        assertThat(dialogo.titulo()).isEqualTo("Editar evento");
+        assertThat(dialogo.nome()).isEqualTo(nomeOriginal);
+        dialogo.preencher(nomeNovo, inicio.plusDays(1), inicio.plusDays(1).plusHours(2)).salvar();
+
+        assertThat(painel.aguardarMensagemDeFeedback()).isEqualTo("Evento atualizado.");
+        assertThat(painel.nomesDosEventos()).containsExactly(nomeNovo);
+        given().header("Authorization", "Bearer " + token)
+                .when().get(BASE_PATH + "/events/mine")
+                .then().statusCode(200)
+                .body("name", hasItem(nomeNovo))
+                .body("name", not(hasItem(nomeOriginal)));
     }
 }
