@@ -22,6 +22,7 @@ public class OrganizerPage {
     private static final By EVENT_TITLES = By.cssSelector("#events-list .event-card .event-title");
     private static final By FEEDBACK = By.id("dashboard-feedback");
     private static final By TOTAL = By.id("total-count");
+    private static final By EMPTY_STATE = By.id("empty-state");
     private static final By SEARCH = By.id("event-search");
     private static final By CANCELLED = By.id("cancelled-count");
 
@@ -109,6 +110,14 @@ public class OrganizerPage {
     public String aguardarMensagemDeFeedback(String mensagemEsperada) {
         wait.until(ExpectedConditions.textToBe(FEEDBACK, mensagemEsperada));
         return driver.findElement(FEEDBACK).getText();
+    }
+
+    public boolean estadoVazioVisivel() {
+        return driver.findElement(EMPTY_STATE).isDisplayed();
+    }
+
+    public String tituloDoEstadoVazio() {
+        return driver.findElement(EMPTY_STATE).findElement(By.tagName("h3")).getText();
     }
 
     public String totalDeEventos() {
