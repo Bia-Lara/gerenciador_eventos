@@ -9,8 +9,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -34,6 +36,12 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
         token = novoUsuario();
         entrarComToken(token);
         painel = new OrganizerPage(driver, wait);
+    }
+
+    // O Chrome não aceita janela com menos de 500 px de largura, então a tela é emulada pelo DevTools.
+    private void emularTela(int largura, int altura) {
+        ((ChromeDriver) driver).executeCdpCommand("Emulation.setDeviceMetricsOverride",
+                Map.of("width", largura, "height", altura, "deviceScaleFactor", 1, "mobile", false));
     }
 
     private String nomeUnico() {
@@ -189,5 +197,19 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
         assertThat(novo.titulo()).isEqualTo("Novo evento");
         assertThat(novo.nome()).isEmpty();
         assertThat(painel.nomesDosEventos()).containsExactly(nome);
+    }
+
+    @Test
+    @DisplayName("Em tela de celular o painel não rola na horizontal e o diálogo cabe na tela com os campos empilhados")
+    void painelEDialogoSeAdaptamATelaDeCelular() {
+        RegistrationApiFixture.createEvent(token, nomeUnico(), RegistrationApiFixture.futureStart());
+        emularTela(400, 800);
+        driver.navigate().refresh();
+
+        assertThat(painel.temRolagemHorizontal()).isFalse();
+        EventDialog dialogo = painel.abrirNovoEvento();
+
+        assertThat(dialogo.cabeNaTela()).isTrue();
+        assertThat(dialogo.camposDeDataEmpilhados()).isTrue();
     }
 }
