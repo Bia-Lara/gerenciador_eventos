@@ -71,6 +71,19 @@ public class EventDialog {
                 "return arguments[0].checkValidity();", driver.findElement(NAME));
     }
 
+    public boolean cabeNaTela() {
+        return (Boolean) ((JavascriptExecutor) driver).executeScript(
+                "const r = arguments[0].getBoundingClientRect();"
+                        + "return r.left >= 0 && r.right <= window.innerWidth && r.bottom <= window.innerHeight;",
+                driver.findElement(DIALOG));
+    }
+
+    public boolean camposDeDataEmpilhados() {
+        int topoDoInicio = driver.findElement(START).getRect().getY();
+        int topoDoTermino = driver.findElement(END).getRect().getY();
+        return topoDoTermino > topoDoInicio;
+    }
+
     public String aguardarMensagemDeErro() {
         wait.until(d -> !d.findElement(FEEDBACK).getText().isBlank());
         return driver.findElement(FEEDBACK).getText();

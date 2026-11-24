@@ -2,6 +2,7 @@ package br.ifsp.demo.support.pages;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -118,6 +119,11 @@ public class OrganizerPage {
 
     public String tituloDoEstadoVazio() {
         return driver.findElement(EMPTY_STATE).findElement(By.tagName("h3")).getText();
+    }
+
+    public boolean temRolagemHorizontal() {
+        return (Boolean) ((JavascriptExecutor) driver).executeScript(
+                "return document.documentElement.scrollWidth > document.documentElement.clientWidth;");
     }
 
     public String totalDeEventos() {
