@@ -22,6 +22,7 @@ public class OrganizerPage {
     private static final By EVENT_TITLES = By.cssSelector("#events-list .event-card .event-title");
     private static final By FEEDBACK = By.id("dashboard-feedback");
     private static final By TOTAL = By.id("total-count");
+    private static final By SEARCH = By.id("event-search");
     private static final By CANCELLED = By.id("cancelled-count");
 
     private final WebDriver driver;
@@ -49,6 +50,18 @@ public class OrganizerPage {
                 .orElse(null));
         botao.click();
         return new EventDialog(driver, wait);
+    }
+
+    public OrganizerPage aguardarEventosNaLista(String... nomes) {
+        fluentWait.until(d -> nomesDosEventos().containsAll(List.of(nomes)));
+        return this;
+    }
+
+    public OrganizerPage buscar(String texto) {
+        WebElement campo = driver.findElement(SEARCH);
+        campo.clear();
+        campo.sendKeys(texto);
+        return this;
     }
 
     public String cancelar(String nomeDoEvento, boolean confirmar) {
