@@ -173,4 +173,21 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
         assertThat(painel.totalDeEventos()).isEqualTo("0");
         assertThat(painel.totalDeCancelados()).isEqualTo("0");
     }
+
+    @Test
+    @DisplayName("Voltar fecha o diálogo de edição sem alterar o evento e o novo evento abre limpo")
+    void voltarFechaDialogoDeEdicaoEONovoEventoAbreLimpo() {
+        String nome = nomeUnico();
+        RegistrationApiFixture.createEvent(token, nome, RegistrationApiFixture.futureStart());
+        driver.navigate().refresh();
+
+        EventDialog edicao = painel.abrirEdicao(nome);
+        assertThat(edicao.titulo()).isEqualTo("Editar evento");
+        edicao.voltar().aguardarFechamento();
+
+        EventDialog novo = painel.abrirNovoEvento();
+        assertThat(novo.titulo()).isEqualTo("Novo evento");
+        assertThat(novo.nome()).isEmpty();
+        assertThat(painel.nomesDosEventos()).containsExactly(nome);
+    }
 }
