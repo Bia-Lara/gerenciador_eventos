@@ -1,5 +1,6 @@
 package br.ifsp.demo.support.pages;
 
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -21,6 +22,7 @@ public class OrganizerPage {
     private static final By EVENT_TITLES = By.cssSelector("#events-list .event-card .event-title");
     private static final By FEEDBACK = By.id("dashboard-feedback");
     private static final By TOTAL = By.id("total-count");
+    private static final By CANCELLED = By.id("cancelled-count");
 
     private final WebDriver driver;
     private final WebDriverWait wait;
@@ -49,6 +51,31 @@ public class OrganizerPage {
         return new EventDialog(driver, wait);
     }
 
+    public String cancelar(String nomeDoEvento, boolean confirmar) {
+        WebElement botao = fluentWait.until(d -> cardDoEvento(nomeDoEvento)
+                .map(card -> card.findElement(By.xpath(".//button[normalize-space()='Cancelar evento']")))
+                .orElse(null));
+        botao.click();
+        Alert confirmacao = wait.until(ExpectedConditions.alertIsPresent());
+        String texto = confirmacao.getText();
+        if (confirmar) {
+            confirmacao.accept();
+        } else {
+            confirmacao.dismiss();
+        }
+        return texto;
+    }
+
+    public String statusDoEvento(String nomeDoEvento) {
+        return fluentWait.until(d -> cardDoEvento(nomeDoEvento)
+                .map(card -> card.findElement(By.cssSelector(".event-status")).getText())
+                .orElse(null));
+    }
+
+    public String totalDeCancelados() {
+        return driver.findElement(CANCELLED).getText();
+    }
+
     private Optional<WebElement> cardDoEvento(String nomeDoEvento) {
         return driver.findElements(EVENT_CARDS).stream()
                 .filter(card -> card.findElement(By.cssSelector(".event-title")).getText().equals(nomeDoEvento))
@@ -63,6 +90,11 @@ public class OrganizerPage {
 
     public String aguardarMensagemDeFeedback() {
         wait.until(d -> !d.findElement(FEEDBACK).getText().isBlank());
+        return driver.findElement(FEEDBACK).getText();
+    }
+
+    public String aguardarMensagemDeFeedback(String mensagemEsperada) {
+        wait.until(ExpectedConditions.textToBe(FEEDBACK, mensagemEsperada));
         return driver.findElement(FEEDBACK).getText();
     }
 
