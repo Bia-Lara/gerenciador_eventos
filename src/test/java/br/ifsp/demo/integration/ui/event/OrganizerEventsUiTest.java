@@ -130,4 +130,21 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
                 .then().statusCode(200)
                 .body("find { it.id == '" + eventId + "' }.status", equalTo("CANCELLED"));
     }
+
+    @Test
+    @DisplayName("Cancelar evento recusando a confirmação mantém o evento ativo")
+    void cancelarEventoRecusandoConfirmacaoMantemEventoAtivo() {
+        String nome = nomeUnico();
+        UUID eventId = RegistrationApiFixture.createEvent(token, nome, RegistrationApiFixture.futureStart());
+        driver.navigate().refresh();
+
+        painel.cancelar(nome, false);
+
+        assertThat(painel.statusDoEvento(nome)).isEqualTo("ATIVO");
+        assertThat(painel.totalDeCancelados()).isEqualTo("0");
+        given().header("Authorization", "Bearer " + token)
+                .when().get(BASE_PATH + "/events/mine")
+                .then().statusCode(200)
+                .body("find { it.id == '" + eventId + "' }.status", equalTo("ACTIVE"));
+    }
 }
