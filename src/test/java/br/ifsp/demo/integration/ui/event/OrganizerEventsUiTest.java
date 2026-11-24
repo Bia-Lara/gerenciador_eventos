@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 
 @Tag("UiTest")
@@ -52,5 +53,21 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
         given().header("Authorization", "Bearer " + token)
                 .when().get(BASE_PATH + "/events/mine")
                 .then().statusCode(200).body("name", hasItem(nome));
+    }
+
+    @Test
+    @DisplayName("Nome vazio é barrado pelo próprio formulário, sem criar o evento")
+    void nomeVazioEBarradoPeloFormulario() {
+        LocalDateTime inicio = RegistrationApiFixture.futureStart();
+
+        EventDialog dialogo = painel.abrirNovoEvento();
+        dialogo.preencher("", inicio, inicio.plusHours(2)).salvar();
+
+        assertThat(dialogo.nomeAceitoPeloNavegador()).isFalse();
+        assertThat(dialogo.estaAberto()).isTrue();
+        assertThat(painel.nomesDosEventos()).isEmpty();
+        given().header("Authorization", "Bearer " + token)
+                .when().get(BASE_PATH + "/events/mine")
+                .then().statusCode(200).body("$", empty());
     }
 }
