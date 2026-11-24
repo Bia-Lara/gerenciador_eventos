@@ -66,6 +66,11 @@ public class EventDialog {
         return driver.findElement(NAME).getAttribute("value");
     }
 
+    public boolean nomeAceitoPeloNavegador() {
+        return (Boolean) ((JavascriptExecutor) driver).executeScript(
+                "return arguments[0].checkValidity();", driver.findElement(NAME));
+    }
+
     public String aguardarMensagemDeErro() {
         wait.until(d -> !d.findElement(FEEDBACK).getText().isBlank());
         return driver.findElement(FEEDBACK).getText();
