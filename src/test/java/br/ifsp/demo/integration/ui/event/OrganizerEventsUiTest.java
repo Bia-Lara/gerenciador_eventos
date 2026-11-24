@@ -16,6 +16,7 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
@@ -109,5 +110,24 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
                 .then().statusCode(200)
                 .body("name", hasItem(nomeNovo))
                 .body("name", not(hasItem(nomeOriginal)));
+    }
+
+    @Test
+    @DisplayName("Cancelar evento confirmando marca o card como cancelado e atualiza o contador")
+    void cancelarEventoConfirmandoMarcaComoCancelado() {
+        String nome = nomeUnico();
+        UUID eventId = RegistrationApiFixture.createEvent(token, nome, RegistrationApiFixture.futureStart());
+        driver.navigate().refresh();
+
+        String pergunta = painel.cancelar(nome, true);
+
+        assertThat(pergunta).isEqualTo("Cancelar o evento \"" + nome + "\"?");
+        assertThat(painel.aguardarMensagemDeFeedback("Evento cancelado.")).isEqualTo("Evento cancelado.");
+        assertThat(painel.statusDoEvento(nome)).isEqualTo("CANCELADO");
+        assertThat(painel.totalDeCancelados()).isEqualTo("1");
+        given().header("Authorization", "Bearer " + token)
+                .when().get(BASE_PATH + "/events/mine")
+                .then().statusCode(200)
+                .body("find { it.id == '" + eventId + "' }.status", equalTo("CANCELLED"));
     }
 }
