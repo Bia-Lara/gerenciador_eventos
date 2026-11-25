@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -111,6 +112,21 @@ class CreateEventApiTest extends BaseApiTest {
                 Arguments.of("início no passado",
                         new CreateEventRequest("Evento", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusHours(1)))
         );
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 quando a data estiver em formato inválido")
+    void deveRetornar400ParaDataEmFormatoInvalido() {
+        String token = novoOrganizador(EntityBuilder.randomEmail());
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body(Map.of("name", "Evento", "startDateTime", "amanhã às 10h", "endDateTime", "depois"))
+        .when()
+                .post(EVENTS_PATH)
+        .then()
+                .statusCode(400);
     }
 
     @Test
