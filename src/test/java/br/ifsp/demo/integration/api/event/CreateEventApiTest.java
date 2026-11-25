@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
@@ -60,8 +61,8 @@ class CreateEventApiTest extends BaseApiTest {
                 .body("organizerId", equalTo(organizerId.toString()))
                 .body("status", equalTo(EventStatus.ACTIVE.name()))
                 .body("categories", empty())
-                .body("startDateTime", equalTo(start.toString()))
-                .body("endDateTime", equalTo(end.toString()));
+                .body("startDateTime", equalTo(start.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
+                .body("endDateTime", equalTo(end.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
     }
 
     @Test

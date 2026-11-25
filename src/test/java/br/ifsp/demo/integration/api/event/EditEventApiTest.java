@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -61,8 +62,8 @@ class EditEventApiTest extends BaseApiTest {
                 .body("name", equalTo("Evento atualizado"))
                 .body("organizerId", equalTo(organizerId.toString()))
                 .body("status", equalTo(EventStatus.ACTIVE.name()))
-                .body("startDateTime", equalTo(novoInicio.toString()))
-                .body("endDateTime", equalTo(novoFim.toString()));
+                .body("startDateTime", equalTo(novoInicio.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
+                .body("endDateTime", equalTo(novoFim.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
 
         given()
                 .header("Authorization", "Bearer " + token)
@@ -71,7 +72,7 @@ class EditEventApiTest extends BaseApiTest {
         .then()
                 .statusCode(200)
                 .body("[0].name", equalTo("Evento atualizado"))
-                .body("[0].startDateTime", equalTo(novoInicio.toString()));
+                .body("[0].startDateTime", equalTo(novoInicio.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
     }
 
     @ParameterizedTest(name = "{0}")
