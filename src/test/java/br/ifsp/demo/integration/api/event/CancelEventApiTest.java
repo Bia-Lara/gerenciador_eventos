@@ -3,10 +3,13 @@ package br.ifsp.demo.integration.api.event;
 import br.ifsp.demo.domain.enumerations.EventStatus;
 import br.ifsp.demo.support.BaseApiTest;
 import br.ifsp.demo.support.EntityBuilder;
+import br.ifsp.demo.support.EventDbFixture;
 import br.ifsp.demo.support.RegistrationApiFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.UUID;
 
@@ -20,6 +23,9 @@ class CancelEventApiTest extends BaseApiTest {
 
     private static final String PASSWORD = "123456";
     private static final String EVENTS_PATH = BASE_PATH + "/events";
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private String novoUsuario() {
         return registerAndAuthenticate(EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
@@ -115,6 +121,23 @@ class CancelEventApiTest extends BaseApiTest {
                 .post(EVENTS_PATH + "/" + eventId + "/cancel")
         .then()
                 .statusCode(200);
+
+        given()
+                .header("Authorization", "Bearer " + token)
+        .when()
+                .post(EVENTS_PATH + "/" + eventId + "/cancel")
+        .then()
+                .statusCode(409);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao cancelar um evento já iniciado")
+    void deveRetornar409AoCancelarEventoJaIniciado() {
+        String email = EntityBuilder.randomEmail();
+        String token = registerAndAuthenticate(EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(),
+                email, PASSWORD);
+        UUID organizerId = userRepository.findByEmail(email).orElseThrow().getId();
+        UUID eventId = new EventDbFixture(jdbc).insertStartedEvent(organizerId);
 
         given()
                 .header("Authorization", "Bearer " + token)
