@@ -1,6 +1,8 @@
 package br.ifsp.demo.integration.ui.event;
 
 import br.ifsp.demo.support.BaseRegistrationsUiTest;
+import br.ifsp.demo.support.EntityBuilder;
+import br.ifsp.demo.support.EventDbFixture;
 import br.ifsp.demo.support.RegistrationApiFixture;
 import br.ifsp.demo.support.pages.EventDialog;
 import br.ifsp.demo.support.pages.OrganizerPage;
@@ -10,6 +12,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -27,6 +31,9 @@ import static org.hamcrest.Matchers.not;
 class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
 
     private final Faker faker = new Faker();
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private String token;
     private OrganizerPage painel;
@@ -117,6 +124,22 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
         dialogo.preencher(nomeNoLimite, inicio, inicio.plusHours(2));
 
         assertThat(dialogo.nome()).hasSize(150);
+    }
+
+    @Test
+    @DisplayName("Editar evento já iniciado informa que o evento já começou")
+    void editarEventoJaIniciadoInformaQueOEventoComecou() {
+        String email = EntityBuilder.randomEmail();
+        String tokenOrganizador = registerAndAuthenticate(EntityBuilder.randomFirstName(),
+                EntityBuilder.randomLastName(), email, "SenhaForte123");
+        new EventDbFixture(jdbc).insertStartedEvent(userRepository.findByEmail(email).orElseThrow().getId());
+        entrarComToken(tokenOrganizador);
+        LocalDateTime novoInicio = RegistrationApiFixture.futureStart();
+
+        EventDialog dialogo = painel.abrirEdicao("Evento já iniciado");
+        dialogo.preencher(nomeUnico(), novoInicio, novoInicio.plusHours(2)).salvar();
+
+        assertThat(dialogo.aguardarMensagemDeErro()).containsIgnoringCase("o evento já começou");
     }
 
     @Test
