@@ -60,6 +60,7 @@ target/
 
 # Local SQLite database
 database.db
+database-test.db
 *.db-journal
 *.db-shm
 *.db-wal
