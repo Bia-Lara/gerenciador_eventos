@@ -11,8 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -26,6 +29,9 @@ class EditEventApiTest extends BaseApiTest {
 
     private static final String PASSWORD = "123456";
     private static final String EVENTS_PATH = BASE_PATH + "/events";
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private String novoUsuario(String email) {
         return registerAndAuthenticate(EntityBuilder.randomFirstName(), EntityBuilder.randomLastName(), email, PASSWORD);
@@ -143,6 +149,34 @@ class EditEventApiTest extends BaseApiTest {
                 .put(EVENTS_PATH + "/" + eventId)
                 .then()
                 .statusCode(409);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 409 ao editar um evento já iniciado")
+    void deveRetornar409AoEditarEventoJaIniciado() {
+        String email = EntityBuilder.randomEmail();
+        String token = novoUsuario(email);
+        UUID organizerId = userRepository.findByEmail(email).orElseThrow().getId();
+        UUID eventId = inserirEventoJaIniciado(organizerId);
+        LocalDateTime novoInicio = RegistrationApiFixture.futureStart().plusDays(5);
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body(new EditEventRequest("Edição após o início", novoInicio, novoInicio.plusHours(2)))
+        .when()
+                .put(EVENTS_PATH + "/" + eventId)
+        .then()
+                .statusCode(409);
+    }
+
+    private UUID inserirEventoJaIniciado(UUID organizerId) {
+        UUID eventId = UUID.randomUUID();
+        LocalDateTime inicio = LocalDateTime.now().minusHours(1).truncatedTo(ChronoUnit.SECONDS);
+        jdbc.update("INSERT INTO event (id, name, start_date_time, end_date_time, organizer_id) VALUES (?, ?, ?, ?, ?)",
+                eventId.toString(), "Evento já iniciado", inicio.toString(), inicio.plusHours(3).toString(),
+                organizerId.toString());
+        return eventId;
     }
 
     @Test
