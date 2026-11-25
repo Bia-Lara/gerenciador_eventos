@@ -38,7 +38,6 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
         painel = new OrganizerPage(driver, wait);
     }
 
-    // O Chrome não aceita janela com menos de 500 px de largura, então a tela é emulada pelo DevTools.
     private void emularTela(int largura, int altura) {
         ((ChromeDriver) driver).executeCdpCommand("Emulation.setDeviceMetricsOverride",
                 Map.of("width", largura, "height", altura, "deviceScaleFactor", 1, "mobile", false));
@@ -106,6 +105,18 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
         dialogo.preencher(nomeUnico(), inicio, inicio.minusHours(1)).salvar();
 
         assertThat(dialogo.aguardarMensagemDeErro()).containsIgnoringCase("término");
+    }
+
+    @Test
+    @DisplayName("Formulário aceita nome com 150 caracteres, o mesmo limite do servidor")
+    void formularioAceitaNomeNoLimiteDe150Caracteres() {
+        String nomeNoLimite = "a".repeat(150);
+        LocalDateTime inicio = RegistrationApiFixture.futureStart();
+
+        EventDialog dialogo = painel.abrirNovoEvento();
+        dialogo.preencher(nomeNoLimite, inicio, inicio.plusHours(2));
+
+        assertThat(dialogo.nome()).hasSize(150);
     }
 
     @Test
