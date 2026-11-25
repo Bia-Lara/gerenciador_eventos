@@ -98,6 +98,17 @@ class OrganizerEventsUiTest extends BaseRegistrationsUiTest {
     }
 
     @Test
+    @DisplayName("Término antes do início mostra a mensagem de erro em português")
+    void terminoAntesDoInicioMostraMensagemEmPortugues() {
+        LocalDateTime inicio = RegistrationApiFixture.futureStart();
+
+        EventDialog dialogo = painel.abrirNovoEvento();
+        dialogo.preencher(nomeUnico(), inicio, inicio.minusHours(1)).salvar();
+
+        assertThat(dialogo.aguardarMensagemDeErro()).containsIgnoringCase("término");
+    }
+
+    @Test
     @DisplayName("Editar evento abre o diálogo preenchido e a alteração aparece na lista e no servidor")
     void editarEventoAtualizaListaEServidor() {
         String nomeOriginal = nomeUnico();
