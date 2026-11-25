@@ -148,6 +148,19 @@ class CancelEventApiTest extends BaseApiTest {
     }
 
     @Test
+    @DisplayName("Deve retornar 404 ao cancelar um evento inexistente")
+    void deveRetornar404AoCancelarEventoInexistente() {
+        String token = novoUsuario();
+
+        given()
+                .header("Authorization", "Bearer " + token)
+        .when()
+                .post(EVENTS_PATH + "/" + UUID.randomUUID() + "/cancel")
+        .then()
+                .statusCode(404);
+    }
+
+    @Test
     @DisplayName("Deve retornar 401 quando não houver token")
     void deveRetornar401SemToken() {
         given()
