@@ -171,6 +171,22 @@ class EditEventApiTest extends BaseApiTest {
     }
 
     @Test
+    @DisplayName("Deve retornar 404 ao editar um evento inexistente")
+    void deveRetornar404AoEditarEventoInexistente() {
+        String token = novoUsuario(EntityBuilder.randomEmail());
+        LocalDateTime novoInicio = RegistrationApiFixture.futureStart().plusDays(5);
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body(new EditEventRequest("Evento inexistente", novoInicio, novoInicio.plusHours(2)))
+        .when()
+                .put(EVENTS_PATH + "/" + UUID.randomUUID())
+        .then()
+                .statusCode(404);
+    }
+
+    @Test
     @DisplayName("Deve retornar 401 quando não houver token")
     void deveRetornar401SemToken() {
         LocalDateTime novoInicio = RegistrationApiFixture.futureStart().plusDays(5);
